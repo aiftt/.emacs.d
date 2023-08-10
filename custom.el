@@ -3,7 +3,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages '(auto-save exec-path-from-shell))
+ '(package-selected-packages '(evil auto-save exec-path-from-shell))
  '(package-vc-selected-packages
    '((auto-save :vc-backend Git :url "https://www.github.com/manateelazycat/auto-save")
      (exec-path-from-shell :vc-backend Git :url "https://www.github.com/purcell/exec-path-from-shell"))))

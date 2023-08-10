@@ -46,6 +46,10 @@
 (blink-cursor-mode -1)
 ;; 启动全屏
 (set-frame-parameter (selected-frame) 'fullscreen 'maximized)
+;; 自动更新 buffer
+(global-auto-revert-mode)
+;; 提示框的默认回答设置为 "yes"
+(fset 'yes-or-no-p 'y-or-n-p)
 
 
 ;; --- 基础设置
@@ -86,11 +90,81 @@
  ;; 用一个很大的 kill ring. 这样防止我不小心删掉重要的东西
  kill-ring-max 2048
  ;; 设置的 mark ring 容量
- mark-ring-max 1024
+ mark-ring-max 2048
  ;; 设置执行表达式的长度没有限制
  eval-expression-print-length nil
  ;; 性能优化
- gc-cons-threshold most-positive-fixnum)
+ gc-cons-threshold most-positive-fixnum
+ ;; 设置执行表达式的长度没有限制
+ eval-expression-print-length nil
+ ;; 设置执行表达式的深度没有限制
+ eval-expression-print-level nil
+ ;; 设置最大的全局标记容量
+ global-mark-ring-max 1024
+ ;; minibuffer 递归调用命令
+ enable-recursive-minibuffers t
+ ;; 删除minibuffer的重复历史
+ history-delete-duplicates t
+ ;; 显示消息超时的时间
+ minibuffer-message-timeout 1
+ ;; 括号匹配显示但不是烦人的跳到另一个括号
+ show-paren-style 'parentheses
+ ;; 当插入右括号时显示匹配的左括号
+ blink-matching-paren t
+ ;; 不自动添加换行符到末尾, 有些情况会出现错误
+ require-final-newline nil
+ ;; 比较窗口设置在同一个 frame 里
+ ediff-window-setup-function (quote ediff-setup-windows-plain)
+ ;; 设置传送文件默认的方法
+ tramp-default-method "ssh"
+ ;; 禁止显示鼠标指针
+ void-text-area-pointer nil
+ ;; 当出现异常时弹出三角警告
+ visible-bell t
+ ;; 显示行尾空格
+ show-trailing-whitespace t
+ create-lockfiles nil
+ ;; 关闭启动消息
+ inhibit-startup-screen t
+ inhibit-startup-message t
+ inhibit-startup-echo-area-message t
+ initial-scratch-message nil
+ ;; 改变 *scratch* buffer 的模式
+ initial-major-mode 'emacs-lisp-mode
+ initial-buffer-choice t
+
+ ;; 不要弹窗提示
+ auto-revert-verbose nil
+ ;; 禁用对话框
+ use-dialog-box nil
+
+ ;; 不创建备份文件。同时，也会关闭创建目录时的确认窗口
+ make-backup-files nil
+ ;; 控制是否通过复制来创建备份文件。如果设置为非 nil 值，Emacs 将通过
+ ;; 复制原始文件来创建备份文件。如果设置为 nil，则备份文件将通过重写
+ ;; （link）原始文件来创建
+ ;; backup-by-copying nil
+ ;; 如果原始文件是一个链接（link），是否通过复制来创建备份文件。如果设
+ ;; 置为非 nil 值，则当原始文件是一个链接时，备份文件将通过复制来创建
+ ;; backup-by-copying-when-linked nil
+ ;; 如果原始文件和备份文件的修改时间或大小不匹配，是否通过复制来创建备
+ ;; 份文件。如果设置为非 nil 值，则当原始文件和备份文件的修改时间或大
+ ;; 小不匹配时，备份文件将通过复制来创建
+ ;; backup-by-copying-when-mismatch nil
+ ;; 类似于 backup-by-copying-when-mismatch，但是当原始文件和备份文件的
+ ;; 权限（权限位）不匹配时，是否通过复制来创建备份文件
+ ;; backup-by-copying-when-privileged-mismatch nil
+ ;; 是否在权限发生变化时通过复制来创建备份文件。如果设置为非 nil 值，
+ ;; 则在原始文件的权限发生变化时，备份文件将通过复制来创建。
+ ;;backup-by-copying-when-privileged nil
+ ;; 禁用备份文件
+ backup-inhibited t
+
+ ;; 当你使用 find-file 或 write-file 命令打开或保存文件时，
+ ;; 如果指定的目录不存在，Emacs 会自动创建该目录，而不会再弹出确认窗口
+ confirm-nonexistent-file-or-buffer nil
+ confirm-nonexistent-file-or-new-buffer nil
+ )
 
 
 ;; --- 添加 hooks
@@ -152,6 +226,25 @@ named arguments:
   (setq exec-path-from-shell-variables '("PATH" "MANPATH" "LSP_USE_PLISTS" "NODE_PATH")
 	exec-path-from-shell-arguments '("-l"))
   (exec-path-from-shell-initialize))
+
+;; --- evil
+(use-package evil
+  :ensure t
+  :init
+  (evil-mode)
+  :config
+  ;; 退出编辑模式后光标留在原地
+  (setq evil-move-cursor-back nil)
+  ;; 让回车，TAB，空格键保持原来的功能
+  (with-eval-after-load 'evil-maps
+    ;; (define-key evil-motion-state-map (kbd "RET") nil)
+    (define-key evil-motion-state-map (kbd "TAB") nil)
+    (define-key evil-motion-state-map (kbd "SPC") nil))
+
+  (progn
+    ;; --- 解绑一些按键
+    (evil-global-set-key 'normal (kbd "c") nil)
+    ))
 
 ;; --- 开发设置
 
