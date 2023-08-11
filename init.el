@@ -214,6 +214,10 @@ one, an error is signaled."
   (interactive)
   (find-file (expand-file-name "init.el" user-emacs-directory)))
 
+(defun gcl/open-ztd-document()
+  (interactive)
+  (find-file "~/.gclrc/ztd/document.org"))
+
 ;; -- load path
 (add-subdirs-to-load-path "~/.emacs.d/extensions/")
 
@@ -369,6 +373,12 @@ one, an error is signaled."
  ;; 如果指定的目录不存在，Emacs 会自动创建该目录，而不会再弹出确认窗口
  confirm-nonexistent-file-or-buffer nil
  confirm-nonexistent-file-or-new-buffer nil
+
+ ;; *scratch* buffer 初始显示的内容
+ initial-scratch-message "\
+ ;; This buffer is for notes you don't want to save, and for Ruby code.
+ ;; If you want to create a file, visit that file with C-x C-f,
+ ;; then enter the text in that file's own buffer."
  )
 
 ;; --- 添加 hooks
@@ -384,8 +394,8 @@ one, an error is signaled."
 ;; sh -c 'printf "%s" "$PATH"' > ~/.path
 (condition-case err
     (let ((path (with-temp-buffer
-		  (insert-file-contents-literally "~/.path")
-		  (buffer-string))))
+		              (insert-file-contents-literally "~/.path")
+		              (buffer-string))))
       (setenv "PATH" path)
       (setq exec-path (append (parse-colon-path path) (list exec-directory))))
   (error (warn "%s" (error-message-string err))))
@@ -418,7 +428,7 @@ named arguments:
 ;; --- 包源配置
 (require 'package)
 (setq package-archives '(("gnu"   . "http://1.15.88.122/gnu/")
-			 ("melpa" . "http://1.15.88.122/melpa/")))
+			                   ("melpa" . "http://1.15.88.122/melpa/")))
 (package-initialize)
 
 ;; --- 环境变量设置
@@ -429,7 +439,7 @@ named arguments:
   :ensure t
   :config
   (setq exec-path-from-shell-variables '("PATH" "MANPATH" "LSP_USE_PLISTS" "NODE_PATH")
- 	exec-path-from-shell-arguments '("-l"))
+ 	      exec-path-from-shell-arguments '("-l"))
   (exec-path-from-shell-initialize))
 
 ;; --- evil
@@ -481,7 +491,7 @@ named arguments:
   :ensure t
   :config
   (setq-default evil-surround-pairs-alist
-		'((?\( . ("(" . ")"))
+		            '((?\( . ("(" . ")"))
                   (?\[ . ("[" . "]"))
                   (?\{ . ("{" . "}"))
 
@@ -501,7 +511,7 @@ named arguments:
 
                   ;; Emacs-style quotes
                   (?\` . ("`" . "'"))
-		  ;; javascript
+		              ;; javascript
                   (?\` . ("`" . "`"))
 
                   ;; Python multi-line strings
@@ -529,6 +539,10 @@ named arguments:
   :config
   (add-hook 'minibuffer-setup-hook #'highlight-parentheses-minibuffer-setup)
   )
+
+(use-package emojify
+  :ensure t
+  :hook (after-init . global-emojify-mode))
 
 (use-package rainbow-delimiters
   :ensure t
@@ -572,33 +586,39 @@ named arguments:
 
 ;; Must be used *after* the theme is loaded
 (custom-set-faces
-  ;; `(mode-line ((t (:background ,(doom-color 'dark-violet)))))
-  `(font-lock-comment-face ((t (:foreground ,(doom-color 'base6))))))
+ ;; `(mode-line ((t (:background ,(doom-color 'dark-violet)))))
+ `(font-lock-comment-face ((t (:foreground ,(doom-color 'base6))))))
+;; 设置默认字体为等宽字体
+(set-face-attribute 'default nil
+                    :family "Fira Code"
+                    :height 130
+                    :weight 'normal
+                    :width 'normal)
 
 ;; - mode line
 (use-package awesome-tray
   :init (slot/vc-install :repo "manateelazycat/awesome-tray")
   :config
   (setq awesome-tray-mode-line-height 0.1
-	awesome-tray-mode-line-active-color "#EC4899"
-	awesome-tray-mode-line-inactive-color "#959eb1"
-	awesome-tray-active-modules '(
-				    ;; "location"
-				    "pdf-view-page"
-				    "date"
-				    "file-path"
-				    "buffer-name"
-				    "mode-name"
-				    "battery"
-				    "git"
-				    "input-method"
-				    "evil"
-				    ;; "flymake"
-				    "belong"
-				    "anzu"
-				    ;; "github"
-				    )
-	awesome-tray-date-format "%d/%H:%M:%S")
+	      awesome-tray-mode-line-active-color "#EC4899"
+	      awesome-tray-mode-line-inactive-color "#959eb1"
+	      awesome-tray-active-modules '(
+				                              ;; "location"
+				                              "pdf-view-page"
+				                              "date"
+				                              "file-path"
+				                              "buffer-name"
+				                              "mode-name"
+				                              "battery"
+				                              "git"
+				                              "input-method"
+				                              "evil"
+				                              ;; "flymake"
+				                              "belong"
+				                              "anzu"
+				                              ;; "github"
+				                              )
+	      awesome-tray-date-format "%d/%H:%M:%S")
   (awesome-tray-mode 1))
 
 ;; --- buffer 管理
@@ -622,8 +642,8 @@ named arguments:
   :ensure t
   :config
   (setq vertico-count 13
-      vertico-resize t
-      vertico-cycle nil)
+        vertico-resize t
+        vertico-cycle nil)
   (vertico-mode)
   (require 'vertico-repeat)
   (add-hook 'minibuffer-setup-hook 'vertico-repeat-save)
@@ -696,9 +716,9 @@ named arguments:
 (use-package consult-dir
   :ensure t
   :bind (("C-x C-d" . consult-dir)
-	 :map minibuffer-local-completion-map
-	 ("C-x C-d" . consult-dir)
-	 ("C-x C-j" . consult-dir-jump-file))
+	       :map minibuffer-local-completion-map
+	       ("C-x C-d" . consult-dir)
+	       ("C-x C-j" . consult-dir-jump-file))
   )
 
 
@@ -791,29 +811,29 @@ named arguments:
   ;; setup directory of stardict dictionary
   (setq sdcv-dictionary-data-dir (concat user-emacs-directory "sdcv-dict"))
   (setq sdcv-dictionary-simple-list    ;setup dictionary list for simple search
-      '("懒虫简明英汉词典"
-        "懒虫简明汉英词典"
-        "KDic11万英汉词典"))
+        '("懒虫简明英汉词典"
+          "懒虫简明汉英词典"
+          "KDic11万英汉词典"))
   (setq sdcv-dictionary-complete-list     ;setup dictionary list for complete search
-      '(
-        "懒虫简明英汉词典"
-        "英汉汉英专业词典"
-        "XDICT英汉辞典"
-        "stardict1.3英汉辞典"
-        "WordNet"
-        "XDICT汉英辞典"
-        "Jargon"
-        "懒虫简明汉英词典"
-        "FOLDOC"
-        "新世纪英汉科技大词典"
-        "KDic11万英汉词典"
-        "朗道汉英字典5.0"
-        "CDICT5英汉辞典"
-        "新世纪汉英科技大词典"
-        "牛津英汉双解美化版"
-        "21世纪双语科技词典"
-        "quick_eng-zh_CN"
-        ))
+        '(
+          "懒虫简明英汉词典"
+          "英汉汉英专业词典"
+          "XDICT英汉辞典"
+          "stardict1.3英汉辞典"
+          "WordNet"
+          "XDICT汉英辞典"
+          "Jargon"
+          "懒虫简明汉英词典"
+          "FOLDOC"
+          "新世纪英汉科技大词典"
+          "KDic11万英汉词典"
+          "朗道汉英字典5.0"
+          "CDICT5英汉辞典"
+          "新世纪汉英科技大词典"
+          "牛津英汉双解美化版"
+          "21世纪双语科技词典"
+          "quick_eng-zh_CN"
+          ))
   )
 
 ;; --- magit
@@ -826,7 +846,7 @@ named arguments:
   (setq magit-refresh-status-buffer nil)
   ;; 当前buffer打开magit
   (setq magit-display-buffer-function
-	(lambda (buffer)
+	      (lambda (buffer)
           (display-buffer buffer '(display-buffer-same-window))))
   (setq magit-ellipsis (get-byte 0 "."))
   ;; 加速diff
@@ -835,18 +855,18 @@ named arguments:
   (setq magit-diff-paint-whitespace nil)
   (setq magit-ediff-dwim-show-on-hunks t)
   (setq magit-display-buffer-function
-	(lambda (buffer)
-	  (display-buffer buffer '(display-buffer-same-window))))
+	      (lambda (buffer)
+	        (display-buffer buffer '(display-buffer-same-window))))
   ;; 加速diff
   (setq magit-revision-insert-related-refs nil)
   )
 
 (defun show-commit-and-preserve-window ()
-    (interactive)
-    ;; NOTE(philc): I'm not sure why magit-show-commit needs to be called interactively, but just invoking it
-    ;; directly gives an argument error.
-    (gcl/preserve-selected-window (lambda ()
-                                    (call-interactively 'magit-show-commit))))
+  (interactive)
+  ;; NOTE(philc): I'm not sure why magit-show-commit needs to be called interactively, but just invoking it
+  ;; directly gives an argument error.
+  (gcl/preserve-selected-window (lambda ()
+                                  (call-interactively 'magit-show-commit))))
 
 (use-package blamer
   :ensure t
@@ -858,9 +878,9 @@ named arguments:
   (blamer-commit-formatter " ● %s")
   :custom-face
   (blamer-face ((t :foreground "#7a88cf"
-                    ;; :background nil
-                    :height 120
-                    :italic t)))
+                   ;; :background nil
+                   :height 120
+                   :italic t)))
   :config
   ;; (global-blamer-mode 1)
   )
@@ -869,9 +889,9 @@ named arguments:
   :ensure t
   :config
   (add-to-list 'auto-mode-alist
-	       (cons "/.dockerignore\\'" 'gitignore-mode))
+	             (cons "/.dockerignore\\'" 'gitignore-mode))
   (add-to-list 'auto-mode-alist
-	       (cons "/.gitignore\\'" 'gitignore-mode))
+	             (cons "/.gitignore\\'" 'gitignore-mode))
   (add-to-list 'auto-mode-alist
                (cons "/.gitconfig\\'" 'gitconfig-mode))
   )
@@ -993,9 +1013,9 @@ named arguments:
   :ensure t
   :config
   (setq js-doc-mail-address user-mail-address
-       js-doc-author (format "<%s> <%s>" user-full-name js-doc-mail-address)
-       js-doc-url user-blog-url
-       js-doc-license "MIT"))
+        js-doc-author (format "<%s> <%s>" user-full-name js-doc-mail-address)
+        js-doc-url user-blog-url
+        js-doc-license "MIT"))
 
 ;; --- development 开发设置
 
@@ -1140,11 +1160,11 @@ The test for presence of the car of ELT-CONS is done with `equal'."
   (completion-category-overrides '((file (styles basic partial-completion)))))
 
 ;; --- edit
+(require 'duplicate-line)
+
 (use-package expand-region
   :ensure t)
 (global-set-key (kbd "C-=") 'er/expand-region)
-
-(require 'duplicate-line)
 
 (use-package autorevert
   :diminish
@@ -1155,6 +1175,12 @@ The test for presence of the car of ELT-CONS is done with `equal'."
   :config
   (setq-default hungry-delete-chars-to-skip " \t\f\v"))
 (global-hungry-delete-mode)
+
+(use-package smartparens
+  :ensure t
+  :config
+  (require 'smartparens-config)
+  (smartparens-global-mode t))
 
 ;; --- hydra
 (use-package hydra :ensure t)
@@ -1211,7 +1237,8 @@ _t_: Type           _c_: Type
   ("1" gcl/open-init-file "打开Emacs配置")
   )
 
-
+(use-package highlight-thing :ensure t)
+(global-highlight-thing-mode)
 (use-package symbol-overlay :ensure t)
 (use-package move-text :ensure t)
 (use-package iedit :ensure t)
@@ -1223,8 +1250,8 @@ _t_: Type           _c_: Type
   :init (slot/vc-install :repo "jcs-elpa/toggle-quotes-plus")
   :config
   (setq toggle-quotes-plus-chars '("\""
-                                 "'"
-                                 "`")))
+                                   "'"
+                                   "`")))
 (global-set-key (kbd "C-'") #'toggle-quotes-plus)
 
 (use-package maple-iedit
@@ -1248,71 +1275,71 @@ _t_: Type           _c_: Type
   :ensure t)
 
 (defun my-string-inflection-cycle-auto ()
-    "switching by major-mode"
-    (interactive)
-    (cond
-     ;; for emacs-lisp-mode
-     ((eq major-mode 'emacs-lisp-mode)
-      (string-inflection-all-cycle))
-     ;; for python
-     ((eq major-mode 'python-mode)
-      (string-inflection-python-style-cycle))
-     ;; for java
-     ((eq major-mode 'java-mode)
-      (string-inflection-java-style-cycle))
-     ;; for elixir
-     ((eq major-mode 'elixir-mode)
-      (string-inflection-elixir-style-cycle))
-     (t
-      ;; default
-      (string-inflection-ruby-style-cycle))))
+  "switching by major-mode"
+  (interactive)
+  (cond
+   ;; for emacs-lisp-mode
+   ((eq major-mode 'emacs-lisp-mode)
+    (string-inflection-all-cycle))
+   ;; for python
+   ((eq major-mode 'python-mode)
+    (string-inflection-python-style-cycle))
+   ;; for java
+   ((eq major-mode 'java-mode)
+    (string-inflection-java-style-cycle))
+   ;; for elixir
+   ((eq major-mode 'elixir-mode)
+    (string-inflection-elixir-style-cycle))
+   (t
+    ;; default
+    (string-inflection-ruby-style-cycle))))
 
 (use-package parrot
   :ensure t
   :config
   (parrot-mode -1)
-(setq parrot-rotate-dict
-      '(
-        (:rot ("alpha" "beta") :caps t :lower nil)
-        ;; => rotations are "Alpha" "Beta"
+  (setq parrot-rotate-dict
+        '(
+          (:rot ("alpha" "beta") :caps t :lower nil)
+          ;; => rotations are "Alpha" "Beta"
 
-        (:rot ("snek" "snake" "stawp"))
-        ;; => rotations are "snek" "snake" "stawp"
+          (:rot ("snek" "snake" "stawp"))
+          ;; => rotations are "snek" "snake" "stawp"
 
-        (:rot ("yes" "no") :caps t :upcase t)
-        ;; => rotations are "yes" "no", "Yes" "No", "YES" "NO"
+          (:rot ("yes" "no") :caps t :upcase t)
+          ;; => rotations are "yes" "no", "Yes" "No", "YES" "NO"
 
-        (:rot ("&" "|"))
-        ;; => rotations are "&" "|"
+          (:rot ("&" "|"))
+          ;; => rotations are "&" "|"
 
-        ;; default dictionary starts here ('v')
-        (:rot ("begin" "end") :caps t :upcase t)
-        (:rot ("enable" "disable") :caps t :upcase t)
-        (:rot ("enter" "exit") :caps t :upcase t)
-        (:rot ("forward" "backward") :caps t :upcase t)
-        (:rot ("front" "rear" "back") :caps t :upcase t)
-        (:rot ("get" "set") :caps t :upcase t)
-        (:rot ("high" "low") :caps t :upcase t)
-        (:rot ("in" "out") :caps t :upcase t)
-        (:rot ("left" "right") :caps t :upcase t)
-        (:rot ("min" "max") :caps t :upcase t)
-        (:rot ("on" "off") :caps t :upcase t)
-        (:rot ("prev" "next"))
-        (:rot ("start" "stop") :caps t :upcase t)
-        (:rot ("true" "false") :caps t :upcase t)
-        (:rot ("&&" "||"))
-        (:rot ("==" "!="))
-        (:rot ("." "->"))
-        (:rot ("if" "else" "elif"))
-        (:rot ("ifdef" "ifndef"))
-        (:rot ("int8_t" "int16_t" "int32_t" "int64_t"))
-        (:rot ("uint8_t" "uint16_t" "uint32_t" "uint64_t"))
-        (:rot ("1" "2" "3" "4" "5" "6" "7" "8" "9" "10"))
-        (:rot ("1st" "2nd" "3rd" "4th" "5th" "6th" "7th" "8th" "9th" "10th"))
+          ;; default dictionary starts here ('v')
+          (:rot ("begin" "end") :caps t :upcase t)
+          (:rot ("enable" "disable") :caps t :upcase t)
+          (:rot ("enter" "exit") :caps t :upcase t)
+          (:rot ("forward" "backward") :caps t :upcase t)
+          (:rot ("front" "rear" "back") :caps t :upcase t)
+          (:rot ("get" "set") :caps t :upcase t)
+          (:rot ("high" "low") :caps t :upcase t)
+          (:rot ("in" "out") :caps t :upcase t)
+          (:rot ("left" "right") :caps t :upcase t)
+          (:rot ("min" "max") :caps t :upcase t)
+          (:rot ("on" "off") :caps t :upcase t)
+          (:rot ("prev" "next"))
+          (:rot ("start" "stop") :caps t :upcase t)
+          (:rot ("true" "false") :caps t :upcase t)
+          (:rot ("&&" "||"))
+          (:rot ("==" "!="))
+          (:rot ("." "->"))
+          (:rot ("if" "else" "elif"))
+          (:rot ("ifdef" "ifndef"))
+          (:rot ("int8_t" "int16_t" "int32_t" "int64_t"))
+          (:rot ("uint8_t" "uint16_t" "uint32_t" "uint64_t"))
+          (:rot ("1" "2" "3" "4" "5" "6" "7" "8" "9" "10"))
+          (:rot ("1st" "2nd" "3rd" "4th" "5th" "6th" "7th" "8th" "9th" "10th"))
 
-        ;; mine
-        (:rot ("let" "const" "var"))
-        )))
+          ;; mine
+          (:rot ("let" "const" "var"))
+          )))
 
 (use-package separedit
   :ensure t)
@@ -1446,7 +1473,7 @@ _t_: Type           _c_: Type
   (engine-mode t)
   (engine/set-keymap-prefix (kbd "C-c s"))
   (defengine baidu "https://www.baidu.com/s?wd=%s"
-	     :keybinding "b")
+	           :keybinding "b")
   (defengine github
     "https://github.com/search?ref=simplesearch&q=%s"
     :keybinding "g")
@@ -1509,8 +1536,8 @@ _t_: Type           _c_: Type
 
   ;; -- keywords
   (setq org-todo-keywords
-          (quote ((sequence "TODO(t)" "STARTED(s)" "|" "DONE(d!/!)")
-                  (sequence "WAITING(w@/!)" "SOMEDAY(S)" "|" "CANCELLED(c@/!)" "MEETING(m)" "PHONE(p)"))))
+        (quote ((sequence "TODO(t)" "STARTED(s)" "|" "DONE(d!/!)")
+                (sequence "WAITING(w@/!)" "SOMEDAY(S)" "|" "CANCELLED(c@/!)" "MEETING(m)" "PHONE(p)"))))
 
   ;; -- paint
   (setq org-plantuml-jar-path "~/.gclrc/plantuml.jar")
@@ -1518,27 +1545,27 @@ _t_: Type           _c_: Type
 
   ;; -- emphasis
   (setq org-emphasis-alist
-          '(("*" my-org-emphasis-bold)
-            ("/" my-org-emphasis-italic)
-            ("_" underline)
-            ("=" org-verbatim verbatim)
-            ("~" org-code verbatim)
-            ("+" (:strike-through t))))
+        '(("*" my-org-emphasis-bold)
+          ("/" my-org-emphasis-italic)
+          ("_" underline)
+          ("=" org-verbatim verbatim)
+          ("~" org-code verbatim)
+          ("+" (:strike-through t))))
   (defface my-org-emphasis-bold
-      '((default :inherit bold)
-        (((class color) (min-colors 88) (background light))
-         :foreground "#a60000")
-        (((class color) (min-colors 88) (background dark))
-         :foreground "#ff8059"))
-      "My bold emphasis for Org.")
+    '((default :inherit bold)
+      (((class color) (min-colors 88) (background light))
+       :foreground "#a60000")
+      (((class color) (min-colors 88) (background dark))
+       :foreground "#ff8059"))
+    "My bold emphasis for Org.")
 
   (defface my-org-emphasis-italic
-      '((default :inherit italic)
-        (((class color) (min-colors 55) (background light))
-         :foreground "#972500")
-        (((class color) (min-colors 55) (background dark))
-         :foreground "#ef8b50"))
-      "My italic emphasis for Org.")
+    '((default :inherit italic)
+      (((class color) (min-colors 55) (background light))
+       :foreground "#972500")
+      (((class color) (min-colors 55) (background dark))
+       :foreground "#ef8b50"))
+    "My italic emphasis for Org.")
 
   ;; Allow multiple line Org emphasis markup.
   ;; http://emacs.stackexchange.com/a/13828/115
@@ -1575,167 +1602,13 @@ _t_: Type           _c_: Type
   (setq org-agenda-file-code-snippet (expand-file-name "snippet.org" org-agenda-dir))
   (setq org-default-notes-file (expand-file-name "gtd.org" org-agenda-dir))
   (setq org-agenda-file-blogposts (expand-file-name "all-posts.org" org-agenda-dir))
-  (setq org-agenda-files (list org-agenda-file-gtd org-agenda-file-journal org-agenda-file-blogposts org-agenda-file-work org-agenda-file-note))
+  (setq org-agenda-files (list org-agenda-file-gtd
+                               org-agenda-file-journal org-agenda-file-blogposts
+                               org-agenda-file-work org-agenda-file-note))
   )
 
 
-(use-package svg-tag-mode
-  :ensure t
-  :after org
-  :hook (org-mode . svg-tag-mode)
-  :config
-  (defun mk/svg-checkbox-empty ()
-    (let* ((svg (svg-create 14 14)))
-      (svg-rectangle svg 0 0 14 14 :fill 'white :rx 2 :stroke-width 2.5 :stroke-color 'black)
-      (svg-image svg :ascent 'center)))
 
-  (defun mk/svg-checkbox-filled ()
-    (let* ((svg (svg-create 14 14)))
-      (svg-rectangle svg 0 0 14 14 :fill "#FFFFFF" :rx 2)
-      (svg-polygon svg '((5.5 . 11) (12 . 3.5) (11 . 2) (5.5 . 9) (1.5 . 5) (1 . 6.5))
-                   :stroke-color 'black :stroke-width 1 :fill 'black)
-      (svg-image svg :ascent 'center)))
-
-  (defun mk/svg-checkbox-toggle ()
-    (interactive)
-    (save-excursion
-      (let* ((start-pos (line-beginning-position))
-             (end-pos (line-end-position))
-             (text (buffer-substring-no-properties start-pos end-pos))
-             (case-fold-search t)       ; Let X and x be the same in search
-             )
-        (beginning-of-line)
-        (cond ((string-match-p "\\[X\\]" text)
-               (progn
-                 (re-search-forward "\\[X\\]" end-pos)
-                 (replace-match "[ ]")))
-              ((string-match-p "\\[ \\]" text)
-               (progn
-                 (search-forward "[ ]" end-pos)
-                 (replace-match "[X]")))))))
-
-  (defun svg-progress-percent (value)
-    (svg-image (svg-lib-concat
-                (svg-lib-progress-bar (/ (string-to-number value) 100.0)
-                                      nil :margin 0 :stroke 2 :radius 3 :padding 2 :width 11)
-                (svg-lib-tag (concat value "%")
-                             nil :stroke 0 :margin 0)) :ascent 'center))
-
-  (defun svg-progress-count (value)
-    (let* ((seq (mapcar #'string-to-number (split-string value "/")))
-           (count (float (car seq)))
-           (total (float (cadr seq))))
-      (svg-image (svg-lib-concat
-                  (svg-lib-progress-bar (/ count total) nil
-                                        :margin 0 :stroke 2 :radius 3 :padding 2 :width 11)
-                  (svg-lib-tag value nil
-                               :stroke 0 :margin 0)) :ascent 'center)))
-
-  (defconst date-re "[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}")
-  (defconst time-re "[0-9]\\{2\\}:[0-9]\\{2\\}")
-  (defconst day-re "[A-Za-z]\\{3\\}")
-  (defconst day-time-re (format "\\(%s\\)? ?\\(%s\\)?" day-re time-re))
-
-  (setq svg-tag-tags
-        `(
-          ;; -- Number
-          ("\([0-9a-zA-Z]\)" . ((lambda (tag)
-                                  (svg-tag-make tag :beg 1 :end -1 :radius 12))))
-          ;; -- Task priority
-          ("\\[#[A-Z]\\]" . ((lambda (tag)
-                               (svg-tag-make tag :face 'org-priority
-                                             :beg 2 :end -1 :margin 0))))
-          ;; -- Tags
-          ("\\(:#[A-Za-z0-9]+\\)" . ((lambda (tag)
-                                       (svg-tag-make tag :beg 2))))
-          ("\\(:#[A-Za-z0-9]+:\\)$" . ((lambda (tag)
-                                         (svg-tag-make tag :beg 2 :end -1))))
-
-          ;; -- Progress
-          ("\\(\\[[0-9]\\{1,3\\}%\\]\\)" . ((lambda (tag)
-                                              (svg-progress-percent (substring tag 1 -2)))))
-          ("\\(\\[[0-9]+/[0-9]+\\]\\)" . ((lambda (tag)
-                                            (svg-progress-count (substring tag 1 -1)))))
-
-          ;; -- Checkbox
-          ("\\[ \\]" . ((lambda (_tag) (mk/svg-checkbox-empty))
-                        (lambda () (interactive) (mk/svg-checkbox-toggle))
-                        "Click to toggle."))
-          ("\\(\\[[Xx]\\]\\)" . ((lambda (_tag) (mk/svg-checkbox-filled))
-                                 (lambda () (interactive) (mk/svg-checkbox-toggle))
-                                 "Click to toggle."))
-
-          ;; -- Date: Active date (with or without day name, with or without time)
-          (,(format "\\(<%s>\\)" date-re) .
-           ((lambda (tag)
-              (svg-tag-make tag :beg 1 :end -1 :margin 0))))
-          (,(format "\\(<%s \\)%s>" date-re day-time-re) .
-           ((lambda (tag)
-              (svg-tag-make tag :beg 1 :inverse nil :crop-right t :margin 0))))
-          (,(format "<%s \\(%s>\\)" date-re day-time-re) .
-           ((lambda (tag)
-              (svg-tag-make tag :end -1 :inverse t :crop-left t :margin 0))))
-
-          ;; -- Date: Inactive date  (with or without day name, with or without time)
-          (,(format "\\(\\[%s\\]\\)" date-re) .
-           ((lambda (tag)
-              (svg-tag-make tag :beg 1 :end -1 :margin 0 :face 'org-date))))
-          (,(format "\\(\\[%s \\)%s\\]" date-re day-time-re) .
-           ((lambda (tag)
-              (svg-tag-make tag :beg 1 :inverse nil :crop-right t :margin 0 :face 'org-date))))
-          (,(format "\\[%s \\(%s\\]\\)" date-re day-time-re) .
-           ((lambda (tag)
-              (svg-tag-make tag :end -1 :inverse t :crop-left t :margin 0 :face 'org-date))))
-
-          ;; Keywords
-          ;; ("TODO" . ((lambda (tag) (svg-tag-make tag :height 0.8 :inverse t
-          ;;                                        :face 'org-todo :margin 0 :radius 5))))
-          ;; ("WORK" . ((lambda (tag) (svg-tag-make tag :height 0.8
-          ;;                                        :face 'org-todo :margin 0 :radius 5))))
-          ;; ("DONE" . ((lambda (tag) (svg-tag-make tag :height 0.8 :inverse t
-          ;;                                        :face 'org-done :margin 0 :radius 5))))
-
-          ("FIXME\\b" . ((lambda (tag) (svg-tag-make "FIXME" :face 'org-todo :inverse t :margin 0 :crop-right t))))
-          ("DONE\\b" . ((lambda (tag) (svg-tag-make "DONE" :face 'org-done :inverse t :margin 0 :crop-right t))))
-          ("TODO\\b" . ((lambda (tag) (svg-tag-make "TODO" :face 'org-tag :inverse t :margin 0 :crop-right t))))
-          ("WORK\\b" . ((lambda (tag) (svg-tag-make "WORK" :face 'org-todo :inverse t :margin 0 :crop-right t))))
-          ))
-
-  (require 'org-tempo)
-  (require 'org-src)
-  (add-hook 'org-babel-after-execute-hook #'org-redisplay-inline-images)
-  (setq org-confirm-babel-evaluate nil
-        org-src-fontify-natively t
-        org-src-tab-acts-natively t
-        org-src-preserve-indentation t
-        ;; or current-window
-        org-src-window-setup 'other-window)
-   (add-to-list 'org-structure-template-alist '("sh" . "src sh"))
-   (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-   (add-to-list 'org-structure-template-alist '("sc" . "src scheme"))
-   (add-to-list 'org-structure-template-alist '("ts" . "src typescript"))
-   (add-to-list 'org-structure-template-alist '("py" . "src python"))
-   (add-to-list 'org-structure-template-alist '("go" . "src go"))
-   (add-to-list 'org-structure-template-alist '("yaml" . "src yaml"))
-   (add-to-list 'org-structure-template-alist '("json" . "src json"))
-
-   (org-babel-do-load-languages
-    'org-babel-load-languages
-    '((emacs-lisp . t)
-      (python . t)
-      (shell . t)
-      (js . t)))
-
-   ;; 设置 JavaScript 代码块的默认语言为 "js"
-   (setq org-babel-default-header-args:js
-         '((:session . "none")
-           (:results . "replace")
-           (:exports . "both")
-           (:cache . "no")
-           (:noweb . "no")
-           (:hlines . "no")
-           (:tangle . "no")))
-   )
 
 ;; https://github.com/Somelauw/evil-org-mode/blob/master/doc/keythemes.org
 (use-package evil-org
@@ -1745,6 +1618,19 @@ _t_: Type           _c_: Type
   (add-hook 'org-mode-hook (lambda () org-superstar-mode))
   (require 'evil-org-agenda)
   (evil-org-agenda-set-keys))
+
+(use-package svg-tag-mode
+  :ensure t
+  :after org
+  :hook (org-mode . svg-tag-mode)
+  :config
+
+  (setq svg-tag-tags
+        '(
+          ("\([0-9a-zA-Z]\)" . ((lambda (tag)
+                                  (svg-tag-make tag :beg 1 :end -1 :radius 12))))
+          ))
+  )
 
 ;; appear
 (use-package org-appear
@@ -1919,6 +1805,10 @@ _t_: Type           _c_: Type
 
 (use-package watch-other-window)
 
+(use-package ace-window :ensure t)
+
+(use-package popup :ensure t)
+
 (setq display-buffer-base-action
       '(
         ;; 当新的 buffer 与当前 window 显示的 buffer 具有相同的 major
@@ -1980,6 +1870,8 @@ _t_: Type           _c_: Type
                  (reusable-frames . visible)
                  (window-height . 0.3))))
 
+;; --- dired
+(use-package direx :ensure t)
 
 ;; --- which-key
 (use-package which-key
@@ -2032,6 +1924,7 @@ _t_: Type           _c_: Type
   ;; - files
   "f" '(:ignore t :which-key "files")
   "ff" '(find-file :which-key "find file")
+  "fj" 'direx:jump-to-directory
 
   ;; - buffer
   "b" '(:ignore t :which-key "buffers")
@@ -2113,12 +2006,15 @@ _t_: Type           _c_: Type
  "M-p" 'symbol-overlay-switch-backward
  "M-c" 'symbol-overlay-remove-all
  "M-m" 'blamer-show-posframe-commit-info
+ "M-o" 'ace-window
 
  "C-'" 'toggle-quotes-plus
  "C-a" 'crux-move-beginning-of-line
+ "C-k" 'crux-smart-kill-line
  "C-j" 'emmet-expand-yas
  "C-s" 'consult-line
 
+ "C-c SPC" 'just-one-space
  "C-c =" 'math-at-point
  "C-c h" 'consult-history
  "C-c o" 'consult-outline
@@ -2131,6 +2027,7 @@ _t_: Type           _c_: Type
  "C-c iu" 'org-mac-link-get-link
  "C-c is" 'yas-insert-snippet
  "C-c iy" 'consult-yasnippet
+ "C-c ie" 'emojify-insert-emoji
  ;; 15:32:24
  "C-c it" 'gcl/insert-current-time
  ;; 2023-08-11 15:32:21
@@ -2158,14 +2055,14 @@ _t_: Type           _c_: Type
  "C-c C-f" 'devdocs-lookup
  "C-c C-d" 'devdocs-peruse
 
+ "C-x C-j" 'direx:jump-to-directory
+
  "C-S-n" 'duplicate-line-or-region-above
  "C-S-o" 'duplicate-line-or-region-below
  "C-S-h" 'buf-move-left
  "C-S-l" 'buf-move-right
  "C-s-j" 'buf-move-down
  "C-S-k" 'buf-move-up
-
- "C-c SPC" 'just-one-space
  )
 
 ;; 指定模式的按键
@@ -2180,6 +2077,7 @@ _t_: Type           _c_: Type
 (global-set-key (kbd "<f5>") 'gcl/reload-init-file)
 (global-set-key (kbd "<f1>") 'gcl/open-init-file)
 (global-set-key (kbd "<f2>") 'restart-emacs)
+(global-set-key (kbd "<f4>") 'gcl/open-ztd-document)
 
 ;; --- 清理
 (defun gcl/cleanup-gc ()
