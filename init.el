@@ -477,8 +477,8 @@ named arguments:
     ))
 
 ;; 设置一些 buffer 中 evil 状态
-;; (evil-set-initial-state 'multi-vterm-mode 'emacs)
-;; (evil-set-initial-state 'vterm-mode 'emacs)
+(evil-set-initial-state 'multi-vterm-mode 'emacs)
+(evil-set-initial-state 'vterm-mode 'emacs)
 (evil-set-initial-state 'magit-mode 'emacs)
 (evil-set-initial-state 'dired-mode 'emacs)
 ;; (evil-set-initial-state 'magit-branch-manager-mode 'emacs)
@@ -591,7 +591,7 @@ named arguments:
 ;; 设置默认字体为等宽字体
 (set-face-attribute 'default nil
                     :family "Fira Code"
-                    :height 130
+                    :height 140
                     :weight 'normal
                     :width 'normal)
 
@@ -1373,17 +1373,17 @@ _t_: Type           _c_: Type
   (yas-reload-all)
   )
 
-(use-package yasnippet-snippets
-  :ensure t
-  :defer t
-  :after yasnippet)
+;; (use-package yasnippet-snippets
+;;  :ensure t
+;;  :defer t
+;;  :after yasnippet)
 
-(with-eval-after-load 'yasnippet
-  (require 'yasnippet-snippets)
-  (yas-global-mode 1)
-  (add-hook 'prog-mode-hook 'yas-minor-mode)
-  (add-hook 'org-mode-hook 'yas-minor-mode)
-  )
+;; (with-eval-after-load 'yasnippet
+;;  (require 'yasnippet-snippets)
+;;  (yas-global-mode 1)
+;;  (add-hook 'prog-mode-hook 'yas-minor-mode)
+;;   (add-hook 'org-mode-hook 'yas-minor-mode)
+;;  )
 
 (use-package markdown-mode
   :ensure t
