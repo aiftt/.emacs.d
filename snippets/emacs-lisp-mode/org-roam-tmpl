@@ -1,0 +1,9 @@
+# key: org-roam-tmpl
+# name: org-roam-tmpl
+# --
+("$1" "$2" plain "%?"
+           :if-new
+           (file+head "$2/\$\{title\}.org"
+                      "#+title: \$\{title\}\\n#+created: %U\\n#+filetags: :$2:\\n#+startup: overview hideblocks")
+           :immediate-finish t
+           :unnarrowed t)

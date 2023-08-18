@@ -28,198 +28,11 @@
 
         ;; 继续递归搜索子目录
         (add-subdirs-to-load-path subdir-path)))))
-
-(defun max-gc-limit ()
-  (setq gc-cons-threshold most-positive-fixnum))
-
-(defun reset-gc-limit ()
-  (setq gc-cons-threshold 100000000))
-
-;; --- system
-(defmacro with-system (type &rest body)
-  "Evaluate BODY if `system-type' equals TYPE."
-  (declare (indent defun))
-  `(when (eq system-type ',type)
-     ,@body))
-
-;; time date
-(defun gcl/insert-standard-date ()
-  "Inserts standard date time string."
-  (interactive)
-  (insert (format-time-string "%Y-%m-%d %T")))
-
-(defun gcl/insert-changelog-date ()
-  "Insert changelog date, like yyyy/mm/dd."
-  (interactive)
-  (insert (format-time-string "%Y/%m/%d")))
-
-(defun gcl/insert-current-time ()
-  "Insert current time, like hh:mm:ss."
-  (interactive)
-  (insert (format-time-string "%T")))
-
-(defun gcl/open-current-directory ()
-  (interactive)
-  (consult-file-externally default-directory))
-
-(defun gcl/copy-file-full-name ()
-  "Copy the current buffer's file name to the clipboard."
-  (interactive)
-  (let ((filename (if (equal major-mode 'dired-mode)
-                      default-directory
-                    (buffer-file-name))))
-    (when filename
-      (kill-new filename)
-      (message "Copied buffer file name '%s' to the clipboard." filename))))
-
-(defun gcl/copy-file-name-only ()
-  "Copy the current buffer's file name only to the clipboard."
-  (interactive)
-  (let ((filename (if (equal major-mode 'dired-mode)
-                      default-directory
-                    (buffer-file-name))))
-    (when filename
-      (kill-new (file-name-nondirectory filename))
-      (message "Copied buffer file name '%s' to the clipboard." (file-name-nondirectory filename)))))
-
-(defun gcl/kill-current-buffer ()
-  (interactive)
-  (kill-current-buffer)
-  (switch-to-prev-buffer))
-
-(defun buf-move-up ()
-  "Swap the current buffer and the buffer above the split.
-If there is no split, ie now window above the current one, an
-error is signaled."
-  ;;  "Switches between the current buffer, and the buffer above the
-  ;;  split, if possible."
-  (interactive)
-  (let* ((other-win (windmove-find-other-window 'up))
-	       (buf-this-buf (window-buffer (selected-window))))
-    (if (null other-win)
-        (error "No window above this one")
-      ;; swap top with this one
-      (set-window-buffer (selected-window) (window-buffer other-win))
-      ;; move this one to top
-      (set-window-buffer other-win buf-this-buf)
-      (select-window other-win))))
-
-(defun buf-move-down ()
-  "Swap the current buffer and the buffer under the split.
-If there is no split, ie now window under the current one, an
-error is signaled."
-  (interactive)
-  (let* ((other-win (windmove-find-other-window 'down))
-	       (buf-this-buf (window-buffer (selected-window))))
-    (if (or (null other-win)
-            (string-match "^ \\*Minibuf" (buffer-name (window-buffer other-win))))
-        (error "No window under this one")
-      ;; swap top with this one
-      (set-window-buffer (selected-window) (window-buffer other-win))
-      ;; move this one to top
-      (set-window-buffer other-win buf-this-buf)
-      (select-window other-win))))
-
-(defun buf-move-left ()
-  "Swap the current buffer and the buffer on the left of the split.
-If there is no split, ie now window on the left of the current
-one, an error is signaled."
-  (interactive)
-  (let* ((other-win (windmove-find-other-window 'left))
-	       (buf-this-buf (window-buffer (selected-window))))
-    (if (null other-win)
-        (error "No left split")
-      ;; swap top with this one
-      (set-window-buffer (selected-window) (window-buffer other-win))
-      ;; move this one to top
-      (set-window-buffer other-win buf-this-buf)
-      (select-window other-win))))
-
-(defun buf-move-right ()
-  "Swap the current buffer and the buffer on the right of the split.
-If there is no split, ie now window on the right of the current
-one, an error is signaled."
-  (interactive)
-  (let* ((other-win (windmove-find-other-window 'right))
-	       (buf-this-buf (window-buffer (selected-window))))
-    (if (null other-win)
-        (error "No right split")
-      ;; swap top with this one
-      (set-window-buffer (selected-window) (window-buffer other-win))
-      ;; move this one to top
-      (set-window-buffer other-win buf-this-buf)
-      (select-window other-win))))
-
-
-(defun kill-other-window-buffer ()
-  "Kill the buffer in other window."
-  (interactive)
-  (other-window +1)
-  (kill-this-buffer)
-  (other-window -1))
-
-(defun gcl/get-frame->selected-window ()
-  "Returns a list of pairs of (frame selected-window)"
-  (let* ((original-frame (window-frame))
-         (result (->> (visible-frame-list)
-                      (-map (lambda (f)
-                              (select-frame f t)
-                              (list f (selected-window)))))))
-    (select-frame original-frame t)
-    result))
-
-(eval-when-compile
-  (require 'cl))
-(defun gcl/preserve-selected-window (f)
-  "Runs the given function and then restores focus to the original window. Useful when you want to invoke
-   a function (like showing documentation) but desire to keep your current window focused."
-  ;; Note that we must preserve the selected window of every frame, because the function being executed may
-  ;; change the focused frame, even if the current frame is in focus.
-  (lexical-let* ((original-frame (selected-frame))
-                 (frames->windows (gcl/get-frame->selected-window))
-                 (result (funcall f)))
-    (-each frames->windows (lambda (x)
-                             (select-frame (first x) t)
-                             (select-window (second x) t)))
-    (select-frame-set-input-focus original-frame t)
-    result))
-
-
-(defun split-window--select-window (orig-func &rest args)
-  "Switch to the other window after a `split-window'"
-  (let ((cur-window (selected-window))
-        (new-window (apply orig-func args)))
-    (when (equal (window-buffer cur-window) (window-buffer new-window))
-      (select-window new-window))
-    new-window))
-(advice-add 'split-window :around #'split-window--select-window)
-
-(defun gcl/cleanup-gc ()
-  "Clean up gc."
-  (setq gc-cons-threshold  (* 1024 200)) ; 200MB
-  (setq gc-cons-percentage 0.5) ; 0.5s
-  (garbage-collect))
-
-(defun switch-to-scratch-buffer ()
-  (interactive)
-  (switch-to-buffer (startup--get-buffer-create-scratch)))
-
-;; <f5> 刷新配置
-(defun gcl/reload-init-file ()
-  "Reload init file with <f5>."
-  (interactive)
-  (load-file (expand-file-name "init.el" user-emacs-directory)))
-
-(defun gcl/open-init-file()
-  (interactive)
-  (find-file (expand-file-name "init.el" user-emacs-directory)))
-
-(defun gcl/open-ztd-document()
-  (interactive)
-  (find-file "~/.gclrc/ztd/document.org"))
-
 ;; -- load path
 (add-subdirs-to-load-path "~/.emacs.d/extensions/")
+(add-to-list 'load-path "~/.emacs.d/lisp/")
+
+(require 'init-func)
 
 ;; --- 我的信息
 (setq blog-admin-dir "~/github/mine/blog.cheng92.com/")
@@ -481,7 +294,7 @@ named arguments:
 (evil-set-initial-state 'vterm-mode 'emacs)
 (evil-set-initial-state 'magit-mode 'emacs)
 (evil-set-initial-state 'dired-mode 'emacs)
-;; (evil-set-initial-state 'magit-branch-manager-mode 'emacs)
+(evil-set-initial-state 'magit-branch-manager-mode 'emacs)
 (evil-set-initial-state 'color-rg-mode 'emacs)
 
 (use-package evil-nerd-commenter
@@ -524,6 +337,12 @@ named arguments:
   )
 (global-evil-surround-mode 1)
 
+(use-package ace-pinyin
+  :ensure t
+  :custom
+  (ace-pinyin-global-mode +1)
+  (ace-pinyin-treat-word-as-char nil))
+
 ;; --- ui 界面管理
 (use-package all-the-icons
   :ensure t)
@@ -541,6 +360,7 @@ named arguments:
   )
 
 (use-package emojify
+  :disabled t
   :ensure t
   :hook (after-init . global-emojify-mode))
 
@@ -996,6 +816,16 @@ named arguments:
    web-mode-enable-auto-indentation t
    web-mode-tag-auto-close-style 1
    web-mode-enable-current-element-highlight t)
+
+  ;; 设置不同类型代码的注释格式
+  (setq web-mode-comment-formats
+        '(("javascript" . "//")    ; JavaScript 注释
+          ("jsx" . "//")           ; JSX 注释
+          ("php" . "//")           ; PHP 注释
+          ("css" . "/*")           ; CSS 注释
+          ("java" . "//")          ; Java 注释
+          ;; 添加更多类型的注释格式
+          ))
 
   ;; Let smartparens handle auto closing brackets, e.g. {{ }} or {% %}
   ;; https://github.com/hlissner/doom-emacs/blob/develop/modules/lang/web/%2Bhtml.el#L56
@@ -1891,11 +1721,11 @@ _t_: Type           _c_: Type
   :config
   (general-evil-setup t)
   (general-create-definer space-leader-def
-    :states '(normal visual emacs)
+    :states '(normal visual)
     :prefix "SPC")
 
   (general-create-definer comma-leader-def
-    :states '(normal visual emacs)
+    :states '(normal visual)
     :prefix ","
     :keymaps 'override)
   )
@@ -1921,11 +1751,6 @@ _t_: Type           _c_: Type
   "a" '(:ignore t :which-key "apps")
   "aa" 'org-agenda
 
-  ;; - files
-  "f" '(:ignore t :which-key "files")
-  "ff" '(find-file :which-key "find file")
-  "fj" 'direx:jump-to-directory
-
   ;; - buffer
   "b" '(:ignore t :which-key "buffers")
   "bb" 'consult-buffer
@@ -1934,6 +1759,16 @@ _t_: Type           _c_: Type
   "bn" 'next-buffer
   "bo" 'consult-buffer-other-window
   "bp" 'previous-buffer
+
+  "dl" 'devdocs-lookup
+  "dr" 'devdocs-peruse
+
+  ;; - files
+  "f" '(:ignore t :which-key "files")
+  "ff" '(find-file :which-key "find file")
+  "fj" 'direx:jump-to-directory
+  "fd" 'crux-delete-buffer-and-file
+  "fo" 'crux-open-with
 
   ;; - open http://baidu.com
   "o" '(:ignore t :which-key "open")
@@ -2009,7 +1844,6 @@ _t_: Type           _c_: Type
  "M-o" 'ace-window
 
  "C-'" 'toggle-quotes-plus
- "C-a" 'crux-move-beginning-of-line
  "C-k" 'crux-smart-kill-line
  "C-j" 'emmet-expand-yas
  "C-s" 'consult-line
@@ -2052,8 +1886,8 @@ _t_: Type           _c_: Type
  "C-c yi" 'sdcv-search-input
 
  "C-c C-'" 'separedit/edit-swagger-commentary
- "C-c C-f" 'devdocs-lookup
- "C-c C-d" 'devdocs-peruse
+ ;; "C-x C-f" 'devdocs-lookup
+ ;; "C-x C-d" 'devdocs-peruse
 
  "C-x C-j" 'direx:jump-to-directory
 
@@ -2071,7 +1905,10 @@ _t_: Type           _c_: Type
  "C-r" 'crux-rename-buffer-and-file
  "C-w" 'evil-delete-backward-word
  "C-p" 'previous-line
- "C-n" 'next-line)
+ "C-n" 'next-line
+
+ "C-a" 'crux-move-beginning-of-line
+ )
 
 ;; --- global 按键设置
 (global-set-key (kbd "<f5>") 'gcl/reload-init-file)

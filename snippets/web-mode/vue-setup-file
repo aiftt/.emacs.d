@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# name: vue-setup-file
+# key: vue-setup-file
+# --
+<script setup lang="ts">
+$1
+</script>
+
+<template>
+$2
+</template>
+
+<style scoped>
+$3
+</style>

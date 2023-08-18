@@ -1,0 +1,76 @@
+# -*- mode: snippet -*-
+# name: sh-cmd-completion
+# key: sh-cmd-com
+# --
+#compdef $1
+
+# zsh completion wrapper for my cli `$1`
+# https://github.com/zsh-users/zsh-completions/blob/master/zsh-completions-howto.org
+
+if ! command -v $1 &>/dev/null; then
+	return
+fi
+
+__$1_gen_completion() {
+	declare current_word
+	current_word="${COMP_WORDS[COMP_CWORD]}"
+	COMPREPLY=($(compgen -W "$1" -- "${current_word}"))
+	return 0
+}
+
+__$1_commands() {
+	declare current_word
+	declare command
+
+	current_word="${COMP_WORDS[COMP_CWORD]}"
+
+	COMMANDS='$2'
+
+	if [ ${#COMP_WORDS[@]} == 4 ]; then
+     # ...
+	else
+		case "${current_word}" in
+		-*) __$1_options ;;
+		*) __$1_gen_completion "${COMMANDS}" ;;
+		esac
+	fi
+}
+
+__$1_options() {
+	OPTIONS=''
+	__$1_gen_completion "${OPTIONS}"
+}
+
+__$1() {
+	declare previous_word
+	previous_word="${COMP_WORDS[COMP_CWORD - 1]}"
+	p2word="${COMP_WORDS[COMP_CWORD - 2]}"
+	# p3word="${COMP_WORDS[COMP_CWORD - 3]}"
+	n=${COMP_CWORD}
+
+	case "${previous_word}" in
+	# 只有 gcl 的时候才显示全部命令
+  	$1) __$1_commands ;;
+		# *) __$1_commands ;;
+	esac
+
+	return 0
+}
+
+# complete is a bash builtin, but recent versions of ZSH come with a function
+# called bashcompinit that will create a complete in ZSH. If the user is in
+# ZSH, load and run bashcompinit before calling the complete function.
+if [[ -n ${ZSH_VERSION-} ]]; then
+	# First calling compinit (only if not called yet!)
+	# and then bashcompinit as mentioned by zsh man page.
+	if ! command -v compinit >/dev/null; then
+		autoload -U +X compinit && if [[ ${ZSH_DISABLE_COMPFIX-} = true ]]; then
+			compinit -u
+		else
+			compinit
+		fi
+	fi
+	autoload -U +X bashcompinit && bashcompinit
+fi
+
+complete -o default -F __$1 $1

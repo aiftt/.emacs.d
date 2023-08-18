@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# name: vue-js-scss
+# key: vue-js-scss
+# --
+<script setup>
+
+</script>
+
+<template>
+
+</template>
+
+<style scoped lang="scss">
+
+</style>

@@ -1,0 +1,22 @@
+# -*- mode: snippet -*-
+# name: vue-option-file
+# key: vue-option-file
+# --
+<template>
+  <div>$1</div>
+</template>
+<script>
+export default {
+  name: "$2",
+  data() {
+    return {}
+  },
+
+  methods: {},
+
+  mounted() {},
+}
+</script>
+<style scoped lang="scss">
+$3
+</style>
