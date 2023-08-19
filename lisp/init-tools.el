@@ -27,5 +27,33 @@
 (use-package math-at-point
   :init (slot/vc-install :repo "shankar2k/math-at-point"))
 
+(use-package all-the-icons
+  :ensure t)
+(use-package all-the-icons-dired
+  :ensure t
+  :hook ((dired-mode . all-the-icons-dired-mode)))
+(use-package posframe
+  :ensure t)
+
+(use-package highlight-parentheses
+  :ensure t
+  :hook (prog-mode . highlight-parentheses-mode)
+  :config
+  (add-hook 'minibuffer-setup-hook #'highlight-parentheses-minibuffer-setup)
+  )
+
+(use-package emojify
+  :disabled t
+  :ensure t
+  :hook (after-init . global-emojify-mode))
+
+(use-package rainbow-delimiters
+  :ensure t
+  :hook (prog-mode-hook . rainbow-delimiters-mode))
+
+(use-package rainbow-mode
+  :ensure t
+  :defer t
+  :hook ((prog-mode org-mode) . rainbow-mode))
 
 (provide 'init-tools)

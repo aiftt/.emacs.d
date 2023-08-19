@@ -1,34 +1,17 @@
 ;;; -*- lexical-binding: t; -*-
 
-;; --- ui 界面管理
-(use-package all-the-icons
-  :ensure t)
-(use-package all-the-icons-dired
-  :ensure t
-  :hook ((dired-mode . all-the-icons-dired-mode)))
-(use-package posframe
-  :ensure t)
+;; - cursor background color
+(set-face-attribute 'cursor nil :background "green")
 
-(use-package highlight-parentheses
-  :ensure t
-  :hook (prog-mode . highlight-parentheses-mode)
-  :config
-  (add-hook 'minibuffer-setup-hook #'highlight-parentheses-minibuffer-setup)
-  )
 
-(use-package emojify
-  :disabled t
-  :ensure t
-  :hook (after-init . global-emojify-mode))
+; 使 frame 根据 背景色的 亮暗, 让 face 自行选择对应的方案.
+(setq frame-background-mode nil)
 
-(use-package rainbow-delimiters
-  :ensure t
-  :hook (prog-mode-hook . rainbow-delimiters-mode))
+(setq frame-resize-pixelwise t)
 
-(use-package rainbow-mode
-  :ensure t
-  :defer t
-  :hook ((prog-mode org-mode) . rainbow-mode))
+;; Scroll 以使 window 底端的 N 行呈现到顶端.
+;; (setq next-screen-context-lines 5)
+
 
 ;; - header line
 (set-face-attribute 'header-line nil
@@ -37,10 +20,6 @@
                     ;; height of mode-line is also unspecified, so we set it directly.
                     :height 150
                     :box (face-attribute 'mode-line :box))
-
-;; - cursor background color
-(set-face-attribute 'cursor nil :background "green")
-(set-face-attribute 'default nil :font "Fira Code" :height 130)
 
 ;; - mode line
 (use-package awesome-tray
@@ -68,4 +47,5 @@
 	      awesome-tray-date-format "%d/%H:%M:%S")
   (awesome-tray-mode 1))
 
+;; --- ui 界面管理
 (provide 'init-ui)

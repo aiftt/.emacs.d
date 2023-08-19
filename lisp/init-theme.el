@@ -26,9 +26,8 @@
 ;; 设置默认字体为等宽字体
 (set-face-attribute 'default nil
                     :family "Fira Code"
-                    :height 140
+                    :height 130
                     :weight 'normal
                     :width 'normal)
-
 
 (provide 'init-theme)
