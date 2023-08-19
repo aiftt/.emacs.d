@@ -5,16 +5,16 @@
 (use-package magit
   :ensure t
   :config
-  ;; 提交时候不显示提交细节
+  ;; ;; 提交时候不显示提交细节
   (setq magit-commit-show-diff nil)
-  ;; 没有焦点时候不刷新状态
+  ;; ;; 没有焦点时候不刷新状态
   (setq magit-refresh-status-buffer nil)
-  ;; 当前buffer打开magit
+  ;; ;; 当前buffer打开magit
   (setq magit-display-buffer-function
 	      (lambda (buffer)
           (display-buffer buffer '(display-buffer-same-window))))
-  (setq magit-ellipsis (get-byte 0 "."))
-  ;; 加速diff
+  ;; (setq magit-ellipsis (get-byte 0 "."))
+  ;; ;; 加速diff
   (setq magit-revision-insert-related-refs nil)
   (setq magit-diff-refine-hunk t)
   (setq magit-diff-paint-whitespace nil)
@@ -22,7 +22,7 @@
   (setq magit-display-buffer-function
 	      (lambda (buffer)
 	        (display-buffer buffer '(display-buffer-same-window))))
-  ;; 加速diff
+  ;; ;; 加速diff
   (setq magit-revision-insert-related-refs nil)
   )
 

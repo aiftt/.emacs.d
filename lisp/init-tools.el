@@ -42,10 +42,10 @@
   (add-hook 'minibuffer-setup-hook #'highlight-parentheses-minibuffer-setup)
   )
 
-(use-package emojify
-  :disabled t
-  :ensure t
-  :hook (after-init . global-emojify-mode))
+;; (use-package emojify
+;;   :disabled t
+;;   :ensure t
+;;   :hook (after-init . global-emojify-mode))
 
 (use-package rainbow-delimiters
   :ensure t
