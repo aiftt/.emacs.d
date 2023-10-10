@@ -30,9 +30,23 @@
   (interactive)
   (insert (format-time-string "%T")))
 
+(defun gcl/consult-file-externally (file)
+  "Open the FILE externally using the system's default program."
+  (interactive "fFile to open externally: ")
+  (cond
+   ((eq system-type 'darwin) ; macOS
+    (start-process "external-program" nil "open" file))
+   ((eq system-type 'gnu/linux) ; Linux
+    (start-process "external-program" nil "xdg-open" file))
+   ((eq system-type 'windows-nt) ; Windows
+    (start-process "external-program" nil "start" "" file))
+   (t ; Other platforms
+    (message "Opening files externally is not supported on this platform."))))
+
+
 (defun gcl/open-current-directory ()
   (interactive)
-  (consult-file-externally default-directory))
+  (gcl/consult-file-externally default-directory))
 
 (defun gcl/copy-file-full-name ()
   "Copy the current buffer's file name to the clipboard."

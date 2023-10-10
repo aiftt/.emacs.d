@@ -104,7 +104,7 @@
           (:rot ("enter" "exit") :caps t :upcase t)
           (:rot ("forward" "backward") :caps t :upcase t)
           (:rot ("front" "rear" "back") :caps t :upcase t)
-          (:rot ("get" "set") :caps t :upcase t)
+          ;; (:rot ("get" "set") :caps t :upcase t)
           (:rot ("high" "low") :caps t :upcase t)
           (:rot ("in" "out") :caps t :upcase t)
           (:rot ("left" "right") :caps t :upcase t)
@@ -125,6 +125,7 @@
 
           ;; mine
           (:rot ("let" "const" "var"))
+          (:rot ("get" "post" "set") :caps t :upcase t)
           )))
 
 (use-package separedit

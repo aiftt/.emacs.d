@@ -25,8 +25,8 @@
     (evil-global-set-key 'normal "w" 'evil-avy-goto-word-or-subword-1)
     (evil-global-set-key 'normal "s" 'evil-avy-goto-line)
 
-    ;; (evil-global-set-key 'motion "-" 'org-decrease-number-at-point)
-    ;; (evil-global-set-key 'motion "+" 'org-increase-number-at-point)
+    (evil-global-set-key 'motion "-" 'org-decrease-number-at-point)
+    (evil-global-set-key 'motion "+" 'org-increase-number-at-point)
 
     (evil-global-set-key 'normal (kbd "gm") 'magit)
     (evil-global-set-key 'normal (kbd "gc") 'show-commit-and-preserve-window)

@@ -83,6 +83,7 @@ named arguments:
 (require 'init-terminal)
 (require 'init-dired)
 (require 'init-general)
+(require 'init-chat)
 
 ;; --- global 按键设置
 (global-set-key (kbd "<f5>") 'gcl/reload-init-file)

@@ -56,6 +56,7 @@
   "bn" 'next-buffer
   "bo" 'consult-buffer-other-window
   "bp" 'previous-buffer
+  "bf" 'gcl/open-current-directory
 
   "dl" 'devdocs-lookup
   "dr" 'devdocs-peruse
@@ -187,6 +188,7 @@
  ;; "C-x C-d" 'devdocs-peruse
 
  "C-x C-j" 'direx:jump-to-directory
+ "C-x j" 'consult-bookmark
 
  "C-S-n" 'duplicate-line-or-region-above
  "C-S-o" 'duplicate-line-or-region-below

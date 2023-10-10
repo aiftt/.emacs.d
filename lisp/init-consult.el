@@ -64,6 +64,10 @@
   (embark-collect-mode . consult-preview-at-point-mode))
 
 ;; - consult
+(use-package saveplace
+  :ensure t
+  :hook (after-init . save-place-mode))
+
 (use-package consult
   :ensure t
   :hook (completion-list-mode . consult-preview-at-point-mode)
@@ -87,10 +91,6 @@
   ;; (autoload 'projectile-project-root "projectile")
   ;; (setq consult-project-function (lambda (_) (projectile-project-root)))
   )
-
-(use-package saveplace
-  :ensure t
-  :hook (after-init . save-place-mode))
 
 (use-package consult-dir
   :ensure t
