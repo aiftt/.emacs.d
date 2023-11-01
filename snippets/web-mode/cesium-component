@@ -1,0 +1,42 @@
+# -*- mode: snippet -*-
+# name: cesium-component
+# key: cesiumcomp
+# --
+
+<template><div v-if="false" /></template>
+<script setup>
+import * as Cesium from 'cesium'
+import { tryCatch } from 'shared-utils'
+import { inject, onBeforeMount, onBeforeUnmount, onMounted } from 'vue'
+
+const props = defineProps({
+  data: {
+    type: Array,
+    default: () => [],
+  },
+})
+
+const emit = defineEmits(['load'])
+const viewer = inject('viewer')
+let entity
+const source = new Cesium.CzmlDataSource()
+viewer.dataSources.add(source)
+
+function init() {
+  // Add a blank CzmlDataSource to hold our multi-part entity/entities.
+
+  emit('load')
+}
+
+onBeforeMount(() => {})
+
+onMounted(() => {
+  init()
+})
+
+onBeforeUnmount(() =>
+  tryCatch(() => {
+    viewer.entities.remove(entity)
+  }),
+)
+</script>

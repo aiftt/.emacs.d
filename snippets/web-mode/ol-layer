@@ -1,0 +1,54 @@
+# key: ollayer
+# name: ol-layer
+# --
+<template>
+  <div v-if="state.ready && !bare">
+    <slot />
+  </div>
+</template>
+<script setup>
+// iserver 世界地图
+import { inject, onBeforeUnmount, onMounted, reactive } from 'vue'
+import TileLayer from 'ol/layer/Tile'
+import { log } from 'shared-utils'
+import { TileSuperMapRest } from '../iclient-ol'
+
+defineProps({
+  // 控制不需要任何元素情况
+  bare: {
+    type: Boolean,
+    default: false,
+  }
+})
+
+const state = reactive({
+  ready: false
+})
+const map = inject('ol-map')
+const projection = inject('ol-projection')
+const url =
+  'https://iserver.supermap.io/iserver/services/map-world/rest/maps/World'
+const source = new TileSuperMapRest({
+  url,
+  wrapX: true,
+})
+const layer = new TileLayer({
+  source,
+  projection,
+})
+
+provide('layer', layer)
+provide('source', source)
+
+// add
+onMounted(() => {
+  map.addLayer(layer)
+  log.cb('[`(file-name-nondirectory (buffer-file-name))`] layer added.').end()
+})
+
+// remove
+onBeforeUnmount(() => {
+  map.removeLayer(layer)
+  log.cb('[`(file-name-nondirectory (buffer-file-name))`] layer removed.').end()
+})
+</script>

@@ -68,6 +68,9 @@
   "fd" 'crux-delete-buffer-and-file
   "fo" 'crux-open-with
 
+  ;; - reload
+  "lr" 'lsp-bridge-restart-process
+
   ;; - open http://baidu.com
   "o" '(:ignore t :which-key "open")
   "om" 'play-sound-file
@@ -174,6 +177,8 @@
  "C-c bs" 'bookmark-set
  "C-c cf" 'gcl/copy-file-name-only
  "C-c cp" 'gcl/copy-file-full-name
+
+ "C-c lr" 'lsp-bridge-restart-process
 
  ;; yas & fanyi
  "C-c yy" 'fanyi-dwim2

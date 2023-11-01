@@ -1,0 +1,32 @@
+# key: mblayer
+# name: mb-layer
+# --
+<template>
+  <div v-if="false" />
+</template>
+<script setup>
+import { inject, onBeforeUnmount, onMounted } from 'vue'
+import { log, tryCatch } from 'shared-utils'
+
+defineProps({
+  layerId: {
+    type: String,
+    default: '`(file-name-nondirectory (buffer-file-name))`',
+  },
+})
+
+const map = inject('map')
+let layer
+
+// add
+onMounted(() => {
+  layer = map.addLayer({})
+
+  provide('layer', layer)
+})
+
+// remove
+onBeforeUnmount(() => {
+  tryCatch(() => map.removeLayer(props.layerId))
+})
+</script>
