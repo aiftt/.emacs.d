@@ -4,6 +4,8 @@
 ;; --- org
 (with-eval-after-load 'org
   (progn
+    (require 'org-tempo)
+
     (setq org-directory "~/.gclrc/org/"
           org-startup-indented t
           org-pretty-entities t
@@ -89,8 +91,6 @@
                                org-agenda-file-journal org-agenda-file-blogposts
                                org-agenda-file-work org-agenda-file-note))
   )
-
-
 
 
 ;; https://github.com/Somelauw/evil-org-mode/blob/master/doc/keythemes.org

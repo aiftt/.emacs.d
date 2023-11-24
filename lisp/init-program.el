@@ -17,11 +17,6 @@
 (add-hook 'sql-mode-hook 'sqlind-minor-mode)
 (use-package pkg-info :ensure t)
 (use-package lua-mode :ensure t)
-(use-package rust-mode
-  :ensure t
-  :mode "\\.rs\\'"
-  :init (setq rust-format-on-save t))
-
 (use-package format-all :ensure t)
 (add-hook 'before-save-hook 'format-all-buffer nil t)
 

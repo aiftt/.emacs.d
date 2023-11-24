@@ -125,8 +125,27 @@
 
           ;; mine
           (:rot ("let" "const" "var"))
+          (:rot ("sm" "md" "lg" "xl" "2xl" "3xl"))
+          (:rot ("aspect-auto" "aspect-square" "aspect-video"))
+          (:rot ("break-after-auto" "break-after-avoid" "break-after-all" "break-after-avoid-page" "break-after-page" "break-after-left" "break-after-right" "break-after-column"))
+          (:rot ("box-border" "box-content"))
+          (:rot ("block" "inline-block" "inline" "flex" "inline-flex" "table" "inline-table" "table-caption" "table-cell" "table-column" "table-column-group" "table-footer-group" "table-header-group" "table-row-group" "table-row" "flow-root" "grid" "inline-grid" "contents" "list-item" "hidden"))
+          (:rot ("float-right" "float-left" "float-none"))
+          (:rot ("clear-left" "clear-right" "clear-both" "clear-none"))
+          (:rot ("object-contain" "object-cover" "object-fill" "object-none" "object-scale-down"))
+          (:rot ("object-bottom" "object-center" "object-left" "object-left-bottom" "object-left-top" "object-right" "object-right-bottom" "object-right-top" "object-top"))
+          (:rot ("overflow-auto" "overflow-hidden" "overflow-clip" "overflow-visible" "overflow-scroll"))
+          (:rot ("static" "fixed" "absolute" "relative" "sticky"))
+          (:rot ("visible" "invisible" "collapse"))
+          (:rot ("flex-row" "flex-row-reverse" "flex-col" "flex-col-reverse"))
+          (:rot ("flex-wrap" "flex-wrap-reverse" "flex-nowrap"))
+          (:rot ("flex-1" "flex-auto" "flex-initial" "flex-none"))
+          (:rot ("grow" "grow-0"))
+          (:rot ("shrink" "shrink-0"))
           (:rot ("get" "post" "set") :caps t :upcase t)
           )))
+
+;; aspect-video
 
 (use-package separedit
   :ensure t)

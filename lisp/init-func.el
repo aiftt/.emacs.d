@@ -202,6 +202,6 @@ one, an error is signaled."
 
 (defun gcl/open-ztd-document()
   (interactive)
-  (find-file "~/.gclrc/ztd/document.org"))
+  (find-file "~/.gclrc/everything.org"))
 
 (provide 'init-func)

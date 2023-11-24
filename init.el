@@ -71,6 +71,7 @@ named arguments:
 (require 'init-project)
 (require 'init-web)
 (require 'init-mode)
+(require 'init-rust)
 (require 'init-program)
 (require 'init-edit)
 (require 'init-hydra)
