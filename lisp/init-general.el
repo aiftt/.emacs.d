@@ -33,6 +33,8 @@
   "," 'hydra-everything/body
   "g" 'hydra-smerge/body
   "s" 'hydra-color-rg/body
+  :keymaps 'org-mode-map
+   "i" 'org-insert-item
   )
 
 (space-leader-def
@@ -212,6 +214,7 @@
  "C-n" 'next-line
 
  "C-a" 'crux-move-beginning-of-line
+ "C-e" 'evil-end-of-line
  )
 
 

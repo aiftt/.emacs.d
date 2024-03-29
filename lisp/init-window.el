@@ -7,7 +7,9 @@
 
 (use-package watch-other-window)
 
-(use-package ace-window :ensure t)
+(use-package ace-window :ensure t
+  :config
+  (setq aw-keys '(?a ?b ?c ?d ?e ?f ?g)))
 
 (use-package popup :ensure t)
 

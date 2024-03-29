@@ -34,11 +34,11 @@ let layer
 const name = '$1'
 onMounted(() => {
   // TODO
-  pushMsg(`\${name}加载完成`)
+  pushMsg(\`\${name}加载完成\`)
 })
 
 onBeforeUnmount(() => {
   layer?.setMap(null)
-  pushMsg(`\${name}已卸载`)
+  pushMsg(\`\${name}已卸载\`)
 })
 </script>

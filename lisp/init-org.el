@@ -2,6 +2,14 @@
 
 
 ;; --- org
+
+;; (defun add-code-tag (contents backend info)
+;;   "Wrap contents in <pre><code> tag."
+;;   (when (org-export-derived-backend-p backend 'html)
+;;     (concat "<pre><code>" contents "</code></pre>")))
+
+;; (add-to-list 'org-export-filter-src-block-functions 'add-code-tag)
+
 (with-eval-after-load 'org
   (progn
     (require 'org-tempo)
@@ -21,8 +29,16 @@
 
   ;; -- keywords
   (setq org-todo-keywords
-        (quote ((sequence "TODO(t)" "STARTED(s)" "|" "DONE(d!/!)")
-                (sequence "WAITING(w@/!)" "SOMEDAY(S)" "|" "CANCELLED(c@/!)" "MEETING(m)" "PHONE(p)"))))
+        '((sequence "未开始(p!)" "进行中(t!)" "阻塞中(s!)" "|" "已完成(d!)" "已取消(a@/!)")))
+
+  ;; 设置任务样式
+  (setq org-todo-keyword-faces
+        '(("未开始" .   (:foreground "red" :weight bold))
+          ("阻塞中" .   (:foreground "red" :weight bold))
+          ("进行中" .      (:foreground "orange" :weight bold))
+          ("已完成" .      (:foreground "green" :weight bold))
+          ("已取消" .     (:background "gray" :foreground "black"))
+          ))
 
   ;; -- paint
   (setq org-plantuml-jar-path "~/.gclrc/plantuml.jar")
@@ -80,16 +96,18 @@
   (setq org-log-done t)
   (setq org-columns-default-format "%60ITEM(Task) %6Effort(Estim){:}")
 
-  (setq org-agenda-file-note (expand-file-name "notes.org" org-agenda-dir))
-  (setq org-agenda-file-gtd (expand-file-name "gtd.org" org-agenda-dir))
-  (setq org-agenda-file-work (expand-file-name "work.org" org-agenda-dir))
-  (setq org-agenda-file-journal (expand-file-name "journal.org" org-agenda-dir))
-  (setq org-agenda-file-code-snippet (expand-file-name "snippet.org" org-agenda-dir))
-  (setq org-default-notes-file (expand-file-name "gtd.org" org-agenda-dir))
-  (setq org-agenda-file-blogposts (expand-file-name "all-posts.org" org-agenda-dir))
-  (setq org-agenda-files (list org-agenda-file-gtd
-                               org-agenda-file-journal org-agenda-file-blogposts
-                               org-agenda-file-work org-agenda-file-note))
+  ;; 加入到日程列表里
+  (setq org-agenda-files (list (expand-file-name "agenda.org" org-agenda-dir)))
+  ;; (setq org-agenda-file-note (expand-file-name "notes.org" org-agenda-dir))
+  ;; (setq org-agenda-file-gtd (expand-file-name "gtd.org" org-agenda-dir))
+  ;; (setq org-agenda-file-work (expand-file-name "work.org" org-agenda-dir))
+  ;; (setq org-agenda-file-journal (expand-file-name "journal.org" org-agenda-dir))
+  ;; (setq org-agenda-file-code-snippet (expand-file-name "snippet.org" org-agenda-dir))
+  ;; (setq org-default-notes-file (expand-file-name "gtd.org" org-agenda-dir))
+  ;; (setq org-agenda-file-blogposts (expand-file-name "all-posts.org" org-agenda-dir))
+  ;; (setq org-agenda-files (list org-agenda-file-gtd
+  ;;                              org-agenda-file-journal org-agenda-file-blogposts
+  ;;                              org-agenda-file-work org-agenda-file-note))
   )
 
 
@@ -272,6 +290,7 @@
   "tl" 'org-store-link
   "tn" 'org-add-note
   "t," 'org-toggle-checkbox
+  "tu" 'org-update-checkbox-count
 
   ;; clock
   "ci" 'org-clock-in

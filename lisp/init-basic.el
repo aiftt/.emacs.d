@@ -183,4 +183,11 @@
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (and (file-readable-p custom-file) (load custom-file))
 
+;; 设置行号显示的样式
+(custom-set-faces
+  '(line-number ((t (:foreground "#888888"))))
+  '(line-number-current-line ((t (:foreg:foregrround "#888888" :weight bold)))))
+;; 启用 display-line-numbers-mode
+(global-display-line-numbers-mode)
+
 (provide 'init-basic)

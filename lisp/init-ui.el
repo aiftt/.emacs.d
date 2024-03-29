@@ -31,6 +31,7 @@
 	      awesome-tray-active-modules '(
 				                              ;; "location"
 				                              "pdf-view-page"
+                                      "belong"
 				                              "date"
 				                              "file-path"
 				                              "buffer-name"

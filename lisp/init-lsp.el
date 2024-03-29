@@ -4,6 +4,7 @@
 (require 'lsp-bridge)
 (require 'lsp-bridge-jdtls)
 (require 'acm-backend-tailwind)
+(setq lsp-bridge-python-command "/usr/bin/python3")
 (global-lsp-bridge-mode)
 (setq acm-enable-tabnine nil)
 ;; 根据文件扩展名设置 lsp server
@@ -13,6 +14,21 @@
                                                       . "vscode-html-language-server")
                                                      (("tsx") . "typescriptreact")
                                                      ))
+
+(setq lsp-bridge-default-mode-hooks
+      '(
+        ;; java-mode-hook
+        typescript-tsx-mode-hook
+        typescript-mode-hook
+        js2-mode-hook
+        js-mode-hook
+        rjsx-mode-hook
+        web-mode-hook
+        ;; org-mode-hook
+        lisp-interaction-mode-hook
+
+        )
+      )
 
 ;; 融合 `lsp-bridge' `find-function' 以及 `dumb-jump' 的智能跳转
 (defun lsp-bridge-jump ()
@@ -52,6 +68,11 @@
 
 ;; 打开日志，开发者才需要
 (setq lsp-bridge-enable-log nil)
+
+(setq acm-backend-lsp-candidate-min-length 2)
+(setq acm-backend-elisp-candidate-min-length 2)
+(setq acm-backend-yas-candidate-min-length 1)
+(setq acm-backend-codeium-candidate-min-length 2)
 
 (with-eval-after-load 'evil
   (evil-global-set-key 'normal (kbd "gd") 'lsp-bridge-jump)

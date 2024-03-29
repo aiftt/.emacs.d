@@ -10,12 +10,6 @@
 (use-package autorevert
   :diminish
   :hook (after-init . global-auto-revert-mode))
-(use-package hungry-delete
-  :ensure t
-  :diminish
-  :config
-  (setq-default hungry-delete-chars-to-skip " \t\f\v"))
-(global-hungry-delete-mode)
 
 (use-package smartparens
   :ensure t
@@ -23,8 +17,12 @@
   (require 'smartparens-config)
   (smartparens-global-mode t))
 
-(use-package highlight-thing :ensure t)
-(global-highlight-thing-mode)
+(use-package highlight-thing :ensure t
+  :config
+  (global-highlight-thing-mode)
+  (set-face-foreground 'highlight-thing "black")
+  (set-face-background 'highlight-thing "cyan")
+  )
 (use-package symbol-overlay :ensure t)
 (use-package move-text :ensure t)
 (use-package iedit :ensure t)
@@ -168,6 +166,15 @@
             `(,@(separedit//region-of-swagger-commentary)
               yaml-mode)))))
 
-
+(use-package smart-hungry-delete
+  :init (slot/vc-install :repo "hrehfeld/emacs-smart-hungry-delete")
+  :config
+  ;; 添加默认钩子
+  (smart-hungry-delete-add-default-hooks)
+  ;; 绑定删除空白字符的快捷键
+  :bind
+  (:map prog-mode-map
+        ("<backspace>" . smart-hungry-delete-backward-char)
+        ("C-d" . smart-hungry-delete-forward-char)))
 
 (provide 'init-edit)

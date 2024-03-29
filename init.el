@@ -91,6 +91,7 @@ named arguments:
 (global-set-key (kbd "<f1>") 'gcl/open-init-file)
 (global-set-key (kbd "<f2>") 'restart-emacs)
 (global-set-key (kbd "<f4>") 'gcl/open-ztd-document)
+(global-set-key (kbd "<f6>") 'gcl/open-ztd-task)
 
 ;; --- 清理
 (defun gcl/cleanup-gc ()
@@ -98,4 +99,6 @@ named arguments:
   (setq gc-cons-threshold  (* 1024 200)) ; 200MB
   (setq gc-cons-percentage 0.5) ; 0.5s
   (garbage-collect))
+
+
 (run-with-idle-timer 4 nil #'gcl/cleanup-gc)

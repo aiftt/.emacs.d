@@ -204,4 +204,22 @@ one, an error is signaled."
   (interactive)
   (find-file "~/.gclrc/everything.org"))
 
+(defun gcl/open-ztd-task()
+  (interactive)
+  (find-file "~/.gclrc/org/ztd.org"))
+
+
+(defun gcl/org-export-on-save ()
+  "Export to HTML when saving an Org Mode file."
+  (when (eq major-mode 'org-mode)
+    (org-html-export-to-html)))
+
+;; (defun delete-backward-whitespace ()
+;;   "Delete whitespace backward until encountering non-whitespace character."
+;;   (interactive)
+;;   (while (and (not (bobp)) (looking-back "[[:space:]\n]" 1))
+;;     (backward-delete-char 1)))
+
+;; (global-set-key (kbd "DEL") 'delete-backward-whitespace)
+
 (provide 'init-func)

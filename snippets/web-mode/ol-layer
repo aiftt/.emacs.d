@@ -9,16 +9,11 @@
 <script setup>
 // iserver 世界地图
 import { inject, onBeforeUnmount, onMounted, reactive } from 'vue'
-import TileLayer from 'ol/layer/Tile'
+import { layerCommonOptionsDefinition } from '../config'
 import { log } from 'shared-utils'
-import { TileSuperMapRest } from '../iclient-ol'
 
 defineProps({
-  // 控制不需要任何元素情况
-  bare: {
-    type: Boolean,
-    default: false,
-  }
+  ...layerCommonOptionsDefinition,
 })
 
 const state = reactive({
@@ -26,22 +21,17 @@ const state = reactive({
 })
 const map = inject('ol-map')
 const projection = inject('ol-projection')
-const url =
-  'https://iserver.supermap.io/iserver/services/map-world/rest/maps/World'
-const source = new TileSuperMapRest({
-  url,
-  wrapX: true,
-})
-const layer = new TileLayer({
-  source,
-  projection,
-})
-
-provide('layer', layer)
-provide('source', source)
 
 // add
 onMounted(() => {
+  const layer = new TileLayer({
+    source,
+    projection,
+  })
+
+  provide('layer', layer)
+  // provide('source', source)
+
   map.addLayer(layer)
   log.cb('[`(file-name-nondirectory (buffer-file-name))`] layer added.').end()
 })
