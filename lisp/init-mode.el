@@ -72,6 +72,8 @@ The test for presence of the car of ELT-CONS is done with `equal'."
   (add-to-alist 'auto-mode-alist elt-cons))
 
 (add-to-list 'interpreter-mode-alist '("coffee" . coffee-mode))
+(add-hook 'web-mode-hook 'emmet2-mode)
+
 
 ;; 自动换行
 (dolist (hook (list

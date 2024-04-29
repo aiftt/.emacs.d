@@ -63,5 +63,9 @@
 
 (use-package smerge-mode)
 
+(use-package diff-hl
+  :ensure
+  :config
+  (global-diff-hl-mode))
 
 (provide 'init-magit)

@@ -55,8 +55,12 @@ named arguments:
 
 ;; --- 包源配置
 (require 'package)
-(setq package-archives '(("gnu"   . "http://1.15.88.122/gnu/")
-			                   ("melpa" . "http://1.15.88.122/melpa/")))
+;; (setq package-archives '(("gnu"   . "http://1.15.88.122/gnu/")
+ 			 ;; ("melpa" . "http://1.15.88.122/melpa/")))
+
+(setq package-archives '(("gnu"   . "http://elpa.emacs-china.org/gnu/")
+                        ("melpa" . "http://elpa.emacs-china.org/melpa/")))
+
 (package-initialize)
 
 (require 'init-func)
@@ -92,6 +96,11 @@ named arguments:
 (global-set-key (kbd "<f2>") 'restart-emacs)
 (global-set-key (kbd "<f4>") 'gcl/open-ztd-document)
 (global-set-key (kbd "<f6>") 'gcl/open-ztd-task)
+(global-set-key (kbd "<f12>") 'gptel)
+(global-set-key (kbd "C-<f12>") 'gptel-menu)
+;; (global-set-key (kbd "C-=") 'expreg-expand)
+;; (global-set-key (kbd "C-s-=") 'expreg-contract)
+
 
 ;; --- 清理
 (defun gcl/cleanup-gc ()

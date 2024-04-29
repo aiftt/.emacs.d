@@ -150,6 +150,7 @@
  "C-k" 'crux-smart-kill-line
  "C-j" 'emmet-expand-yas
  "C-s" 'consult-line
+ "C-j" 'emmet2-expand
 
  "C-c SPC" 'just-one-space
  "C-c =" 'math-at-point
@@ -217,5 +218,9 @@
  "C-e" 'evil-end-of-line
  )
 
+(general-define-key
+ :keymaps '(org-mode-map)
+ "C-c <return>" 'gptel-send
+ "C-c <backspace>" 'gptel-abort)
 
 (provide 'init-general)

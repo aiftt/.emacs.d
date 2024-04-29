@@ -28,12 +28,26 @@
 (use-package json-mode :ensure t)
 (use-package css-mode :ensure t)
 (use-package scss-mode :ensure t)
-(use-package emmet-mode
-  :ensure t
-  :hook ((sgml-mode html-mode css-mode web-mode typescript-mode js-mode) . emmet-mode)
-  :config
-  (add-hook 'emmet-mode-hook (lambda () (setq emmet-indentation 2))))
+;; (use-package emmet-mode
+;;   :ensure t
+;;   :hook ((sgml-mode html-mode css-mode web-mode typescript-mode js-mode) . emmet-mode)
+;;   :config
+;;   (add-hook 'emmet-mode-hook (lambda () (setq emmet-indentation 2))))
 
+
+(use-package deno-bridge
+  :straight (:type git :host github :repo "manateelazycat/deno-bridge")
+  :init
+  (use-package websocket))
+
+;; https://docs.emmet.io/cheat-sheet/
+(use-package emmet2-mode
+  :init (slot/vc-install :repo "p233/emmet2-mode")
+  :after deno-bridge
+  :hook ((sgml-mode html-mode css-mode web-mode typescript-mode js-mode) . emmet2-mode)                     ;; Enable emmet2-mode for web-mode and css-mode and other major modes based on them, such as the build-in scss-mode
+  :config                                                       ;; OPTIONAL
+  (unbind-key "C-j" emmet2-mode-map)                            ;; Unbind the default expand key
+  (define-key emmet2-mode-map (kbd "C-c C-.") 'emmet2-expand))  ;; Bind custom expand key
 
 (use-package web-mode
   :ensure t
