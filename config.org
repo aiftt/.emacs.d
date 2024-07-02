@@ -299,6 +299,503 @@
       "M-m ]"   "next nav prefix"))
 #+END_SRC
 
+** 数字键
+
+#+BEGIN_SRC emacs-lisp
+  (modalka-define-kbd "0" "C-0")
+  (modalka-define-kbd "1" "C-1")
+  (modalka-define-kbd "2" "C-2")
+  (modalka-define-kbd "3" "C-3")
+  (modalka-define-kbd "4" "C-4")
+  (modalka-define-kbd "5" "C-5")
+  (modalka-define-kbd "6" "C-6")
+  (modalka-define-kbd "7" "C-7")
+  (modalka-define-kbd "8" "C-8")
+  (modalka-define-kbd "9" "C-9")
+#+END_SRC
+
+** 移动按键
+
+#+BEGIN_SRC emacs-lisp
+  (modalka-define-kbd "h" "C-b")
+  (modalka-define-kbd "j" "C-n")
+  (modalka-define-kbd "k" "C-p")
+  (modalka-define-kbd "l" "C-f")
+  (modalka-define-kbd "e" "M-f")
+  (modalka-define-kbd "b" "M-b")
+  (modalka-define-kbd "n" "M-n")
+  (modalka-define-kbd "N" "M-p")
+  (modalka-define-kbd "{" "M-{")
+  (modalka-define-kbd "}" "M-}")
+  (modalka-define-kbd "0" "C-a")
+  (modalka-define-kbd "$" "C-e")
+  (modalka-define-kbd "G" "M->")
+  (modalka-define-kbd "y" "M-w")
+  (modalka-define-kbd "p" "C-y")
+  (modalka-define-kbd "P" "M-y")
+  (modalka-define-kbd "x" "C-d")
+  (modalka-define-kbd "D" "C-k")
+  (modalka-define-kbd "z" "C-l")
+  (modalka-define-kbd "!" "M-&")
+  (modalka-define-kbd "J" "C-v")
+  (modalka-define-kbd "K" "M-v")
+  (modalka-define-kbd "M" "C-u")
+  (modalka-define-kbd "(" "M-a")
+  (modalka-define-kbd ")" "M-e")
+  (modalka-define-kbd "/" "C-s")
+  (modalka-define-kbd "E" "C-g")
+  (modalka-define-kbd "d" "C-w")
+  (modalka-define-kbd "w" "C-x o")
+  (modalka-define-kbd "W" "M-m W-")
+  (modalka-define-kbd "B" "M-m B")
+  (modalka-define-kbd "H" "C-x >")
+  (modalka-define-kbd "L" "C-x <")
+  (modalka-define-kbd "Z" "C-x 1")
+  (modalka-define-kbd "q" "C-x (")
+  (modalka-define-kbd "Q" "C-x )")
+  (modalka-define-kbd "." "M-m .")
+  (modalka-define-kbd "?" "M-m ?")
+  (modalka-define-kbd "v" "C-SPC")
+  (modalka-define-kbd "V" "M-m V")
+  (modalka-define-kbd "=" "M-m =")
+  (modalka-define-kbd "R" "M-m R")
+
+  
+  (modalka-define-kbd "X" "C-x C-x")
+  (modalka-define-kbd "+" "C-x r m")
+  (modalka-define-kbd "'" "C-x r b")
+  (modalka-define-kbd "\\" "C-c C-c")
+#+END_SRC
+
+** g 前缀
+
+#+BEGIN_SRC emacs-lisp
+  (modalka-define-kbd "g g" "M-<")
+  (modalka-define-kbd "g o" "C-x C-e")
+  (modalka-define-kbd "g O" "C-M-x")
+  (modalka-define-kbd "g m" "M-m g m")
+  (modalka-define-kbd "g M" "M-m g M")
+  (modalka-define-kbd "g n" "M-m g n")
+  (modalka-define-kbd "g N" "M-m g N")
+  (modalka-define-kbd "g f" "M-m g f")
+  (modalka-define-kbd "g F" "M-m g F")
+  (modalka-define-kbd "g j" "M-m g j")
+  (modalka-define-kbd "g k" "M-m g k")
+  (modalka-define-kbd "g q" "M-m g q")
+  (modalka-define-kbd "g w" "C-x 3")
+  (modalka-define-kbd "g -" "C-x 2")
+  (modalka-define-kbd "g @" "M-m g @")
+  (modalka-define-kbd "g ;" "M-m g ;")
+  (modalka-define-kbd "g :" "M-m g :")
+  (modalka-define-kbd "g #" "M-m g #")
+  (modalka-define-kbd "g {" "M-m g {")
+  (modalka-define-kbd "g }" "M-m g }")
+  (modalka-define-kbd "g (" "M-m g (")
+  (modalka-define-kbd "g )" "M-m g )")
+  (modalka-define-kbd "^" "M-m ^")
+  (modalka-define-kbd "&" "M-m &")
+  (modalka-define-kbd "g S" "C-j")
+  (modalka-define-kbd "g ?" "C-h k")
+#+END_SRC
+
+** 区域选择
+
+#+BEGIN_SRC emacs-lisp
+  (modalka-define-kbd "i a" "C-x h")
+#+END_SRC
+
+* 快捷打开文件
+
+** 重新加载配置
+
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "<f5>") 'reload-init-file) 
+
+(defun reload-init-file ()
+  "重新加载 init.el 文件的函数"
+  (interactive)
+  (load-file "~/.emacs.d/init.el")) 
+#+END_SRC
+
+** 打开配置文件
+
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "<f1>")
+                (lambda ()
+                  (interactive)
+                  (find-file "~/.emacs.d/config.org")))
+#+END_SRC
+
+* Custom.el
+
+#+BEGIN_SRC emacs-lisp
+  (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(when (file-exists-p custom-file)
+  (load custom-file))
+#+END_SRC
+
+* 界面配置
+
+** 去掉工具条等
+
+#+BEGIN_SRC emacs-lisp
+  (when window-system
+  (tool-bar-mode 0)
+  (scroll-bar-mode 0)
+  (tooltip-mode 0))
+#+END_SRC
+
+** 初始化启动大小
+#+BEGIN_SRC emacs-lisp
+  ;; initial window
+  (setq initial-frame-alist
+	'((width . 102)   ; characters in a line
+	  (height . 54))) ; number of lines
+
+  ;; sebsequent frame
+  (setq default-frame-alist
+	'((width . 100)   ; characters in a line
+	  (height . 52))) ; number of lines
+#+END_SRC
+
+** 光标设置
+
+#+BEGIN_SRC emacs-lisp
+  ;; Bar cursor
+  (setq-default cursor-type '(bar . 1))
+  ;; 光标不闪烁
+  (blink-cursor-mode -1)
+#+END_SRC
+
+** 启动界面配置
+
+#+BEGIN_SRC emacs-lisp
+  (setq inhibit-startup-message t
+      initial-scratch-message ""
+      initial-major-mode 'fundamental-mode
+      inhibit-splash-screen t)
+#+END_SRC
+
+
+* 修改默认配置
+
+** meta -> option
+#+BEGIN_SRC emacs-lisp
+;;  (when (eq system-type 'darwin)
+;;  (setq mac-option-modifier 'meta))
+#+END_SRC
+** 备份
+
+#+BEGIN_SRC emacs-lisp
+  ;; 统一备份到临时文件目录 /tmp/.saves
+(setq backup-by-copying t      ; don't clobber symlinks
+      backup-directory-alist
+      '(("." . "/tmp/.saves"))    ; don't litter my fs tree
+      delete-old-versions t
+      kept-new-versions 6
+      kept-old-versions 2
+      version-control t)       ; use versioned backups
+#+END_SRC
+
+** 自动保存
+
+#+BEGIN_SRC emacs-lisp
+  (setq auto-save-file-name-transforms `((".*" ,temporary-file-directory t))
+      create-lockfiles nil)
+#+END_SRC
+
+** 文件编码
+
+#+BEGIN_SRC emacs-lisp
+  (prefer-coding-system 'utf-8)
+(setq-default buffer-file-coding-system 'utf-8-auto-unix)
+#+END_SRC
+
+** 错误信息
+
+#+BEGIN_SRC emacs-lisp
+  (setq visible-bell nil)
+(setq ring-bell-function 'ignore)
+#+END_SRC
+
+** 截断行
+
+#+BEGIN_SRC emacs-lisp
+  (setq-default truncate-lines t)
+#+END_SRC
+
+** 超大文件警告
+
+#+BEGIN_SRC emacs-lisp
+  (setq large-file-warning-threshold (* 15 1024 1024))
+#+END_SRC
+
+** yes or no ?
+
+#+BEGIN_SRC emacs-lisp
+  (fset 'yes-or-no-p 'y-or-n-p)
+#+END_SRC
+
+** 单词自动修正
+
+#+BEGIN_SRC emacs-lisp
+(setq save-abbrevs 'silently)
+(setq-default abbrev-mode t)
+#+END_SRC
+
+** ediff
+
+#+BEGIN_SRC emacs-lisp
+  (setq ediff-window-setup-function 'ediff-setup-windows-plain
+      ediff-split-window-function 'split-window-horizontally)
+#+END_SRC
+
+** tramp 远程
+
+默认使用 ssh。
+
+#+BEGIN_SRC emacs-lisp
+  (setq tramp-default-method "ssh"
+      tramp-backup-directory-alist backup-directory-alist
+      tramp-ssh-controlmaster-options "ssh")
+#+END_SRC
+
+** 驼峰单词里移动
+
+#+BEGIN_SRC emacs-lisp
+  (subword-mode)
+#+END_SRC
+
+** 段落
+
+默认认为两个空格开头为一个段落，关闭此选项。
+
+#+BEGIN_SRC emacs-lisp
+  (setq sentence-end-double-space nil)
+#+END_SRC
+
+** 更好的通配符搜索
+
+#+BEGIN_SRC emacs-lisp
+  (setq search-whitespace-regexp ".*?")
+#+END_SRC
+
+** 历史记录
+
+#+BEGIN_SRC emacs-lisp
+(savehist-mode)
+#+END_SRC
+
+** 聚焦区域
+
+[[https://www.gnu.org/software/emacs/manual/html_node/emacs/Narrowing.html][文档描述]], 可以让你聚焦与光标当前(或标记内容)所属的区域，隐藏其他内容，专注编辑或展示该区域内容。
+
+~C-x n n~: 开启
+
+~C-x n w~: 关闭
+
+#+BEGIN_SRC emacs-lisp
+  (put 'narrow-to-region 'disabled nil)
+#+END_SRC
+
+** PDF 预览
+
+#+BEGIN_SRC emacs-lisp
+  (setq doc-view-continuous t)
+#+END_SRC
+
+** 窗口管理
+
+#+BEGIN_SRC emacs-lisp
+  (when (fboundp 'winner-mode)
+  (winner-mode 1))
+#+END_SRC
+
+** 最近文件
+
+#+BEGIN_SRC emacs-lisp
+  (setq recentf-max-saved-items 1000
+      recentf-exclude '("/tmp/" "/ssh:"))
+(recentf-mode)
+#+END_SRC
+
+** 全屏设置
+
+在 mac 上，当进入一个新的工作空间时，会默认全屏？
+
+#+BEGIN_SRC emacs-lisp
+  (setq ns-use-native-fullscreen nil)
+#+END_SRC
+* 一些有用的库(前置安装)
+
+#+BEGIN_SRC emacs-lisp
+(use-package async
+  :ensure t
+  :commands (async-start))
+  
+(use-package cl-lib
+  :ensure t)
+
+(use-package dash
+  :ensure t)
+
+(use-package s
+  :ensure t)
+#+END_SRC
+
+* which-key
+
+#+BEGIN_SRC emacs-lisp
+  (use-package which-key
+  :ensure t
+  :defer t
+  :diminish which-key-mode
+  :init
+  (setq which-key-sort-order 'which-key-key-order-alpha)
+  :bind* (("M-m ?" . which-key-show-top-level))
+  :config
+  (which-key-mode)
+  (which-key-add-key-based-replacements
+    "M-m ?" "top level bindings"))
+#+END_SRC
+
+* 重启Emacs
+
+#+BEGIN_SRC emacs-lisp
+  (use-package restart-emacs
+  :ensure t
+  :bind* (("<f2>" . restart-emacs)))
+#+END_SRC
+
+* Modalka mode(类似Evil)
+
+#+BEGIN_SRC emacs-lisp
+    (use-package modalka
+    :ensure t
+    :demand t
+    :bind* (("C-z" . modalka-mode))
+    :diminish (modalka-mode . "μ")
+    :init
+    (setq modalka-cursor-type 'box)
+    :config
+    (global-set-key (kbd "<escape>") #'modalka-mode)
+    (modalka-global-mode 1)
+    (add-to-list 'modalka-excluded-modes 'magit-status-mode)
+    (add-to-list 'modalka-excluded-modes 'magit-popup-mode)
+    (add-to-list 'modalka-excluded-modes 'eshell-mode)
+    (add-to-list 'modalka-excluded-modes 'deft-mode)
+    (add-to-list 'modalka-excluded-modes 'term-mode)
+    (which-key-add-key-based-replacements
+      "M-m"     "Modalka prefix"
+      "M-m :"   "extended prefix"
+      "M-m m"   "move prefix"
+      "M-m s"   "send code prefix"
+      "M-m SPC" "user prefix"
+      "M-m g"   "global prefix"
+      "M-m o"   "org prefix"
+      "M-m a"   "expand around prefix"
+      "M-m i"   "expand inside prefix"
+      "M-m ["   "prev nav prefix"
+      "M-m ]"   "next nav prefix"))
+#+END_SRC
+
+** 数字键
+
+#+BEGIN_SRC emacs-lisp
+  (modalka-define-kbd "0" "C-0")
+  (modalka-define-kbd "1" "C-1")
+  (modalka-define-kbd "2" "C-2")
+  (modalka-define-kbd "3" "C-3")
+  (modalka-define-kbd "4" "C-4")
+  (modalka-define-kbd "5" "C-5")
+  (modalka-define-kbd "6" "C-6")
+  (modalka-define-kbd "7" "C-7")
+  (modalka-define-kbd "8" "C-8")
+  (modalka-define-kbd "9" "C-9")
+#+END_SRC
+
+** 移动按键
+
+#+BEGIN_SRC emacs-lisp
+  (modalka-define-kbd "h" "C-b")
+  (modalka-define-kbd "j" "C-n")
+  (modalka-define-kbd "k" "C-p")
+  (modalka-define-kbd "l" "C-f")
+  (modalka-define-kbd "e" "M-f")
+  (modalka-define-kbd "b" "M-b")
+  (modalka-define-kbd "n" "M-n")
+  (modalka-define-kbd "N" "M-p")
+  (modalka-define-kbd "{" "M-{")
+  (modalka-define-kbd "}" "M-}")
+  (modalka-define-kbd "0" "C-a")
+  (modalka-define-kbd "$" "C-e")
+  (modalka-define-kbd "G" "M->")
+  (modalka-define-kbd "y" "M-w")
+  (modalka-define-kbd "p" "C-y")
+  (modalka-define-kbd "P" "M-y")
+  (modalka-define-kbd "x" "C-d")
+  (modalka-define-kbd "D" "C-k")
+  (modalka-define-kbd "z" "C-l")
+  (modalka-define-kbd "!" "M-&")
+  (modalka-define-kbd "J" "C-v")
+  (modalka-define-kbd "K" "M-v")
+  (modalka-define-kbd "M" "C-u")
+  (modalka-define-kbd "(" "M-a")
+  (modalka-define-kbd ")" "M-e")
+  (modalka-define-kbd "/" "C-s")
+  (modalka-define-kbd "E" "C-g")
+  (modalka-define-kbd "d" "C-w")
+  (modalka-define-kbd "w" "C-x o")
+  (modalka-define-kbd "W" "M-m W")
+  (modalka-define-kbd "B" "M-m B")
+  (modalka-define-kbd "H" "C-x >")
+  (modalka-define-kbd "L" "C-x <")
+  (modalka-define-kbd "Z" "C-x 1")
+  (modalka-define-kbd "q" "C-x (")
+  (modalka-define-kbd "Q" "C-x )")
+  (modalka-define-kbd "." "M-m .")
+  (modalka-define-kbd "?" "M-m ?")
+  (modalka-define-kbd "v" "C-SPC")
+  (modalka-define-kbd "V" "M-m V")
+  (modalka-define-kbd "=" "M-m =")
+  (modalka-define-kbd "R" "M-m R")
+  (modalka-define-kbd "X" "C-x C-x")
+  (modalka-define-kbd "+" "C-x r m")
+  (modalka-define-kbd "'" "C-x r b")
+  (modalka-define-kbd "\\" "C-c C-c")
+#+END_SRC
+
+** g 前缀
+
+#+BEGIN_SRC emacs-lisp
+  (modalka-define-kbd "g g" "M-<")
+  (modalka-define-kbd "g o" "C-x C-e")
+  (modalka-define-kbd "g O" "C-M-x")
+  (modalka-define-kbd "g m" "M-m g m")
+  (modalka-define-kbd "g M" "M-m g M")
+  (modalka-define-kbd "g n" "M-m g n")
+  (modalka-define-kbd "g N" "M-m g N")
+  (modalka-define-kbd "g f" "M-m g f")
+  (modalka-define-kbd "g F" "M-m g F")
+  (modalka-define-kbd "g j" "M-m g j")
+  (modalka-define-kbd "g k" "M-m g k")
+  (modalka-define-kbd "g q" "M-m g q")
+  (modalka-define-kbd "g w" "C-x 3")
+  (modalka-define-kbd "g -" "C-x 2")
+  (modalka-define-kbd "g @" "M-m g @")
+  (modalka-define-kbd "g ;" "M-m g ;")
+  (modalka-define-kbd "g :" "M-m g :")
+  (modalka-define-kbd "g #" "M-m g #")
+  (modalka-define-kbd "g {" "M-m g {")
+  (modalka-define-kbd "g }" "M-m g }")
+  (modalka-define-kbd "g (" "M-m g (")
+  (modalka-define-kbd "g )" "M-m g )")
+  (modalka-define-kbd "^" "M-m ^")
+  (modalka-define-kbd "&" "M-m &")
+  (modalka-define-kbd "g S" "C-j")
+  (modalka-define-kbd "g ?" "C-h k")
+#+END_SRC
+
 * 内置包管理
 
 ** flyspell
@@ -375,6 +872,14 @@
 (add-hook 'auto-revert-mode-hook 'sk/diminish-auto-revert)
 #+END_SRC
 
+* 发现模式
+
+#+BEGIN_SRC emacs-lisp
+  (use-package discover-my-major
+  :ensure t
+  :bind (("C-h C-m" . discover-my-major)
+         ("C-h s-m" . discover-my-mode)))
+#+END_SRC
 * 按键绑定
 
 ** 默认功能按键
@@ -382,26 +887,42 @@
 #+BEGIN_SRC emacs-lisp
   (bind-keys*
    ("C-r"       . dabbrev-expand)
-   ("s-/"       . hippie-expand)
+   ("M-/"       . hippie-expand)
    ("C-S-d"     . kill-whole-line)
-   ("s-m SPC c" . load-theme)
-   ("s-m SPC r" . locate)
-   ("s-m w"     . winner-undo)
-   ("s-m g m"   . make-frame)
-   ("s-m g M"   . delete-frame)
-   ("s-m g n"   . select-frame-by-name)
-   ("s-m g n"   . set-frame-name)
-   ("s-m b"     . mode-line-other-buffer)
-   ("s-m ="     . indent-region)
-   ("s-m g f"   . find-file-at-point)
-   ("s-m g u"   . downcase-region)
-   ("s-m g U"   . upcase-region)
-   ("s-m g C"   . capitalize-region)
-   ("s-m g F"   . follow-mode)
-   ("s-m R"     . overwrite-mode)
-   ("s-m : t"   . emacs-init-time)
-   ("s-m g @"   . compose-mail)
-   ("s-m SPC ?" . describe-bindings))
+   ("M-m SPC c" . load-theme)
+   ("M-m SPC r" . locate)
+   ("M-m w"     . winner-undo)
+   ("M-m g m"   . make-frame)
+   ("M-m g M"   . delete-frame)
+   ("M-m g n"   . select-frame-by-name)
+   ("M-m g n"   . set-frame-name)
+   ("M-m b"     . mode-line-other-buffer)
+   ("M-m ="     . indent-region)
+   ("M-m g f"   . find-file-at-point)
+   ("M-m g u"   . downcase-region)
+   ("M-m g U"   . upcase-region)
+   ("M-m g C"   . capitalize-region)
+   ("M-m g F"   . follow-mode)
+   ("M-m R"     . overwrite-mode)
+   ("M-m : t"   . emacs-init-time)
+   ("M-m g @"   . compose-mail)
+   ("M-m SPC ?" . describe-bindings))
+#+END_SRC
+
+** which-key
+
+#+BEGIN_SRC emacs-lisp
+  (use-package which-key
+  :ensure t
+  :defer t
+  :diminish which-key-mode
+  :init
+  (setq which-key-sort-order 'which-key-key-order-alpha)
+  :bind* (("s-m ?" . which-key-show-top-level))
+  :config
+  (which-key-mode)
+  (which-key-add-key-based-replacements
+    "s-m ?" "top level bindings"))
 #+END_SRC
 
 * 保存时自动转换配置
