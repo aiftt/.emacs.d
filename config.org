@@ -676,34 +676,45 @@
 
 * Modalka mode(类似Evil)
 
+
 #+BEGIN_SRC emacs-lisp
+
+    (defun exit-on-space ()
+      (interactive)
+      (modalka-mode 0)
+      (insert-char 32))
+
+    (defun exit-modalka ()
+      (interactive)
+      (modalka-mode 0))
+
     (use-package modalka
-    :ensure t
-    :demand t
-    :bind* (("C-z" . modalka-mode))
-    :diminish (modalka-mode . "μ")
-    :init
-    (setq modalka-cursor-type 'box)
-    :config
-    (global-set-key (kbd "<escape>") #'modalka-mode)
-    (modalka-global-mode 1)
-    (add-to-list 'modalka-excluded-modes 'magit-status-mode)
-    (add-to-list 'modalka-excluded-modes 'magit-popup-mode)
-    (add-to-list 'modalka-excluded-modes 'eshell-mode)
-    (add-to-list 'modalka-excluded-modes 'deft-mode)
-    (add-to-list 'modalka-excluded-modes 'term-mode)
-    (which-key-add-key-based-replacements
-      "M-m"     "Modalka prefix"
-      "M-m :"   "extended prefix"
-      "M-m m"   "move prefix"
-      "M-m s"   "send code prefix"
-      "M-m SPC" "user prefix"
-      "M-m g"   "global prefix"
-      "M-m o"   "org prefix"
-      "M-m a"   "expand around prefix"
-      "M-m i"   "expand inside prefix"
-      "M-m ["   "prev nav prefix"
-      "M-m ]"   "next nav prefix"))
+      :ensure t
+      :demand t
+      :bind* (("C-z" . modalka-mode))
+      :diminish (modalka-mode . "μ")
+      :init
+      (setq modalka-cursor-type 'box)
+      :config
+      (global-set-key (kbd "<escape>") #'modalka-mode)
+      (modalka-global-mode 1)
+      (add-to-list 'modalka-excluded-modes 'magit-status-mode)
+      (add-to-list 'modalka-excluded-modes 'magit-popup-mode)
+      (add-to-list 'modalka-excluded-modes 'eshell-mode)
+      (add-to-list 'modalka-excluded-modes 'deft-mode)
+      (add-to-list 'modalka-excluded-modes 'term-mode)
+      (which-key-add-key-based-replacements
+	"M-m"     "Modalka prefix"
+	"M-m :"   "extended prefix"
+	"M-m m"   "move prefix"
+	"M-m s"   "send code prefix"
+	"M-m SPC" "user prefix"
+	"M-m g"   "global prefix"
+	"M-m o"   "org prefix"
+	"M-m a"   "expand around prefix"
+	"M-m i"   "expand inside prefix"
+	"M-m ["   "prev nav prefix"
+	"M-m ]"   "next nav prefix"))
 #+END_SRC
 
 ** 数字键
@@ -784,6 +795,7 @@
   (modalka-define-kbd "+" "C-x r m")
   (modalka-define-kbd "'" "C-x r b")
   (modalka-define-kbd "\\" "C-c C-c")
+  (modalka-define-kbd "," "C-x M-r")
 
   ;; 说明
   (which-key-add-key-based-replacements
@@ -825,6 +837,7 @@
     "K"   "scroll up"
     "L"   "scroll right"
     "'"   "org edit separately"
+    ","   "vertico-repeat"
     "q"   "start macro"
     "Q"   "end macro"
     "?"   "top level bindings"
@@ -1048,6 +1061,43 @@
   :ensure t
   :bind (("C-h C-m" . discover-my-major)
          ("C-h s-m" . discover-my-mode)))
+#+END_SRC
+
+* Hydras
+
+#+BEGIN_SRC emacs-lisp
+  (use-package hydra
+  :ensure t)
+#+END_SRC
+
+* 自动补全
+
+#+BEGIN_SRC emacs-lisp
+  (use-package vertico
+    :ensure t
+    :bind (("C-x M-r" . vertico-repeat)
+	   :map vertico-map
+	   ("C-l" . vertico-directory-delete-word)
+	   ("M-g" . vertico-multiform-grid)
+	   ("M-q" . vertico-multiform-flat))
+    :init (vertico-mode 1)
+    :config (progn
+	      (add-hook 'minibuffer-setup-hook #'vertico-repeat-save)
+	      (vertico-mouse-mode 1)
+	      (vertico-multiform-mode 1)
+	      (setq vertico-multiform-categories '((consult-grep buffer))
+		    vertico-multiform-commands '((tmm-menubar flat)
+						 (tmm-shortcut flat)))
+
+	      ;; Needed with `read-file-name-completion-ignore-case'.
+	      ;; See these links:
+	      ;; - https://github.com/minad/vertico/issues/341
+	      ;; - https://debbugs.gnu.org/cgi/bugreport.cgi?bug=60264
+	      ;;
+	      ;; Regardless of it fixing an actual bug, I prefer
+	      ;; this behavior.
+	      (add-hook 'rfn-eshadow-update-overlay-hook #'vertico-directory-tidy))
+    )
 #+END_SRC
 * 按键绑定
 

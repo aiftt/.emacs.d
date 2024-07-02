@@ -4,7 +4,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(discover-my-major exec-path-from-shell diminish dired modalka restart-emacs org-contrib))
+   '(vertico hydra discover-my-major exec-path-from-shell diminish dired modalka restart-emacs org-contrib))
  '(safe-local-variable-values
    '((eval when
 	   (fboundp #'tangle-if-init)
