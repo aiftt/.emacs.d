@@ -41,3 +41,4 @@ tramp
 /blink-search.db
 /mind-wave/
 /org-ai-images/
+*.elc
