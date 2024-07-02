@@ -1,6 +1,0 @@
-[submodule "extensions/lsp-bridge"]
-	path = extensions/lsp-bridge
-	url = https://github.com/manateelazycat/lsp-bridge.git
-[submodule "extensions/mind-wave"]
-	path = extensions/mind-wave
-	url = https://github.com/manateelazycat/mind-wave.git

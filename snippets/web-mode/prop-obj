@@ -1,8 +1,0 @@
-# -*- mode: snippet -*-
-# name: prop-obj
-# key: pobj
-# --
-$1: {
-  type: Object,
-  default: () => ({})
-}

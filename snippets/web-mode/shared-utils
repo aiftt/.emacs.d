@@ -1,5 +1,0 @@
-# -*- mode: snippet -*-
-# name: shared-utils
-# key: xs
-# --
-import { $1 } from 'shared-utils'
