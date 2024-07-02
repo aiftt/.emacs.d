@@ -1,10 +1,234 @@
-#+BEGIN_SRC emacs-lisp :tangle no
-(message "I don't exist!")
+* 个人信息
+
+#+BEGIN_SRC emacs-lisp
+  (setq user-full-name "Lee Zhicheng")
 #+END_SRC
 
+* 快捷打开文件
+
+** 重新加载配置
+
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "<f5>") 'reload-init-file) 
+
+(defun reload-init-file ()
+  "重新加载 init.el 文件的函数"
+  (interactive)
+  (load-file "~/.emacs.d/init.el")) 
+#+END_SRC
+
+** 打开配置文件
+
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "<f1>")
+                (lambda ()
+                  (interactive)
+                  (find-file "~/.emacs.d/config.org")))
+#+END_SRC
+
+* Custom.el
+
+#+BEGIN_SRC emacs-lisp
+  (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(when (file-exists-p custom-file)
+  (load custom-file))
+#+END_SRC
+
+* 界面配置
+
+** 去掉工具条等
+
+#+BEGIN_SRC emacs-lisp
+  (when window-system
+  (tool-bar-mode 0)
+  (scroll-bar-mode 0)
+  (tooltip-mode 0))
+#+END_SRC
+
+** 初始化启动大小
+#+BEGIN_SRC emacs-lisp
+  ;; initial window
+  (setq initial-frame-alist
+	'((width . 102)   ; characters in a line
+	  (height . 54))) ; number of lines
+
+  ;; sebsequent frame
+  (setq default-frame-alist
+	'((width . 100)   ; characters in a line
+	  (height . 52))) ; number of lines
+#+END_SRC
+
+** 光标设置
+
+#+BEGIN_SRC emacs-lisp
+  ;; Bar cursor
+  (setq-default cursor-type '(bar . 1))
+  ;; 光标不闪烁
+  (blink-cursor-mode -1)
+#+END_SRC
+
+** 启动界面配置
+
+#+BEGIN_SRC emacs-lisp
+  (setq inhibit-startup-message t
+      initial-scratch-message ""
+      initial-major-mode 'fundamental-mode
+      inhibit-splash-screen t)
+#+END_SRC
+
+
+* 修改默认配置
+
+** meta -> option
+#+BEGIN_SRC emacs-lisp
+;;  (when (eq system-type 'darwin)
+;;  (setq mac-option-modifier 'meta))
+#+END_SRC
+** 备份
+
+#+BEGIN_SRC emacs-lisp
+  ;; 统一备份到临时文件目录 /tmp/.saves
+(setq backup-by-copying t      ; don't clobber symlinks
+      backup-directory-alist
+      '(("." . "/tmp/.saves"))    ; don't litter my fs tree
+      delete-old-versions t
+      kept-new-versions 6
+      kept-old-versions 2
+      version-control t)       ; use versioned backups
+#+END_SRC
+
+** 自动保存
+
+#+BEGIN_SRC emacs-lisp
+  (setq auto-save-file-name-transforms `((".*" ,temporary-file-directory t))
+      create-lockfiles nil)
+#+END_SRC
+
+** 文件编码
+
+#+BEGIN_SRC emacs-lisp
+  (prefer-coding-system 'utf-8)
+(setq-default buffer-file-coding-system 'utf-8-auto-unix)
+#+END_SRC
+
+** 错误信息
+
+#+BEGIN_SRC emacs-lisp
+  (setq visible-bell nil)
+(setq ring-bell-function 'ignore)
+#+END_SRC
+
+** 截断行
+
+#+BEGIN_SRC emacs-lisp
+  (setq-default truncate-lines t)
+#+END_SRC
+
+** 超大文件警告
+
+#+BEGIN_SRC emacs-lisp
+  (setq large-file-warning-threshold (* 15 1024 1024))
+#+END_SRC
+
+** yes or no ?
+
+#+BEGIN_SRC emacs-lisp
+  (fset 'yes-or-no-p 'y-or-n-p)
+#+END_SRC
+
+** 单词自动修正
+
+#+BEGIN_SRC emacs-lisp
+(setq save-abbrevs 'silently)
+(setq-default abbrev-mode t)
+#+END_SRC
+
+** ediff
+
+#+BEGIN_SRC emacs-lisp
+  (setq ediff-window-setup-function 'ediff-setup-windows-plain
+      ediff-split-window-function 'split-window-horizontally)
+#+END_SRC
+
+** tramp 远程
+
+默认使用 ssh。
+
+#+BEGIN_SRC emacs-lisp
+  (setq tramp-default-method "ssh"
+      tramp-backup-directory-alist backup-directory-alist
+      tramp-ssh-controlmaster-options "ssh")
+#+END_SRC
+
+** 驼峰单词里移动
+
+#+BEGIN_SRC emacs-lisp
+  (subword-mode)
+#+END_SRC
+
+** 段落
+
+默认认为两个空格开头为一个段落，关闭此选项。
+
+#+BEGIN_SRC emacs-lisp
+  (setq sentence-end-double-space nil)
+#+END_SRC
+
+** 更好的通配符搜索
+
+#+BEGIN_SRC emacs-lisp
+  (setq search-whitespace-regexp ".*?")
+#+END_SRC
+
+** 历史记录
+
+#+BEGIN_SRC emacs-lisp
+(savehist-mode)
+#+END_SRC
+
+** 聚焦区域
+
+[[https://www.gnu.org/software/emacs/manual/html_node/emacs/Narrowing.html][文档描述]], 可以让你聚焦与光标当前(或标记内容)所属的区域，隐藏其他内容，专注编辑或展示该区域内容。
+
+~C-x n n~: 开启
+
+~C-x n w~: 关闭
+
+#+BEGIN_SRC emacs-lisp
+  (put 'narrow-to-region 'disabled nil)
+#+END_SRC
+
+** PDF 预览
+
+#+BEGIN_SRC emacs-lisp
+  (setq doc-view-continuous t)
+#+END_SRC
+
+** 窗口管理
+
+#+BEGIN_SRC emacs-lisp
+  (when (fboundp 'winner-mode)
+  (winner-mode 1))
+#+END_SRC
+
+** 最近文件
+
+#+BEGIN_SRC emacs-lisp
+  (setq recentf-max-saved-items 1000
+      recentf-exclude '("/tmp/" "/ssh:"))
+(recentf-mode)
+#+END_SRC
+
+** 全屏设置
+
+在 mac 上，当进入一个新的工作空间时，会默认全屏？
+
+#+BEGIN_SRC emacs-lisp
+  (setq ns-use-native-fullscreen nil)
+#+END_SRC
 * 一些有用的库(前置安装)
 
-#+BEGINS_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp
 (use-package async
   :ensure t
   :commands (async-start))
@@ -17,8 +241,6 @@
 
 (use-package s
   :ensure t)
-
-  
 #+END_SRC
 
 * which-key
@@ -42,7 +264,7 @@
 #+BEGIN_SRC emacs-lisp
   (use-package restart-emacs
   :ensure t
-  :bind* (("C-x M-c" . restart-emacs)))
+  :bind* (("<f2>" . restart-emacs)))
 #+END_SRC
 
 * Modalka mode(类似Evil)
@@ -75,6 +297,111 @@
       "M-m i"   "expand inside prefix"
       "M-m ["   "prev nav prefix"
       "M-m ]"   "next nav prefix"))
+#+END_SRC
+
+* 内置包管理
+
+** flyspell
+
+#+BEGIN_SRC emacs-lisp
+  (use-package flyspell
+  :diminish (flyspell-mode . "φ")
+  :bind* (("M-m ] s" . flyspell-goto-next-error)))
+#+END_SRC
+* 文件目录管理
+
+** dired
+
+#+BEGIN_SRC emacs-lisp
+  (use-package dired
+    :bind (:map dired-mode-map
+		("C-c C-e" . wdired-change-to-wdired-mode))
+    :init
+    (setq dired-dwim-target t
+	  dired-recursive-copies 'top
+	  dired-recursive-deletes 'top
+	  dired-listing-switches "-alh")
+    :config
+    (add-hook 'dired-mode-hook 'dired-hide-details-mode))
+#+END_SRC
+
+* 环境变量
+
+#+BEGIN_SRC emacs-lisp
+  (use-package exec-path-from-shell
+  :ensure t
+  :demand t
+  :init
+  (setq exec-path-from-shell-check-startup-files nil)
+  :config
+  ;; (exec-path-from-shell-copy-env "PYTHONPATH")
+  (when (memq window-system '(mac ns x))
+    (exec-path-from-shell-initialize)))
+#+END_SRC
+* 状态栏
+
+** diminish
+
+#+BEGIN_SRC emacs-lisp
+  (use-package diminish
+  :ensure t
+  :demand t
+  :diminish (visual-line-mode . "ω")
+  :diminish hs-minor-mode
+  :diminish abbrev-mode
+  :diminish auto-fill-function
+  :diminish subword-mode
+  :diminish eldoc-mode
+  )
+#+END_SRC
+
+一些内置的 minor mode 不能通过上面的方式来隐藏，然后可以通过单独定义一些函数来达到目的，如下：
+
+** org-indent mode
+
+#+BEGIN_SRC emacs-lisp
+  (defun sk/diminish-org-indent ()
+  (interactive)
+  (diminish 'org-indent-mode ""))
+(add-hook 'org-indent-mode-hook 'sk/diminish-org-indent)
+#+END_SRC
+
+** auto-revert mode
+
+#+BEGIN_SRC emacs-lisp
+  (defun sk/diminish-auto-revert ()
+  (interactive)
+  (diminish 'auto-revert-mode ""))
+(add-hook 'auto-revert-mode-hook 'sk/diminish-auto-revert)
+#+END_SRC
+
+* 按键绑定
+
+** 默认功能按键
+
+#+BEGIN_SRC emacs-lisp
+  (bind-keys*
+   ("C-r"       . dabbrev-expand)
+   ("s-/"       . hippie-expand)
+   ("C-S-d"     . kill-whole-line)
+   ("s-m SPC c" . load-theme)
+   ("s-m SPC r" . locate)
+   ("s-m w"     . winner-undo)
+   ("s-m g m"   . make-frame)
+   ("s-m g M"   . delete-frame)
+   ("s-m g n"   . select-frame-by-name)
+   ("s-m g n"   . set-frame-name)
+   ("s-m b"     . mode-line-other-buffer)
+   ("s-m ="     . indent-region)
+   ("s-m g f"   . find-file-at-point)
+   ("s-m g u"   . downcase-region)
+   ("s-m g U"   . upcase-region)
+   ("s-m g C"   . capitalize-region)
+   ("s-m g F"   . follow-mode)
+   ("s-m R"     . overwrite-mode)
+   ("s-m : t"   . emacs-init-time)
+   ("s-m g @"   . compose-mail)
+   ("s-m SPC ?" . describe-bindings))
 #+END_SRC
 
 * 保存时自动转换配置
