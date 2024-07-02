@@ -139,14 +139,19 @@
 :ensure t
 :bind* (("<f2>" . restart-emacs)))
 
+(defun exit-modalka ()
+  (interactive)
+  (modalka-mode 0))
+
 (defun exit-on-space ()
   (interactive)
   (modalka-mode 0)
   (insert-char 32))
 
-(defun exit-modalka ()
+(defun exit-on-newline ()
   (interactive)
-  (modalka-mode 0))
+  (modalka-mode 0)
+  (newline-and-indent))
 
 (use-package modalka
   :ensure t
@@ -175,6 +180,9 @@
     "M-m i"   "expand inside prefix"
     "M-m ["   "prev nav prefix"
     "M-m ]"   "next nav prefix"))
+
+(define-key modalka-mode-map (kbd "o") #'exit-on-newline)
+(define-key modalka-mode-map (kbd "i") #'exit-modalka)
 
 (modalka-define-kbd "0" "C-0")
 (modalka-define-kbd "1" "C-1")
@@ -232,6 +240,7 @@
 (modalka-define-kbd "w" "C-x o")
 (modalka-define-kbd "W" "M-m W")
 (modalka-define-kbd "B" "M-m B")
+(modalka-define-kbd "u" "C-x u")
 (modalka-define-kbd "H" "C-x >")
 (modalka-define-kbd "L" "C-x <")
 (modalka-define-kbd "Z" "C-x 1")
@@ -245,7 +254,7 @@
 (modalka-define-kbd "R" "M-m R")
 (modalka-define-kbd "X" "C-x C-x")
 (modalka-define-kbd "+" "C-x r m")
-(modalka-define-kbd "'" "C-x r b")
+(modalka-define-kbd "'" "M-g M")
 (modalka-define-kbd "\\" "C-c C-c")
 (modalka-define-kbd "," "C-x M-r")
 
@@ -269,7 +278,7 @@
   "$"   "end of line"
   "("   "start of sentence"
   ")"   "end of sentence"
-  "/" "search"
+  "/"   "search"
   "E"   "exit anything"
   "B"   "previous buffer"
   "W"   "winner undo"
@@ -306,70 +315,6 @@
 (modalka-define-kbd ": q" "C-x C-c")
 (modalka-define-kbd ": r" "C-x M-c")
 (modalka-define-kbd ": t" "M-m : t")
-
-(modalka-define-kbd "i a" "C-x h")
-
-(which-key-add-key-based-replacements
-  "i"   "expand prefix"
-  "i a" "expand entire buffer")
-
-(modalka-define-kbd "g g" "M-<")
-(modalka-define-kbd "g o" "C-x C-e")
-(modalka-define-kbd "g O" "C-M-x")
-(modalka-define-kbd "g m" "M-m g m")
-(modalka-define-kbd "g M" "M-m g M")
-(modalka-define-kbd "g n" "M-m g n")
-(modalka-define-kbd "g N" "M-m g N")
-(modalka-define-kbd "g f" "M-m g f")
-(modalka-define-kbd "g F" "M-m g F")
-(modalka-define-kbd "g j" "M-m g j")
-(modalka-define-kbd "g k" "M-m g k")
-(modalka-define-kbd "g q" "M-m g q")
-(modalka-define-kbd "g w" "C-x 3")
-(modalka-define-kbd "g -" "C-x 2")
-(modalka-define-kbd "g @" "M-m g @")
-(modalka-define-kbd "g ;" "M-m g ;")
-(modalka-define-kbd "g :" "M-m g :")
-(modalka-define-kbd "g #" "M-m g #")
-(modalka-define-kbd "g {" "M-m g {")
-(modalka-define-kbd "g }" "M-m g }")
-(modalka-define-kbd "g (" "M-m g (")
-(modalka-define-kbd "g )" "M-m g )")
-(modalka-define-kbd "^" "M-m ^")
-(modalka-define-kbd "&" "M-m &")
-(modalka-define-kbd "g S" "C-j")
-(modalka-define-kbd "g ?" "C-h k")
-
-;; 说明
-
-(which-key-add-key-based-replacements
-  "g"   "global prefix"
-  "g g" "start of file"
-  "g m" "make frame"
-  "g M" "delete frame"
-  "g n" "select frame by name"
-  "g N" "name frame"
-  "g j" "next pdf page"
-  "g k" "previous pdf page"
-  "g f" "file/url at cursor"
-  "g F" "enable follow mode"
-  "g o" "eval elisp"
-  "g O" "eval defun"
-  "g w" "vertical split win"
-  "g W" "horizontal split win"
-  "g S" "split line"
-  "g @" "compose mail"
-  "g #" "list eww histories"
-  "g x" "browse with eww"
-  "g :" "browse with external browser"
-  "g {" "eww back"
-  "g }" "eww forward"
-  "g (" "info previous"
-  "g )" "info next"
-  "^"   "info up"
-  "&"   "info goto"
-  "g q" "format para"
-  "g ?" "find command bound to key")
 
 (modalka-define-kbd "] ]" "C-x n n")
 (modalka-define-kbd "] w" "C-x n w")
@@ -414,9 +359,77 @@
   "SPC q" "quit window"
   "g U"   "simulate C-c C-k")
 
+(modalka-define-kbd "g g" "M-<")
+(modalka-define-kbd "g o" "C-x C-e")
+(modalka-define-kbd "g O" "C-M-x")
+(modalka-define-kbd "g m" "M-m g m")
+(modalka-define-kbd "g M" "M-m g M")
+(modalka-define-kbd "g n" "M-m g n")
+(modalka-define-kbd "g N" "M-m g N")
+(modalka-define-kbd "g f" "M-m g f")
+(modalka-define-kbd "g F" "M-m g F")
+(modalka-define-kbd "g j" "M-m g j")
+(modalka-define-kbd "g k" "M-m g k")
+(modalka-define-kbd "g q" "M-m g q")
+(modalka-define-kbd "g w" "C-x 3")
+(modalka-define-kbd "g -" "C-x 2")
+(modalka-define-kbd "g @" "M-m g @")
+(modalka-define-kbd "g ;" "M-m g ;")
+(modalka-define-kbd "g :" "M-m g :")
+(modalka-define-kbd "g #" "M-m g #")
+(modalka-define-kbd "g {" "M-m g {")
+(modalka-define-kbd "g }" "M-m g }")
+(modalka-define-kbd "g (" "M-m g (")
+(modalka-define-kbd "g )" "M-m g )")
+(modalka-define-kbd "^" "M-m ^")
+(modalka-define-kbd "&" "M-m &")
+(modalka-define-kbd "g S" "C-j")
+(modalka-define-kbd "g ?" "C-h k")
+
+(modalka-define-kbd "g i" "M-g i")
+(modalka-define-kbd "g r" "M-g r")
+;; 说明
+
+(which-key-add-key-based-replacements
+  "g"   "global prefix"
+  "g i" "consult imenu"
+  "g r" "consult ripgrep"
+  "g g" "start of file"
+  "g m" "make frame"
+  "g M" "delete frame"
+  "g n" "select frame by name"
+  "g N" "name frame"
+  "g j" "next pdf page"
+  "g k" "previous pdf page"
+  "g f" "file/url at cursor"
+  "g F" "enable follow mode"
+  "g o" "eval elisp"
+  "g O" "eval defun"
+  "g w" "vertical split win"
+  "g W" "horizontal split win"
+  "g S" "split line"
+  "g @" "compose mail"
+  "g #" "list eww histories"
+  "g x" "browse with eww"
+  "g :" "browse with external browser"
+  "g {" "eww back"
+  "g }" "eww forward"
+  "g (" "info previous"
+  "g )" "info next"
+  "^"   "info up"
+  "&"   "info goto"
+  "g q" "format para"
+  "g ?" "find command bound to key")
+
+;; (modalka-define-kbd "i a" "C-x h")
+
+;; (which-key-add-key-based-replacements
+;;  "i"   "expand prefix"
+;;  "i a" "expand entire buffer")
+
 (use-package flyspell
-:diminish (flyspell-mode . "φ")
-:bind* (("M-m ] s" . flyspell-goto-next-error)))
+  :diminish (flyspell-mode . "φ")
+  :bind* (("M-m ] s" . flyspell-goto-next-error)))
 
 (use-package dired
   :bind (:map dired-mode-map
@@ -430,25 +443,25 @@
   (add-hook 'dired-mode-hook 'dired-hide-details-mode))
 
 (use-package exec-path-from-shell
-:ensure t
-:demand t
-:init
-(setq exec-path-from-shell-check-startup-files nil)
-:config
-;; (exec-path-from-shell-copy-env "PYTHONPATH")
-(when (memq window-system '(mac ns x))
-  (exec-path-from-shell-initialize)))
+  :ensure t
+  :demand t
+  :init
+  (setq exec-path-from-shell-check-startup-files nil)
+  :config
+  ;; (exec-path-from-shell-copy-env "PYTHONPATH")
+  (when (memq window-system '(mac ns x))
+    (exec-path-from-shell-initialize)))
 
 (use-package diminish
-:ensure t
-:demand t
-:diminish (visual-line-mode . "ω")
-:diminish hs-minor-mode
-:diminish abbrev-mode
-:diminish auto-fill-function
-:diminish subword-mode
-:diminish eldoc-mode
-)
+  :ensure t
+  :demand t
+  :diminish (visual-line-mode . "ω")
+  :diminish hs-minor-mode
+  :diminish abbrev-mode
+  :diminish auto-fill-function
+  :diminish subword-mode
+  :diminish eldoc-mode
+  )
 
 (defun sk/diminish-org-indent ()
   (interactive)
@@ -461,12 +474,12 @@
 (add-hook 'auto-revert-mode-hook 'sk/diminish-auto-revert)
 
 (use-package discover-my-major
-:ensure t
-:bind (("C-h C-m" . discover-my-major)
-       ("C-h s-m" . discover-my-mode)))
+  :ensure t
+  :bind (("C-h C-m" . discover-my-major)
+	 ("C-h s-m" . discover-my-mode)))
 
 (use-package hydra
-:ensure t)
+  :ensure t)
 
 (use-package vertico
   :ensure t
@@ -608,6 +621,7 @@
 	      ;; M-g …
 	      ("M-g g" . consult-line)
 	      ("M-g o" . consult-outline)
+	      ("C-s-s" . consult-outline)
 	      ("M-g i" . consult-imenu)
 	      ("M-g I" . consult-info)
 	      ("M-g r" . consult-ripgrep)
