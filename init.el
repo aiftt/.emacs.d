@@ -42,7 +42,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages '(org-contrib))
+ '(package-selected-packages '(modalka restart-emacs org-contrib))
  '(safe-local-variable-values
    '((eval when
 	   (fboundp #'tangle-if-init)
