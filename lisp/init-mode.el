@@ -16,6 +16,7 @@ The test for presence of the car of ELT-CONS is done with `equal'."
   (symbol-value alist-var))
 
 (dolist (elt-cons '(
+                    ("\\.prettierrc" . yaml-mode)
                     ("\\.markdown" . markdown-mode)
                     ("\\.md" . markdown-mode)
                     ("\\.stumpwmrc\\'" . lisp-mode)

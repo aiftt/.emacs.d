@@ -161,6 +161,9 @@
  "C-c m" 'vr/mc-mark
  "C-c u" 'uuidgen
 
+ ;; errors
+ "C-c el" 'lsp-bridge-diagnostic-list
+
  ;; insert
  "C-c iu" 'org-mac-link-get-link
  "C-c is" 'yas-insert-snippet

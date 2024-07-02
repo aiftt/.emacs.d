@@ -139,4 +139,15 @@
 (use-package dumb-jump
   :ensure t)
 
+(defun my-save-hook-function ()
+  (let ((project-root (projectile-project-root))
+        (current-file (buffer-file-name)))
+    (unless (file-exists-p (concat project-root "node_modules/.bin/eslint"))
+      (message "ESLint not found. Skipping command.")
+      (return))
+    (ignore-errors
+      (shell-command (concat project-root "node_modules/.bin/eslint --fix --cache " current-file)))))
+
+(add-hook 'after-save-hook 'my-save-hook-function)
+
 (provide 'init-web)

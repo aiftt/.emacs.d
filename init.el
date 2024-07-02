@@ -55,11 +55,11 @@ named arguments:
 
 ;; --- 包源配置
 (require 'package)
-;; (setq package-archives '(("gnu"   . "http://1.15.88.122/gnu/")
- 			 ;; ("melpa" . "http://1.15.88.122/melpa/")))
+(setq package-archives '(("gnu"   . "http://1.15.88.122/gnu/")
+ 			 ("melpa" . "http://1.15.88.122/melpa/")))
 
-(setq package-archives '(("gnu"   . "http://elpa.emacs-china.org/gnu/")
-                        ("melpa" . "http://elpa.emacs-china.org/melpa/")))
+;; (setq package-archives '(("gnu"   . "http://elpa.emacs-china.org/gnu/")
+                        ;; ("melpa" . "http://elpa.emacs-china.org/melpa/")))
 
 (package-initialize)
 
@@ -80,7 +80,8 @@ named arguments:
 (require 'init-edit)
 (require 'init-hydra)
 (require 'init-snippet)
-(require 'init-lsp)
+;; (require 'init-lsp)
+(require 'init-lsp-mode)
 (require 'init-search)
 (require 'init-org)
 (require 'init-window)
