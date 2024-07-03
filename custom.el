@@ -4,9 +4,10 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(toggle-quotes-plus move-text doom-modeline highlight-symbol corfu embark-consult embark vertico hydra discover-my-major exec-path-from-shell diminish dired modalka restart-emacs org-contrib))
+   '(doom-themes all-the-icons-dired all-the-icons-completion parrot string-inflection emacs-maple-iedit maple-iedit toggle-quotes-plus move-text doom-modeline highlight-symbol corfu embark-consult embark vertico hydra discover-my-major exec-path-from-shell diminish dired modalka restart-emacs org-contrib))
  '(package-vc-selected-packages
-   '((toggle-quotes-plus :vc-backend Git :url "https://www.github.com/jcs-elpa/toggle-quotes-plus")))
+   '((emacs-maple-iedit :vc-backend Git :url "https://www.github.com/honmaple/emacs-maple-iedit")
+     (toggle-quotes-plus :vc-backend Git :url "https://www.github.com/jcs-elpa/toggle-quotes-plus")))
  '(safe-local-variable-values
    '((eval when
 	   (fboundp #'tangle-if-init)

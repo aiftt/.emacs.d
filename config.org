@@ -1,7 +1,8 @@
 * 个人信息
 
 #+BEGIN_SRC emacs-lisp
-  (setq user-full-name "Lee Zhicheng")
+    (setq user-full-name "Lee ZhiCheng"
+	  user-mail-address "ftt.loves@gmail.com")
 #+END_SRC
 
 * 函数定义
@@ -17,6 +18,25 @@
 		(if (stringp dired-directory)
 		    dired-directory
 		  (car dired-directory)))))))
+
+
+
+  (defvar toggle-one-window-window-configuration nil
+    "The window configuration use for `toggle-one-window'.")
+
+  (defun toggle-one-window ()
+    "Toggle between window layout and one window."
+    (interactive)
+    (if (equal (length (cl-remove-if #'window-dedicated-p (window-list))) 1)
+	(if toggle-one-window-window-configuration
+	    (progn
+	      (set-window-configuration toggle-one-window-window-configuration)
+	      (setq toggle-one-window-window-configuration nil))
+	  (message "No other windows exist."))
+      (setq toggle-one-window-window-configuration (current-window-configuration))
+      (delete-other-windows)))
+
+  (global-set-key (kbd "s-o") 'toggle-one-window)
 #+END_SRC
 * 重映射
 #+BEGIN_SRC emacs-lisp
@@ -68,19 +88,6 @@
   (tooltip-mode 0))
 #+END_SRC
 
-** 初始化启动大小
-#+BEGIN_SRC emacs-lisp
-  ;; initial window
-  (setq initial-frame-alist
-	'((width . 102)   ; characters in a line
-	  (height . 54))) ; number of lines
-
-  ;; sebsequent frame
-  (setq default-frame-alist
-	'((width . 100)   ; characters in a line
-	  (height . 52))) ; number of lines
-#+END_SRC
-
 ** 光标设置
 
 #+BEGIN_SRC emacs-lisp
@@ -101,157 +108,136 @@
 
 * 修改默认配置
 
-** 基础设置
 #+BEGIN_SRC emacs-lisp
-(column-number-mode t)
-#+END_SRC
-** meta -> option
-#+BEGIN_SRC emacs-lisp
-;;  (when (eq system-type 'darwin)
-;;  (setq mac-option-modifier 'meta))
-#+END_SRC
-** 备份
-
-#+BEGIN_SRC emacs-lisp
+  ;; - 选中粘贴时能覆盖选中的内容
+  (delete-selection-mode 1)
+  ;; - 高亮当前行
+  (global-hl-line-mode 1)
+  (column-number-mode t)
+  ;; 启动全屏
+  (set-frame-parameter (selected-frame) 'fullscreen 'maximized)
+  ;; - 交换 meta -> option
+  ;;  (when (eq system-type 'darwin)
+  ;;  (setq mac-option-modifier 'meta))
+  ;; - 备份
   ;; 统一备份到临时文件目录 /tmp/.saves
-(setq backup-by-copying t      ; don't clobber symlinks
-      backup-directory-alist
-      '(("." . "/tmp/.saves"))    ; don't litter my fs tree
-      delete-old-versions t
-      kept-new-versions 6
-      kept-old-versions 2
-      version-control t)       ; use versioned backups
-#+END_SRC
-
-** 自动保存
-
-#+BEGIN_SRC emacs-lisp
+  (setq backup-by-copying t      ; don't clobber symlinks
+	backup-directory-alist
+	'(("." . "/tmp/.saves"))    ; don't litter my fs tree
+	delete-old-versions t
+	kept-new-versions 6
+	kept-old-versions 2
+	version-control t)       ; use versioned backups
+  ;; - 自动保存
   (setq auto-save-file-name-transforms `((".*" ,temporary-file-directory t))
-      create-lockfiles nil)
-#+END_SRC
-
-** 文件编码
-
-#+BEGIN_SRC emacs-lisp
+	create-lockfiles nil)
+  ;; - 文件编码
   (prefer-coding-system 'utf-8)
-(setq-default buffer-file-coding-system 'utf-8-auto-unix)
-#+END_SRC
-
-** 错误信息
-
-#+BEGIN_SRC emacs-lisp
+  (setq-default buffer-file-coding-system 'utf-8-auto-unix)
+  ;; - 错误信息
   (setq visible-bell nil)
-(setq ring-bell-function 'ignore)
-#+END_SRC
+  (setq ring-bell-function 'ignore)
 
-** 截断行
-
-#+BEGIN_SRC emacs-lisp
+  ;; - 截断行
   (setq-default truncate-lines t)
-#+END_SRC
 
-** 超大文件警告
-
-#+BEGIN_SRC emacs-lisp
+  ;; - 超大文件警告
   (setq large-file-warning-threshold (* 15 1024 1024))
-#+END_SRC
 
-** yes or no ?
-
-#+BEGIN_SRC emacs-lisp
+  ;; - yes or no
   (fset 'yes-or-no-p 'y-or-n-p)
-#+END_SRC
-
-** 单词自动修正
-
-#+BEGIN_SRC emacs-lisp
-(setq save-abbrevs 'silently)
-(setq-default abbrev-mode t)
-#+END_SRC
-
-** ediff
-
-#+BEGIN_SRC emacs-lisp
+  ;; - 单词自动修正
+  (setq save-abbrevs 'silently)
+  ;; - ediff
+  (setq-default abbrev-mode t)
   (setq ediff-window-setup-function 'ediff-setup-windows-plain
-      ediff-split-window-function 'split-window-horizontally)
-#+END_SRC
+	ediff-split-window-function 'split-window-horizontally)
 
-** tramp 远程
-
-默认使用 ssh。
-
-#+BEGIN_SRC emacs-lisp
+  ;; - ssh
   (setq tramp-default-method "ssh"
-      tramp-backup-directory-alist backup-directory-alist
-      tramp-ssh-controlmaster-options "ssh")
-#+END_SRC
+	tramp-backup-directory-alist backup-directory-alist
+	tramp-ssh-controlmaster-options "ssh")
 
-** 驼峰单词里移动
-
-#+BEGIN_SRC emacs-lisp
+  ;; - 驼峰单词里移动
   (subword-mode)
-#+END_SRC
-
-** 段落
-
-默认认为两个空格开头为一个段落，关闭此选项。
-
-#+BEGIN_SRC emacs-lisp
+  ;; - 默认认为两个空格开头为一个段落，关闭此选项
   (setq sentence-end-double-space nil)
-#+END_SRC
-
-** 更好的通配符搜索
-
-#+BEGIN_SRC emacs-lisp
+  ;; - 更好的通配符搜索
   (setq search-whitespace-regexp ".*?")
-#+END_SRC
-
-** 历史记录
-
-#+BEGIN_SRC emacs-lisp
-(savehist-mode)
-#+END_SRC
-
-** 聚焦区域
-
-[[https://www.gnu.org/software/emacs/manual/html_node/emacs/Narrowing.html][文档描述]], 可以让你聚焦与光标当前(或标记内容)所属的区域，隐藏其他内容，专注编辑或展示该区域内容。
-
-~C-x n n~: 开启
-
-~C-x n w~: 关闭
-
-#+BEGIN_SRC emacs-lisp
+  ;; - 历史记录
+  (savehist-mode)
+  ;; - C-x n n 开启, C-x n w 关闭
   (put 'narrow-to-region 'disabled nil)
-#+END_SRC
-
-** PDF 预览
-
-#+BEGIN_SRC emacs-lisp
+  ;; - PDF 预览
   (setq doc-view-continuous t)
-#+END_SRC
-
-** 窗口管理
-
-#+BEGIN_SRC emacs-lisp
+  ;; - 窗口管理
   (when (fboundp 'winner-mode)
-  (winner-mode 1))
-#+END_SRC
+    (winner-mode 1))
 
-** 最近文件
-
-#+BEGIN_SRC emacs-lisp
+  ;; - 最近文件
   (setq recentf-max-saved-items 1000
-      recentf-exclude '("/tmp/" "/ssh:"))
-(recentf-mode)
-#+END_SRC
+	recentf-exclude '("/tmp/" "/ssh:"))
+  (recentf-mode)
 
-** 全屏设置
+  ;; - 在 mac 上，当进入一个新的工作空间时，会默认全屏
+  (setq ns-use-native-fullscreen nil)
 
-在 mac 上，当进入一个新的工作空间时，会默认全屏？
+  ;; - 不生成备份文件
+  (setq make-backup-files nil)
+  #+END_SRC
+
+
+优化配置项：
 
 #+BEGIN_SRC emacs-lisp
-  (setq ns-use-native-fullscreen nil)
+  (setq
+   ;; 缩短更新 screen 的时间
+   idle-update-delay 0.1
+   ;; 加速启动
+   auto-mode-case-fold nil
+   ;; 加快快捷键提示的速度
+   process-adaptive-read-buffering nil
+   ;; 提升 IO 性能
+   echo-keystrokes 0.1
+   ;; 增加单次读取进程输出的数据量（缺省 4KB)
+   read-process-output-max (* 1024 1024)
+
+   ;; 性能优化
+   gc-cons-threshold most-positive-fixnum
+
+   ;; 括号匹配显示但不是烦人的跳到另一个括号
+   show-paren-style 'parentheses
+   ;; 当插入右括号时显示匹配的左括号
+   blink-matching-paren t
+
+   ;; 不自动添加换行符到末尾, 有些情况会出现错误
+   require-final-newline nil
+
+   ;; 比较窗口设置在同一个 frame 里
+   ediff-window-setup-function (quote ediff-setup-windows-plain)
+
+   ;; 改变 *scratch* buffer 的模式
+   initial-major-mode 'emacs-lisp-mode
+   initial-buffer-choice t
+
+
+   )
 #+END_SRC
+
+环境变量路径：
+
+#+BEGIN_SRC emacs-lisp
+  ;; 直接将环境变量拷贝到 ~/.path 中
+  ;; sh -c 'printf "%s" "$PATH"' > ~/.path
+  (condition-case err
+      (let ((path (with-temp-buffer
+		    (insert-file-contents-literally "~/.path")
+		    (buffer-string))))
+	(setenv "PATH" path)
+	(setq exec-path (append (parse-colon-path path) (list exec-directory))))
+    (error (warn "%s" (error-message-string err))))
+#+END_SRC
+
 * 一些有用的库(前置安装)
 
 #+BEGIN_SRC emacs-lisp
@@ -599,8 +585,6 @@
   (modalka-define-kbd "g }" "M-m g }")
   (modalka-define-kbd "g (" "M-m g (")
   (modalka-define-kbd "g )" "M-m g )")
-  (modalka-define-kbd "^" "M-m ^")
-  (modalka-define-kbd "&" "M-m &")
   (modalka-define-kbd "g S" "C-j")
   (modalka-define-kbd "g ?" "C-h k")
 
@@ -629,7 +613,7 @@
     "g o" "eval elisp"
     "g O" "eval defun"
     "g w" "vertical split win"
-    "g W" "horizontal split win"
+    "g -" "horizontal split win"
     "g S" "split line"
     "g @" "compose mail"
     "g #" "list eww histories"
@@ -639,8 +623,6 @@
     "g }" "eww forward"
     "g (" "info previous"
     "g )" "info next"
-    "^"   "info up"
-    "&"   "info goto"
     "g q" "format para"
     "g ?" "find command bound to key")
 #+END_SRC
@@ -686,13 +668,10 @@
 #+BEGIN_SRC emacs-lisp
   (use-package exec-path-from-shell
     :ensure t
-    :demand t
-    :init
-    (setq exec-path-from-shell-check-startup-files nil)
     :config
-    ;; (exec-path-from-shell-copy-env "PYTHONPATH")
-    (when (memq window-system '(mac ns x))
-      (exec-path-from-shell-initialize)))
+    (setq exec-path-from-shell-variables '("PATH" "MANPATH" "LSP_USE_PLISTS" "NODE_PATH")
+	  exec-path-from-shell-arguments '("-l"))
+    (exec-path-from-shell-initialize))
 #+END_SRC
 * 状态栏
 
@@ -748,6 +727,15 @@
 #+END_SRC
 
 * 自动补全
+** all-the-icons
+#+BEGIN_SRC emacs-lisp
+  (use-package all-the-icons-completion
+    :ensure t
+    :after (marginalia all-the-icons)
+    :hook (marginalia-mode . all-the-icons-completion-marginalia-setup)
+    :init
+    (all-the-icons-completion-mode))
+  #+END_SRC
 ** vertico
 
 #+BEGIN_SRC emacs-lisp
@@ -1111,11 +1099,139 @@
   (global-set-key (kbd "C-=") 'er/expand-region)
 #+END_SRC
 
-* move-text
+* hydra
+#+BEGIN_SRC emacs-lisp
+  (use-package hydra :ensure t)
+
+
+#+END_SRC
+* 文本编辑
+** iedit
+#+BEGIN_SRC emacs-lisp
+  (use-package maple-iedit
+    :init (slot/vc-install :repo "honmaple/emacs-maple-iedit")
+    :commands (maple-iedit-match-all maple-iedit-match-next maple-iedit-match-previous)
+    :config
+    (setq maple-iedit-ignore-case t)
+
+    (defhydra maple/iedit ()
+      ("n" maple-iedit-match-next "next")
+      ("t" maple-iedit-skip-and-match-next "skip and next")
+      ("T" maple-iedit-skip-and-match-previous "skip and previous")
+      ("p" maple-iedit-match-previous "prev"))
+    :bind* (("M-m e i" . maple/iedit/body)))
+
+  (modalka-define-kbd "C-," "M-m e i")
+
+  (which-key-add-key-based-replacements
+    "C-," "iedit"
+    )
+
+#+END_SRC
+** move-text
 #+BEGIN_SRC emacs-lisp
   (use-package move-text :ensure t)
   (global-set-key (kbd "s-<") 'move-text-up)
   (global-set-key (kbd "s->") 'move-text-down)
+#+END_SRC
+
+** string-inflection
+
+#+BEGIN_SRC emacs-lisp
+  (use-package string-inflection :ensure t)
+  (global-set-key (kbd "s-i") 'my-string-inflection-cycle-auto)
+
+  (defun my-string-inflection-cycle-auto ()
+    "switching by major-mode"
+    (interactive)
+    (cond
+     ;; for emacs-lisp-mode
+     ((eq major-mode 'emacs-lisp-mode)
+      (string-inflection-all-cycle))
+     ;; for python
+     ((eq major-mode 'python-mode)
+      (string-inflection-python-style-cycle))
+     ;; for java
+     ((eq major-mode 'java-mode)
+      (string-inflection-java-style-cycle))
+     ;; for elixir
+     ((eq major-mode 'elixir-mode)
+      (string-inflection-elixir-style-cycle))
+     (t
+      ;; default
+      (string-inflection-ruby-style-cycle))))
+#+END_SRC
+
+
+** parrot
+
+#+BEGIN_SRC emacs-lisp
+  (use-package parrot
+    :ensure t
+    :config
+    (parrot-mode -1)
+    (setq parrot-rotate-dict
+	  '(
+	    (:rot ("alpha" "beta") :caps t :lower nil)
+	    ;; => rotations are "Alpha" "Beta"
+
+	    (:rot ("snek" "snake" "stawp"))
+	    ;; => rotations are "snek" "snake" "stawp"
+
+	    (:rot ("yes" "no") :caps t :upcase t)
+	    ;; => rotations are "yes" "no", "Yes" "No", "YES" "NO"
+
+	    (:rot ("&" "|"))
+	    ;; => rotations are "&" "|"
+
+	    ;; default dictionary starts here ('v')
+	    (:rot ("begin" "end") :caps t :upcase t)
+	    (:rot ("enable" "disable") :caps t :upcase t)
+	    (:rot ("enter" "exit") :caps t :upcase t)
+	    (:rot ("forward" "backward") :caps t :upcase t)
+	    (:rot ("front" "rear" "back") :caps t :upcase t)
+	    ;; (:rot ("get" "set") :caps t :upcase t)
+	    (:rot ("high" "low") :caps t :upcase t)
+	    (:rot ("in" "out") :caps t :upcase t)
+	    (:rot ("left" "right") :caps t :upcase t)
+	    (:rot ("min" "max") :caps t :upcase t)
+	    (:rot ("on" "off") :caps t :upcase t)
+	    (:rot ("prev" "next"))
+	    (:rot ("start" "stop") :caps t :upcase t)
+	    (:rot ("true" "false") :caps t :upcase t)
+	    (:rot ("&&" "||"))
+	    (:rot ("==" "!="))
+	    (:rot ("." "->"))
+	    (:rot ("if" "else" "elif"))
+	    (:rot ("ifdef" "ifndef"))
+	    (:rot ("int8_t" "int16_t" "int32_t" "int64_t"))
+	    (:rot ("uint8_t" "uint16_t" "uint32_t" "uint64_t"))
+	    (:rot ("1" "2" "3" "4" "5" "6" "7" "8" "9" "10"))
+	    (:rot ("1st" "2nd" "3rd" "4th" "5th" "6th" "7th" "8th" "9th" "10th"))
+
+	    ;; mine
+	    (:rot ("let" "const" "var"))
+	    (:rot ("sm" "md" "lg" "xl" "2xl" "3xl"))
+	    (:rot ("aspect-auto" "aspect-square" "aspect-video"))
+	    (:rot ("break-after-auto" "break-after-avoid" "break-after-all" "break-after-avoid-page" "break-after-page" "break-after-left" "break-after-right" "break-after-column"))
+	    (:rot ("box-border" "box-content"))
+	    (:rot ("block" "inline-block" "inline" "flex" "inline-flex" "table" "inline-table" "table-caption" "table-cell" "table-column" "table-column-group" "table-footer-group" "table-header-group" "table-row-group" "table-row" "flow-root" "grid" "inline-grid" "contents" "list-item" "hidden"))
+	    (:rot ("float-right" "float-left" "float-none"))
+	    (:rot ("clear-left" "clear-right" "clear-both" "clear-none"))
+	    (:rot ("object-contain" "object-cover" "object-fill" "object-none" "object-scale-down"))
+	    (:rot ("object-bottom" "object-center" "object-left" "object-left-bottom" "object-left-top" "object-right" "object-right-bottom" "object-right-top" "object-top"))
+	    (:rot ("overflow-auto" "overflow-hidden" "overflow-clip" "overflow-visible" "overflow-scroll"))
+	    (:rot ("static" "fixed" "absolute" "relative" "sticky"))
+	    (:rot ("visible" "invisible" "collapse"))
+	    (:rot ("flex-row" "flex-row-reverse" "flex-col" "flex-col-reverse"))
+	    (:rot ("flex-wrap" "flex-wrap-reverse" "flex-nowrap"))
+	    (:rot ("flex-1" "flex-auto" "flex-initial" "flex-none"))
+	    (:rot ("grow" "grow-0"))
+	    (:rot ("shrink" "shrink-0"))
+	    (:rot ("get" "post" "set") :caps t :upcase t)
+	    )))
+
+  (global-set-key (kbd "s-I") 'parrot-rotate-next-word-at-point)
 #+END_SRC
 * 切换引号
 
@@ -1133,9 +1249,49 @@
 
   (which-key-add-key-based-replacements
     "C-'" "toggle quotes"
-  )
+    )
 #+END_SRC
-* mode line
+* 主题配置
+** all-the-icons
+#+BEGIN_SRC emacs-lisp
+  (use-package all-the-icons
+    :ensure t)
+  (use-package all-the-icons-dired
+    :ensure t
+    :hook ((dired-mode . all-the-icons-dired-mode)))
+#+END_SRC
+** doom theme
+#+BEGIN_SRC emacs-lisp
+  ;; (use-package doom-themes
+  ;;   :ensure t
+  ;;   :config
+  ;;   ;; Global settings (defaults)
+  ;;   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+  ;; 	doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  ;;   (load-theme 'doom-one t)
+
+  ;; Enable flashing mode-line on errors
+  ;;  (doom-themes-visual-bell-config)
+  ;; Enable custom neotree theme (all-the-icons must be installed!)
+  ;;  (doom-themes-neotree-config)
+  ;; or for treemacs users
+  ;;  (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
+  ;;  (doom-themes-treemacs-config)
+  ;; Corrects (and improves) org-mode's native fontification.
+  ;; (doom-themes-org-config))
+
+  ;; ;; Must be used *after* the theme is loaded
+  ;; (custom-set-faces
+  ;;  ;; `(mode-line ((t (:background ,(doom-color 'dark-violet)))))
+  ;;  `(font-lock-comment-face ((t (:foreground ,(doom-color 'base6))))))
+  ;; 设置默认字体为等宽字体
+  ;; (set-face-attribute 'default nil
+  ;; 		    :family "Fira Code"
+  ;; 		    :height 130
+  ;; 		    :weight 'normal
+  ;; 		    :width 'normal)
+#+END_SRC
+** mode line
 
 #+BEGIN_SRC emacs-lisp
   (use-package doom-modeline
@@ -1180,7 +1336,101 @@
    (lambda (result)
      (message "Init tangling completed: %s" result))))
 #+END_SRC
+* 按键绑定表
 
+** 单键
+| modalka   | normal        | function                            |
+|-----------+---------------+-------------------------------------|
+| ~0...9~   | ~C-0...9~     | -                                   |
+| ~o~       | -             | exit modalka and newline            |
+| ~i~       | -             | exit modalka and insert             |
+| ~c~       | ~M-m g c~     | upcase word or region               |
+| ~C~       | ~M-m g d~     | downcase word or region             |
+| ~h/j/k/l~ | ~C-b/n/p/f~   | move cursor left/down/up/right      |
+| ~e/b~     | ~M-f/b~       | move to word end/begin              |
+| ~{}~      | ~M-{}~        | move to begin/end of paragraph      |
+| ~0$~      | ~C-a/e~       | move to begin/end of line           |
+| ~G~       | ~M->~         | move to file end                    |
+| ~y~       | ~M-w~         | yank                                |
+| ~p~       | ~C-y~         | paste                               |
+| ~P~       | ~M-y~         | paste from clipboard                |
+| ~x~       | ~C-d~         | delete char                         |
+| ~D~       | ~C-k~         | delete line from current position   |
+| ~z~       | ~C-l~         | locate to center                    |
+| ~!~       | ~M-&~         | execute command async               |
+| ~J/K~     | ~C/M-v~       | turn page down/up                   |
+| ~()~      | ~M-a/e~       | move to sentence begin/end          |
+| ~/~       | ~C-s~         | search line in buffer               |
+| ~E~       | ~C-g~         | quit mode                           |
+| ~d~       | ~C-w~         | delete region                       |
+| ~w~       | ~C-x o~       | switch window                       |
+| ~B~       | ~C-x <left>~  | previous buffer                     |
+| ~N~       | ~C-x <right>~ | next buffer                         |
+| ~u~       | ~C-x u~       | rollback                            |
+| ~H/L~     | ~C-x ><~      | scroll to line start/end            |
+| ~Z~       | ~C-x 1~       | close other windows                 |
+| ~q/Q~     | ~C-x ()~      | macro on/off                        |
+| ~v~       | ~C-SPC~       | mark start                          |
+| ~?~       | ~M-m ?~       | which key                           |
+| ~=~       | ~M-m =~       | indent region                       |
+| ~X~       | ~C-x C-x~     | exchange cursor between mark region |
+| ~+~       | ~C-x r m~     | add bookmark                        |
+| ~'~       | ~C-x r b~     | visit bookmark                      |
+| ~\~       | ~C-c C-c~     | execute codeblock                   |
+| ~,~       | ~C-x M-r~     | repeat vertico search result        |
+| ~vline~   | ~M-m e l~     | duplicate line                      |
+| ~`~       | ~M-m e i~     | iedit                               |
+|           |               |                                     |
+** 组合键
+| modalka    | normal      | function                     |
+|------------+-------------+------------------------------|
+| ~:q~       | ~C-x C-c~   | quit emacs                   |
+| ~:t~       | ~C-x M-c~   | emacs init time              |
+|------------+-------------+------------------------------|
+| ~]]~       | ~C-x n n~   | focus line                   |
+| ~]w~       | ~C-x n w~   | exit focus line              |
+| ~]s~       | ~M-m ] s~   | next spell error             |
+|------------+-------------+------------------------------|
+| ~SPC SPC~  | ~M-x~       | execute command              |
+| ~SPC a~    | ~C-x b~     | switch buffer                |
+| ~SPC k~    | ~C-x k~     | kill buffer                  |
+| ~SPC g~    | ~M-g g~     | goto line                    |
+| ~SPC d~    | ~C-x d~     | dired                        |
+| ~SPC q~    | ~C-x 0~     | quit window                  |
+| ~SPC f~    | ~C-x C-f~   | find file                    |
+| ~SPC w~    | ~C-x C-s~   | save buffer                  |
+| ~SPC c~    | ~M-m SPC c~ | load theme                   |
+| ~SPC R~    | ~M-m SPC R~ | locate                       |
+| ~SPC ?~    | ~M-m SPC ?~ | describe bindings            |
+| ~SPC .~    | ~M-SPC~     | just one space               |
+|------------+-------------+------------------------------|
+| ~g i~      | ~M-g i~     | imenu                        |
+| ~g r~      | ~M-g r~     | consult ripgrep              |
+| ~g g~      | ~M-<~       | goto start of buffer         |
+| ~g o~      | ~C-x C-e~   | eval elisp                   |
+| ~g O~      | ~C-M-x~     | eval defun                   |
+| ~g m~      | ~M-m g m~   | make frame                   |
+| ~g M~      | ~M-m g M~   | delete frame                 |
+| ~g n~      | ~M-m g n~   | select frame by name         |
+| ~g N~      | ~M-m g N~   | name frame                   |
+| ~g f~      | ~M-m g f~   | file/url at cursor           |
+| ~g l~      | ~M-g M-g~   | goto line                    |
+| ~g j~      | ~M-m g j~   | next pdf page                |
+| ~g k~      | ~M-m g k~   | prev pdf page                |
+| ~g q~      | ~M-m g q~   | format paragraph             |
+| ~g w~      | ~C-x 3~     | vertical split window        |
+| ~g -~      | ~C-x 2~     | horizaontal split window     |
+| ~g S~      | ~C-j~       | split line                   |
+| ~g @~      | ~M-m g @~   | compose mail                 |
+| ~g ;~      | ~M-m g ;~   | browse with external browser |
+| ~g {}~     | ~M-m g {}~  | eww back/forward             |
+| ~g ()~     | ~M-m g ()~  | info prev/next               |
+| ~g ?~      | ~~          | find bound key               |
+|------------+-------------+------------------------------|
+| s, Command |             |                              |
+| -          | ~s i~       | string inflection            |
+| -          | ~s I~       | parrot, switch word          |
+| -          | ~s o~       | toggle one window            |
 
 # Local Variables:
 # eval: (when (fboundp #'tangle-if-init) (add-hook 'after-save-hook #'tangle-if-init))

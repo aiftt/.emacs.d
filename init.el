@@ -7,18 +7,33 @@
 ;;; Code:
 
 ;; 提高垃圾回收阀值500MB
+
 (setq gc-cons-threshold (* 500 1024 1024))
+
+(cl-defun slot/vc-install (&key (fetcher "github") repo name rev backend)
+  "Install a package from a remote if it's not already installed.
+This is a thin wrapper around `package-vc-install' in order to
+make non-interactive usage more ergonomic.  Takes the following
+named arguments:
+
+- FETCHER the remote where to get the package (e.g., \"gitlab\").
+  If omitted, this defaults to \"github\".
+
+- REPO should be the name of the repository (e.g.,
+  \"slotThe/arXiv-citation\".
+
+- NAME, REV, and BACKEND are as in `package-vc-install' (which
+  see)."
+  (let* ((url (format "https://www.%s.com/%s" fetcher repo))
+         (iname (when name (intern name)))
+         (pac-name (or iname (intern (file-name-base repo)))))
+    (unless (package-installed-p pac-name)
+      (package-vc-install url iname rev backend))))
 
 ;; 包管理器初始化 
 (require 'package)
-(when (>= emacs-major-version 24)
-  (require 'package)
-  (add-to-list 'package-archives '("melpa" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/") t)
-;;   (add-to-list 'package-archives '("org" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/org/") t)
-  )
-(when (< emacs-major-version 24)
-  ;; For important compatibility libraries like cl-lib
-  (add-to-list 'package-archives '("gnu" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")))
+(setq package-archives '(("gnu"   . "http://mirrors.cloud.tencent.com/elpa/gnu/")
+                         ("melpa" . "http://mirrors.cloud.tencent.com/elpa/melpa/")))
 (package-initialize)
 
 ;; Make sure Org is installed

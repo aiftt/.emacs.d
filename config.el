@@ -1,4 +1,5 @@
-(setq user-full-name "Lee Zhicheng")
+(setq user-full-name "Lee ZhiCheng"
+      user-mail-address "ftt.loves@gmail.com")
 
 (defun vifon/buffer-file-or-directory-name (buf)
   "The file BUF is visiting, works also if it's a `dired' buffer."
@@ -10,6 +11,25 @@
 	      (if (stringp dired-directory)
 		  dired-directory
 		(car dired-directory)))))))
+
+
+
+(defvar toggle-one-window-window-configuration nil
+  "The window configuration use for `toggle-one-window'.")
+
+(defun toggle-one-window ()
+  "Toggle between window layout and one window."
+  (interactive)
+  (if (equal (length (cl-remove-if #'window-dedicated-p (window-list))) 1)
+      (if toggle-one-window-window-configuration
+	  (progn
+	    (set-window-configuration toggle-one-window-window-configuration)
+	    (setq toggle-one-window-window-configuration nil))
+	(message "No other windows exist."))
+    (setq toggle-one-window-window-configuration (current-window-configuration))
+    (delete-other-windows)))
+
+(global-set-key (kbd "s-o") 'toggle-one-window)
 
 (bind-key [remap just-one-space] #'cycle-spacing)
 (bind-key [remap upcase-word] #'upcase-dwim)
@@ -41,16 +61,6 @@
 (scroll-bar-mode 0)
 (tooltip-mode 0))
 
-;; initial window
-(setq initial-frame-alist
-      '((width . 102)   ; characters in a line
-	(height . 54))) ; number of lines
-
-;; sebsequent frame
-(setq default-frame-alist
-      '((width . 100)   ; characters in a line
-	(height . 52))) ; number of lines
-
 ;; Bar cursor
 (setq-default cursor-type '(bar . 1))
 ;; 光标不闪烁
@@ -61,11 +71,17 @@
     initial-major-mode 'fundamental-mode
     inhibit-splash-screen t)
 
+;; - 选中粘贴时能覆盖选中的内容
+(delete-selection-mode 1)
+;; - 高亮当前行
+(global-hl-line-mode 1)
 (column-number-mode t)
-
+;; 启动全屏
+(set-frame-parameter (selected-frame) 'fullscreen 'maximized)
+;; - 交换 meta -> option
 ;;  (when (eq system-type 'darwin)
 ;;  (setq mac-option-modifier 'meta))
-
+;; - 备份
 ;; 统一备份到临时文件目录 /tmp/.saves
 (setq backup-by-copying t      ; don't clobber symlinks
       backup-directory-alist
@@ -74,52 +90,105 @@
       kept-new-versions 6
       kept-old-versions 2
       version-control t)       ; use versioned backups
-
+;; - 自动保存
 (setq auto-save-file-name-transforms `((".*" ,temporary-file-directory t))
-    create-lockfiles nil)
-
+      create-lockfiles nil)
+;; - 文件编码
 (prefer-coding-system 'utf-8)
 (setq-default buffer-file-coding-system 'utf-8-auto-unix)
-
+;; - 错误信息
 (setq visible-bell nil)
 (setq ring-bell-function 'ignore)
 
+;; - 截断行
 (setq-default truncate-lines t)
 
+;; - 超大文件警告
 (setq large-file-warning-threshold (* 15 1024 1024))
 
+;; - yes or no
 (fset 'yes-or-no-p 'y-or-n-p)
-
+;; - 单词自动修正
 (setq save-abbrevs 'silently)
+;; - ediff
 (setq-default abbrev-mode t)
-
 (setq ediff-window-setup-function 'ediff-setup-windows-plain
-    ediff-split-window-function 'split-window-horizontally)
+      ediff-split-window-function 'split-window-horizontally)
 
+;; - ssh
 (setq tramp-default-method "ssh"
-    tramp-backup-directory-alist backup-directory-alist
-    tramp-ssh-controlmaster-options "ssh")
+      tramp-backup-directory-alist backup-directory-alist
+      tramp-ssh-controlmaster-options "ssh")
 
+;; - 驼峰单词里移动
 (subword-mode)
-
+;; - 默认认为两个空格开头为一个段落，关闭此选项
 (setq sentence-end-double-space nil)
-
+;; - 更好的通配符搜索
 (setq search-whitespace-regexp ".*?")
-
+;; - 历史记录
 (savehist-mode)
-
+;; - C-x n n 开启, C-x n w 关闭
 (put 'narrow-to-region 'disabled nil)
-
+;; - PDF 预览
 (setq doc-view-continuous t)
-
+;; - 窗口管理
 (when (fboundp 'winner-mode)
-(winner-mode 1))
+  (winner-mode 1))
 
+;; - 最近文件
 (setq recentf-max-saved-items 1000
       recentf-exclude '("/tmp/" "/ssh:"))
 (recentf-mode)
 
+;; - 在 mac 上，当进入一个新的工作空间时，会默认全屏
 (setq ns-use-native-fullscreen nil)
+
+;; - 不生成备份文件
+(setq make-backup-files nil)
+
+(setq
+ ;; 缩短更新 screen 的时间
+ idle-update-delay 0.1
+ ;; 加速启动
+ auto-mode-case-fold nil
+ ;; 加快快捷键提示的速度
+ process-adaptive-read-buffering nil
+ ;; 提升 IO 性能
+ echo-keystrokes 0.1
+ ;; 增加单次读取进程输出的数据量（缺省 4KB)
+ read-process-output-max (* 1024 1024)
+
+ ;; 性能优化
+ gc-cons-threshold most-positive-fixnum
+
+ ;; 括号匹配显示但不是烦人的跳到另一个括号
+ show-paren-style 'parentheses
+ ;; 当插入右括号时显示匹配的左括号
+ blink-matching-paren t
+
+ ;; 不自动添加换行符到末尾, 有些情况会出现错误
+ require-final-newline nil
+
+ ;; 比较窗口设置在同一个 frame 里
+ ediff-window-setup-function (quote ediff-setup-windows-plain)
+
+ ;; 改变 *scratch* buffer 的模式
+ initial-major-mode 'emacs-lisp-mode
+ initial-buffer-choice t
+
+
+ )
+
+;; 直接将环境变量拷贝到 ~/.path 中
+;; sh -c 'printf "%s" "$PATH"' > ~/.path
+(condition-case err
+    (let ((path (with-temp-buffer
+		  (insert-file-contents-literally "~/.path")
+		  (buffer-string))))
+      (setenv "PATH" path)
+      (setq exec-path (append (parse-colon-path path) (list exec-directory))))
+  (error (warn "%s" (error-message-string err))))
 
 (use-package async
   :ensure t
@@ -429,8 +498,6 @@
 (modalka-define-kbd "g }" "M-m g }")
 (modalka-define-kbd "g (" "M-m g (")
 (modalka-define-kbd "g )" "M-m g )")
-(modalka-define-kbd "^" "M-m ^")
-(modalka-define-kbd "&" "M-m &")
 (modalka-define-kbd "g S" "C-j")
 (modalka-define-kbd "g ?" "C-h k")
 
@@ -459,7 +526,7 @@
   "g o" "eval elisp"
   "g O" "eval defun"
   "g w" "vertical split win"
-  "g W" "horizontal split win"
+  "g -" "horizontal split win"
   "g S" "split line"
   "g @" "compose mail"
   "g #" "list eww histories"
@@ -469,8 +536,6 @@
   "g }" "eww forward"
   "g (" "info previous"
   "g )" "info next"
-  "^"   "info up"
-  "&"   "info goto"
   "g q" "format para"
   "g ?" "find command bound to key")
 
@@ -497,13 +562,10 @@
 
 (use-package exec-path-from-shell
   :ensure t
-  :demand t
-  :init
-  (setq exec-path-from-shell-check-startup-files nil)
   :config
-  ;; (exec-path-from-shell-copy-env "PYTHONPATH")
-  (when (memq window-system '(mac ns x))
-    (exec-path-from-shell-initialize)))
+  (setq exec-path-from-shell-variables '("PATH" "MANPATH" "LSP_USE_PLISTS" "NODE_PATH")
+	exec-path-from-shell-arguments '("-l"))
+  (exec-path-from-shell-initialize))
 
 (use-package diminish
   :ensure t
@@ -533,6 +595,13 @@
 
 (use-package hydra
   :ensure t)
+
+(use-package all-the-icons-completion
+  :ensure t
+  :after (marginalia all-the-icons)
+  :hook (marginalia-mode . all-the-icons-completion-marginalia-setup)
+  :init
+  (all-the-icons-completion-mode))
 
 (use-package vertico
   :ensure t
@@ -863,9 +932,120 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
   :ensure t)
 (global-set-key (kbd "C-=") 'er/expand-region)
 
+(use-package hydra :ensure t)
+
+(use-package maple-iedit
+  :init (slot/vc-install :repo "honmaple/emacs-maple-iedit")
+  :commands (maple-iedit-match-all maple-iedit-match-next maple-iedit-match-previous)
+  :config
+  (setq maple-iedit-ignore-case t)
+
+  (defhydra maple/iedit ()
+    ("n" maple-iedit-match-next "next")
+    ("t" maple-iedit-skip-and-match-next "skip and next")
+    ("T" maple-iedit-skip-and-match-previous "skip and previous")
+    ("p" maple-iedit-match-previous "prev"))
+  :bind* (("M-m e i" . maple/iedit/body)))
+
+(modalka-define-kbd "C-," "M-m e i")
+
+(which-key-add-key-based-replacements
+  "C-," "iedit"
+  )
+
 (use-package move-text :ensure t)
 (global-set-key (kbd "s-<") 'move-text-up)
 (global-set-key (kbd "s->") 'move-text-down)
+
+(use-package string-inflection :ensure t)
+(global-set-key (kbd "s-i") 'my-string-inflection-cycle-auto)
+
+(defun my-string-inflection-cycle-auto ()
+  "switching by major-mode"
+  (interactive)
+  (cond
+   ;; for emacs-lisp-mode
+   ((eq major-mode 'emacs-lisp-mode)
+    (string-inflection-all-cycle))
+   ;; for python
+   ((eq major-mode 'python-mode)
+    (string-inflection-python-style-cycle))
+   ;; for java
+   ((eq major-mode 'java-mode)
+    (string-inflection-java-style-cycle))
+   ;; for elixir
+   ((eq major-mode 'elixir-mode)
+    (string-inflection-elixir-style-cycle))
+   (t
+    ;; default
+    (string-inflection-ruby-style-cycle))))
+
+(use-package parrot
+  :ensure t
+  :config
+  (parrot-mode -1)
+  (setq parrot-rotate-dict
+	'(
+	  (:rot ("alpha" "beta") :caps t :lower nil)
+	  ;; => rotations are "Alpha" "Beta"
+
+	  (:rot ("snek" "snake" "stawp"))
+	  ;; => rotations are "snek" "snake" "stawp"
+
+	  (:rot ("yes" "no") :caps t :upcase t)
+	  ;; => rotations are "yes" "no", "Yes" "No", "YES" "NO"
+
+	  (:rot ("&" "|"))
+	  ;; => rotations are "&" "|"
+
+	  ;; default dictionary starts here ('v')
+	  (:rot ("begin" "end") :caps t :upcase t)
+	  (:rot ("enable" "disable") :caps t :upcase t)
+	  (:rot ("enter" "exit") :caps t :upcase t)
+	  (:rot ("forward" "backward") :caps t :upcase t)
+	  (:rot ("front" "rear" "back") :caps t :upcase t)
+	  ;; (:rot ("get" "set") :caps t :upcase t)
+	  (:rot ("high" "low") :caps t :upcase t)
+	  (:rot ("in" "out") :caps t :upcase t)
+	  (:rot ("left" "right") :caps t :upcase t)
+	  (:rot ("min" "max") :caps t :upcase t)
+	  (:rot ("on" "off") :caps t :upcase t)
+	  (:rot ("prev" "next"))
+	  (:rot ("start" "stop") :caps t :upcase t)
+	  (:rot ("true" "false") :caps t :upcase t)
+	  (:rot ("&&" "||"))
+	  (:rot ("==" "!="))
+	  (:rot ("." "->"))
+	  (:rot ("if" "else" "elif"))
+	  (:rot ("ifdef" "ifndef"))
+	  (:rot ("int8_t" "int16_t" "int32_t" "int64_t"))
+	  (:rot ("uint8_t" "uint16_t" "uint32_t" "uint64_t"))
+	  (:rot ("1" "2" "3" "4" "5" "6" "7" "8" "9" "10"))
+	  (:rot ("1st" "2nd" "3rd" "4th" "5th" "6th" "7th" "8th" "9th" "10th"))
+
+	  ;; mine
+	  (:rot ("let" "const" "var"))
+	  (:rot ("sm" "md" "lg" "xl" "2xl" "3xl"))
+	  (:rot ("aspect-auto" "aspect-square" "aspect-video"))
+	  (:rot ("break-after-auto" "break-after-avoid" "break-after-all" "break-after-avoid-page" "break-after-page" "break-after-left" "break-after-right" "break-after-column"))
+	  (:rot ("box-border" "box-content"))
+	  (:rot ("block" "inline-block" "inline" "flex" "inline-flex" "table" "inline-table" "table-caption" "table-cell" "table-column" "table-column-group" "table-footer-group" "table-header-group" "table-row-group" "table-row" "flow-root" "grid" "inline-grid" "contents" "list-item" "hidden"))
+	  (:rot ("float-right" "float-left" "float-none"))
+	  (:rot ("clear-left" "clear-right" "clear-both" "clear-none"))
+	  (:rot ("object-contain" "object-cover" "object-fill" "object-none" "object-scale-down"))
+	  (:rot ("object-bottom" "object-center" "object-left" "object-left-bottom" "object-left-top" "object-right" "object-right-bottom" "object-right-top" "object-top"))
+	  (:rot ("overflow-auto" "overflow-hidden" "overflow-clip" "overflow-visible" "overflow-scroll"))
+	  (:rot ("static" "fixed" "absolute" "relative" "sticky"))
+	  (:rot ("visible" "invisible" "collapse"))
+	  (:rot ("flex-row" "flex-row-reverse" "flex-col" "flex-col-reverse"))
+	  (:rot ("flex-wrap" "flex-wrap-reverse" "flex-nowrap"))
+	  (:rot ("flex-1" "flex-auto" "flex-initial" "flex-none"))
+	  (:rot ("grow" "grow-0"))
+	  (:rot ("shrink" "shrink-0"))
+	  (:rot ("get" "post" "set") :caps t :upcase t)
+	  )))
+
+(global-set-key (kbd "s-I") 'parrot-rotate-next-word-at-point)
 
 (use-package toggle-quotes-plus
   :ensure t
@@ -880,7 +1060,42 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 
 (which-key-add-key-based-replacements
   "C-'" "toggle quotes"
-)
+  )
+
+(use-package all-the-icons
+  :ensure t)
+(use-package all-the-icons-dired
+  :ensure t
+  :hook ((dired-mode . all-the-icons-dired-mode)))
+
+;; (use-package doom-themes
+;;   :ensure t
+;;   :config
+;;   ;; Global settings (defaults)
+;;   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+;; 	doom-themes-enable-italic t) ; if nil, italics is universally disabled
+;;   (load-theme 'doom-one t)
+
+;; Enable flashing mode-line on errors
+;;  (doom-themes-visual-bell-config)
+;; Enable custom neotree theme (all-the-icons must be installed!)
+;;  (doom-themes-neotree-config)
+;; or for treemacs users
+;;  (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
+;;  (doom-themes-treemacs-config)
+;; Corrects (and improves) org-mode's native fontification.
+;; (doom-themes-org-config))
+
+;; ;; Must be used *after* the theme is loaded
+;; (custom-set-faces
+;;  ;; `(mode-line ((t (:background ,(doom-color 'dark-violet)))))
+;;  `(font-lock-comment-face ((t (:foreground ,(doom-color 'base6))))))
+;; 设置默认字体为等宽字体
+;; (set-face-attribute 'default nil
+;; 		    :family "Fira Code"
+;; 		    :height 130
+;; 		    :weight 'normal
+;; 		    :width 'normal)
 
 (use-package doom-modeline
 :ensure t
