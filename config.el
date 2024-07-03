@@ -11,6 +11,15 @@
 		  dired-directory
 		(car dired-directory)))))))
 
+(bind-key [remap just-one-space] #'cycle-spacing)
+(bind-key [remap upcase-word] #'upcase-dwim)
+(bind-key [remap downcase-word] #'downcase-dwim)
+(bind-key [remap capitalize-word] #'capitalize-dwim)
+(bind-key [remap count-words-region] #'count-words)
+(bind-key [remap eval-last-sexp] #'pp-eval-last-sexp)
+(bind-key [remap eval-expression] #'pp-eval-expression)
+(bind-key [remap zap-to-char] #'zap-up-to-char)
+
 (global-set-key (kbd "<f5>") 'reload-init-file) 
 
 (defun reload-init-file ()
@@ -51,6 +60,8 @@
     initial-scratch-message ""
     initial-major-mode 'fundamental-mode
     inhibit-splash-screen t)
+
+(column-number-mode t)
 
 ;;  (when (eq system-type 'darwin)
 ;;  (setq mac-option-modifier 'meta))
@@ -177,12 +188,46 @@
     "M-m g"   "global prefix"
     "M-m o"   "org prefix"
     "M-m a"   "expand around prefix"
+    "M-m e"   "buffer edit"
     "M-m i"   "expand inside prefix"
     "M-m ["   "prev nav prefix"
     "M-m ]"   "next nav prefix"))
 
 (define-key modalka-mode-map (kbd "o") #'exit-on-newline)
 (define-key modalka-mode-map (kbd "i") #'exit-modalka)
+
+(defun auto-enter-modalka-mode ()
+  (modalka-mode 1))
+
+(run-with-idle-timer 5 nil 'auto-enter-modalka-mode)
+
+(bind-keys*
+ ("C-r"       . dabbrev-expand)
+ ("M-/"       . hippie-expand)
+ ("C-S-d"     . kill-whole-line)
+ ("M-m SPC c" . load-theme)
+ ("M-m SPC r" . locate)
+ ("M-m w"     . winner-undo)
+ ("M-m g m"   . make-frame)
+ ("M-m g M"   . delete-frame)
+ ("M-m g n"   . select-frame-by-name)
+ ("M-m g n"   . set-frame-name)
+ ("M-m b"     . mode-line-other-buffer)
+ ("M-m ="     . indent-region)
+ ("M-m g c"   . upcase-dwim)
+ ("M-m g d"   . downcase-dwim)
+ ("M-m g f"   . find-file-at-point)
+ ("M-m g u"   . downcase-region)
+ ("M-m g U"   . upcase-region)
+ ("M-m g C"   . capitalize-region)
+ ("M-m g F"   . follow-mode)
+ ("M-m R"     . overwrite-mode)
+ ("M-m : t"   . emacs-init-time)
+ ("M-m g @"   . compose-mail)
+ ("M-m SPC ?" . describe-bindings)
+
+ ("M-m e l" . duplicate-dwim)
+ )
 
 (modalka-define-kbd "0" "C-0")
 (modalka-define-kbd "1" "C-1")
@@ -209,54 +254,52 @@
   "8" "8"
   "9" "9")
 
-(modalka-define-kbd "h" "C-b")
-(modalka-define-kbd "j" "C-n")
-(modalka-define-kbd "k" "C-p")
-(modalka-define-kbd "l" "C-f")
-(modalka-define-kbd "e" "M-f")
-(modalka-define-kbd "b" "M-b")
-(modalka-define-kbd "n" "M-n")
-(modalka-define-kbd "N" "M-p")
-(modalka-define-kbd "{" "M-{")
-(modalka-define-kbd "}" "M-}")
-(modalka-define-kbd "0" "C-a")
-(modalka-define-kbd "$" "C-e")
-(modalka-define-kbd "G" "M->")
-(modalka-define-kbd "y" "M-w")
-(modalka-define-kbd "p" "C-y")
-(modalka-define-kbd "P" "M-y")
-(modalka-define-kbd "x" "C-d")
-(modalka-define-kbd "D" "C-k")
-(modalka-define-kbd "z" "C-l")
-(modalka-define-kbd "!" "M-&")
-(modalka-define-kbd "J" "C-v")
-(modalka-define-kbd "K" "M-v")
-(modalka-define-kbd "M" "C-u")
-(modalka-define-kbd "(" "M-a")
-(modalka-define-kbd ")" "M-e")
-(modalka-define-kbd "/" "C-s")
-(modalka-define-kbd "E" "C-g")
-(modalka-define-kbd "d" "C-w")
-(modalka-define-kbd "w" "C-x o")
-(modalka-define-kbd "W" "M-m W")
-(modalka-define-kbd "B" "M-m B")
-(modalka-define-kbd "u" "C-x u")
-(modalka-define-kbd "H" "C-x >")
-(modalka-define-kbd "L" "C-x <")
-(modalka-define-kbd "Z" "C-x 1")
-(modalka-define-kbd "q" "C-x (")
-(modalka-define-kbd "Q" "C-x )")
-(modalka-define-kbd "." "M-m .")
-(modalka-define-kbd "?" "M-m ?")
-(modalka-define-kbd "v" "C-SPC")
-(modalka-define-kbd "V" "M-m V")
-(modalka-define-kbd "=" "M-m =")
-(modalka-define-kbd "R" "M-m R")
-(modalka-define-kbd "X" "C-x C-x")
-(modalka-define-kbd "+" "C-x r m")
-(modalka-define-kbd "'" "M-g M")
-(modalka-define-kbd "\\" "C-c C-c")
-(modalka-define-kbd "," "C-x M-r")
+(modalka-define-kbd "c" "M-m g c")	; 单词大写
+(modalka-define-kbd "C" "M-m g d")	; 单词小写，M-c 首字母大写
+(modalka-define-kbd "h" "C-b")	; 左
+(modalka-define-kbd "j" "C-n")	; 下
+(modalka-define-kbd "k" "C-p")	; 上
+(modalka-define-kbd "l" "C-f")	; 右
+(modalka-define-kbd "e" "M-f")	; 移动到单词结尾
+(modalka-define-kbd "b" "M-b")	; 移动到单词开头
+(modalka-define-kbd "{" "M-{")	; 章节开始
+(modalka-define-kbd "}" "M-}")	; 章节结尾
+(modalka-define-kbd "0" "C-a")	; 行首
+(modalka-define-kbd "$" "C-e")	; 行尾
+(modalka-define-kbd "G" "M->")	; 文件结尾
+(modalka-define-kbd "y" "M-w")	; 复制
+(modalka-define-kbd "p" "C-y")	; 粘贴
+(modalka-define-kbd "P" "M-y")	; 从粘贴板复制粘贴
+(modalka-define-kbd "x" "C-d")	; 删除当前字符
+(modalka-define-kbd "D" "C-k")	; 删除光标后的内容
+(modalka-define-kbd "z" "C-l")	; 定位中心行
+(modalka-define-kbd "!" "M-&")	; 异步执行shell命令
+(modalka-define-kbd "J" "C-v")	; 向下翻页
+(modalka-define-kbd "K" "M-v")	; 向上翻页
+(modalka-define-kbd "(" "M-a")	; 句子开头
+(modalka-define-kbd ")" "M-e")	; 句子结尾
+(modalka-define-kbd "/" "C-s")	; 文件内搜索
+(modalka-define-kbd "E" "C-g")	; 退出模式
+(modalka-define-kbd "d" "C-w")	; 删除区域
+(modalka-define-kbd "w" "C-x o")	; 切换窗口
+(modalka-define-kbd "B" "C-x <left>")	; 上一个buffer
+(modalka-define-kbd "N" "C-x <right>"); 下一个buffer
+(modalka-define-kbd "u" "C-x u")	; 回退
+(modalka-define-kbd "H" "C-x >")	; 向右滚动列
+(modalka-define-kbd "L" "C-x <")	; 向左滚动列
+(modalka-define-kbd "Z" "C-x 1")	; 关闭其他 buffer
+(modalka-define-kbd "q" "C-x (")	; 定制宏
+(modalka-define-kbd "Q" "C-x )")	; 退出宏
+(modalka-define-kbd "v" "C-SPC")	; 标记
+(modalka-define-kbd "?" "M-m ?")	; which-key
+(modalka-define-kbd "=" "M-m =")	; 缩进
+(modalka-define-kbd "X" "C-x C-x")	; 标记区域光标来回切换
+(modalka-define-kbd "+" "C-x r m")	; 书签
+(modalka-define-kbd "'" "C-x r b")	; 访问书签
+(modalka-define-kbd "\\" "C-c C-c")	; 执行当前光标位置代码
+(modalka-define-kbd "," "C-x M-r")	; 显示上一次的搜索结果
+
+(modalka-define-kbd "|" "M-m e l")	; 复制当前行或选中区域
 
 ;; 说明
 (which-key-add-key-based-replacements
@@ -264,6 +307,8 @@
   "DEL" "smart del"
   "TAB" "smart tab"
   "RET" "smart enter"
+  "c"   "upcase"
+  "C"   "downcase"
   "h"   "prev char"
   "j"   "next line"
   "k"   "prev line"
@@ -279,6 +324,7 @@
   "("   "start of sentence"
   ")"   "end of sentence"
   "/"   "search"
+  "|"   "duplicate line"
   "E"   "exit anything"
   "B"   "previous buffer"
   "W"   "winner undo"
@@ -323,7 +369,7 @@
 ;; 说明
 (which-key-add-key-based-replacements
   "]"   "forward nav/edit"
-  "] ]" "narrow region"
+  "] w" "backward nav/edit"
   "] s" "next spell error")
 
 (which-key-add-key-based-replacements
@@ -342,10 +388,12 @@
 (modalka-define-kbd "SPC c" "M-m SPC c")
 (modalka-define-kbd "SPC R" "M-m SPC R")
 (modalka-define-kbd "SPC ?" "M-m SPC ?")
+(modalka-define-kbd "SPC ." "M-SPC")
 
 ;; 说明
 (which-key-add-key-based-replacements
   "SPC"   "custom prefix"
+  "SPC ." "just one space"
   "SPC ?" "describe bindings"
   "SPC j" "jump to cmd"
   "SPC f" "find file"
@@ -386,8 +434,12 @@
 (modalka-define-kbd "g S" "C-j")
 (modalka-define-kbd "g ?" "C-h k")
 
+;; consult
 (modalka-define-kbd "g i" "M-g i")
 (modalka-define-kbd "g r" "M-g r")
+
+;; edit
+(modalka-define-kbd "g l" "M-g M-g")	; goto line
 ;; 说明
 
 (which-key-add-key-based-replacements
@@ -403,6 +455,7 @@
   "g k" "previous pdf page"
   "g f" "file/url at cursor"
   "g F" "enable follow mode"
+  "g l" "goto line"
   "g o" "eval elisp"
   "g O" "eval defun"
   "g w" "vertical split win"
@@ -733,40 +786,109 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 	    (add-to-list 'consult-bookmark-narrow
 			 '(?t "TMSU" tmsu-dired-bookmark-open))))
 
-(bind-keys*
- ("C-r"       . dabbrev-expand)
- ("M-/"       . hippie-expand)
- ("C-S-d"     . kill-whole-line)
- ("M-m SPC c" . load-theme)
- ("M-m SPC r" . locate)
- ("M-m w"     . winner-undo)
- ("M-m g m"   . make-frame)
- ("M-m g M"   . delete-frame)
- ("M-m g n"   . select-frame-by-name)
- ("M-m g n"   . set-frame-name)
- ("M-m b"     . mode-line-other-buffer)
- ("M-m ="     . indent-region)
- ("M-m g f"   . find-file-at-point)
- ("M-m g u"   . downcase-region)
- ("M-m g U"   . upcase-region)
- ("M-m g C"   . capitalize-region)
- ("M-m g F"   . follow-mode)
- ("M-m R"     . overwrite-mode)
- ("M-m : t"   . emacs-init-time)
- ("M-m g @"   . compose-mail)
- ("M-m SPC ?" . describe-bindings))
+(use-package corfu
+  :ensure t
+  :init (global-corfu-mode 1)
+  :config (progn
+	    (corfu-popupinfo-mode 1)
+	    (corfu-echo-mode 1)
+	    (setq corfu-popupinfo-delay '(nil . t)
+		  corfu-echo-delay t)))
+
+;; https://archive.is/Gj6Fu
+(autoload 'ffap-file-at-point "ffap")
+(defun complete-path-at-point+ ()
+  (let ((fn (ffap-file-at-point))
+	(fap (thing-at-point 'filename)))
+    (when (and (or fn (equal "/" fap))
+	       (save-excursion
+		 (search-backward fap (line-beginning-position) t)))
+      (list (match-beginning 0)
+	    (match-end 0)
+	    #'completion-file-name-table :exclusive 'no))))
+(add-hook 'completion-at-point-functions
+	  #'complete-path-at-point+
+	  'append)
+
+;; Add prompt indicator to `completing-read-multiple'.
+;; We display [CRM<separator>], e.g., [CRM,] if the separator is a comma.
+;;
+;; Taken from the Vertico docs.
+(defun crm-indicator (args)
+  (cons (format "[CRM%s] %s"
+		(replace-regexp-in-string
+		 "\\`\\[.*?]\\*\\|\\[.*?]\\*\\'" ""
+		 crm-separator)
+		(car args))
+	(cdr args)))
+(advice-add #'completing-read-multiple :filter-args #'crm-indicator)
+
+(setq enable-recursive-minibuffers t)
+(minibuffer-depth-indicate-mode 1)
+
+;; Use the completing-read UI for the M-tab completion unless
+;; overridden (for example by `corfu').
+(setq-default completion-in-region-function
+	      (lambda (&rest args)
+		(apply (if vertico-mode
+			   #'consult-completion-in-region
+			 #'completion--in-region)
+		       args)))
 
 (use-package which-key
-:ensure t
-:defer t
-:diminish which-key-mode
-:init
-(setq which-key-sort-order 'which-key-key-order-alpha)
-:bind* (("s-m ?" . which-key-show-top-level))
-:config
-(which-key-mode)
+  :ensure t
+  :defer t
+  :diminish which-key-mode
+  :init
+  (setq which-key-sort-order 'which-key-key-order-alpha)
+  :bind* (("s-m ?" . which-key-show-top-level))
+  :config
+  (which-key-mode)
+  (which-key-add-key-based-replacements
+    "s-m ?" "top level bindings"))
+
+(use-package symbol-overlay
+  :ensure t
+  :defer t
+  :config
+  (symbol-overlay-mode +1)
+  (global-set-key (kbd "M-i") #'symbol-overlay-put)
+  (global-set-key (kbd "M-n") #'symbol-overlay-switch-forward)
+  (global-set-key (kbd "M-p") #'symbol-overlay-switch-backward)
+  (global-set-key (kbd "<f7>") #'symbol-overlay-mode)
+  (global-set-key (kbd "<f8>") #'symbol-overlay-remove-all)
+  )
+
+(use-package expand-region
+  :ensure t)
+(global-set-key (kbd "C-=") 'er/expand-region)
+
+(use-package move-text :ensure t)
+(global-set-key (kbd "s-<") 'move-text-up)
+(global-set-key (kbd "s->") 'move-text-down)
+
+(use-package toggle-quotes-plus
+  :ensure t
+  :bind* (("M-m e '" . toggle-quotes-plus))
+  :config
+  (setq toggle-quotes-plus-chars '("\""
+				   "'"
+				   "`")))
+
+(modalka-define-kbd "C-'" "M-m e '")
+
+
 (which-key-add-key-based-replacements
-  "s-m ?" "top level bindings"))
+  "C-'" "toggle quotes"
+)
+
+(use-package doom-modeline
+:ensure t
+:init (progn
+        (setq doom-modeline-env-version nil
+              doom-modeline-icon nil
+              doom-modeline-minor-modes t)
+        (doom-modeline-mode 1)))
 
 (defun tangle-if-init ()
   "If the current buffer is 'init.org' the code-blocks are
