@@ -1076,6 +1076,7 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 
 (use-package magit
   :ensure t
+  :bind* (("M-m g d" . magit))
   :config
   ;; ;; 提交时候不显示提交细节
   (setq magit-commit-show-diff nil)
@@ -1083,7 +1084,7 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
   (setq magit-refresh-status-buffer nil)
   ;; ;; 当前buffer打开magit
   (setq magit-display-buffer-function
-	      (lambda (buffer)
+	(lambda (buffer)
 	  (display-buffer buffer '(display-buffer-same-window))))
   ;; (setq magit-ellipsis (get-byte 0 "."))
   ;; ;; 加速diff
@@ -1092,11 +1093,14 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
   (setq magit-diff-paint-whitespace nil)
   (setq magit-ediff-dwim-show-on-hunks t)
   (setq magit-display-buffer-function
-	      (lambda (buffer)
-		(display-buffer buffer '(display-buffer-same-window))))
+	(lambda (buffer)
+	  (display-buffer buffer '(display-buffer-same-window))))
   ;; ;; 加速diff
   (setq magit-revision-insert-related-refs nil)
   )
+
+(modalka-define-kbd "g d" "M-m g d")
+(which-key-add-key-based-replacements "g d" "magit")
 
 (use-package blamer
   :ensure t
@@ -1119,9 +1123,9 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
   :ensure t
   :config
   (add-to-list 'auto-mode-alist
-		     (cons "/.dockerignore\\'" 'gitignore-mode))
+	       (cons "/.dockerignore\\'" 'gitignore-mode))
   (add-to-list 'auto-mode-alist
-		     (cons "/.gitignore\\'" 'gitignore-mode))
+	       (cons "/.gitignore\\'" 'gitignore-mode))
   (add-to-list 'auto-mode-alist
 	       (cons "/.gitconfig\\'" 'gitconfig-mode))
   )
