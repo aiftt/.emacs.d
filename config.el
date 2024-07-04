@@ -180,7 +180,7 @@ one, an error is signaled."
 (bind-key [remap eval-expression] #'pp-eval-expression)
 (bind-key [remap zap-to-char] #'zap-up-to-char)
 
-(global-set-key (kbd "<f5>") 'reload-init-file) 
+(global-set-key (kbd "<f5>") 'reload-init-file)
 
 (defun reload-init-file ()
   "重新加载 init.el 文件的函数"
@@ -330,34 +330,26 @@ one, an error is signaled."
       (setq exec-path (append (parse-colon-path path) (list exec-directory))))
   (error (warn "%s" (error-message-string err))))
 
-(use-package async
-  :ensure t
-  :commands (async-start))
-  
-(use-package cl-lib
-  :ensure t)
-
-(use-package dash
-  :ensure t)
-
-(use-package s
-  :ensure t)
+(use-package async :straight t :commands (async-start))
+(use-package cl-lib)
+(use-package dash :straight t)
+(use-package s :straight t)
 
 (use-package which-key
-:ensure t
-:defer t
-:diminish which-key-mode
-:init
-(setq which-key-sort-order 'which-key-key-order-alpha)
-:bind* (("M-m ?" . which-key-show-top-level))
-:config
-(which-key-mode)
-(which-key-add-key-based-replacements
-  "M-m ?" "top level bindings"))
+  :straight t
+  :defer t
+  :diminish which-key-mode
+  :init
+  (setq which-key-sort-order 'which-key-key-order-alpha)
+  :bind* (("M-m ?" . which-key-show-top-level))
+  :config
+  (which-key-mode)
+  (which-key-add-key-based-replacements
+    "M-m ?" "top level bindings"))
 
 (use-package restart-emacs
-:ensure t
-:bind* (("<f2>" . restart-emacs)))
+  :straight t
+  :bind* (("<f2>" . restart-emacs)))
 
 (defun exit-modalka ()
   (interactive)
@@ -374,7 +366,7 @@ one, an error is signaled."
   (newline-and-indent))
 
 (use-package modalka
-  :ensure t
+  :straight t
   :demand t
   :bind* (("C-z" . modalka-mode))
   :diminish (modalka-mode . "μ")
@@ -686,29 +678,31 @@ one, an error is signaled."
 ;;  "i a" "expand entire buffer")
 
 (use-package flyspell
+  :straight t
   :diminish (flyspell-mode . "φ")
   :bind* (("M-m ] s" . flyspell-goto-next-error)))
 
 (use-package dired
+  :straight (:type built-in)
   :bind (:map dired-mode-map
-	      ("C-c C-e" . wdired-change-to-wdired-mode))
+	    ("C-c C-e" . wdired-change-to-wdired-mode))
   :init
   (setq dired-dwim-target t
-	dired-recursive-copies 'top
-	dired-recursive-deletes 'top
-	dired-listing-switches "-alh")
+      dired-recursive-copies 'top
+      dired-recursive-deletes 'top
+      dired-listing-switches "-alh")
   :config
   (add-hook 'dired-mode-hook 'dired-hide-details-mode))
 
 (use-package exec-path-from-shell
-  :ensure t
+  :straight t
   :config
   (setq exec-path-from-shell-variables '("PATH" "MANPATH" "LSP_USE_PLISTS" "NODE_PATH")
 	exec-path-from-shell-arguments '("-l"))
   (exec-path-from-shell-initialize))
 
 (use-package diminish
-  :ensure t
+  :straight t
   :demand t
   :diminish (visual-line-mode . "ω")
   :diminish hs-minor-mode
@@ -729,22 +723,21 @@ one, an error is signaled."
 (add-hook 'auto-revert-mode-hook 'sk/diminish-auto-revert)
 
 (use-package discover-my-major
-  :ensure t
+  :straight t
   :bind (("C-h C-m" . discover-my-major)
 	 ("C-h s-m" . discover-my-mode)))
 
-(use-package hydra
-  :ensure t)
+(use-package hydra :straight t)
 
 (use-package all-the-icons-completion
-  :ensure t
+  :straight t
   :after (marginalia all-the-icons)
   :hook (marginalia-mode . all-the-icons-completion-marginalia-setup)
   :init
   (all-the-icons-completion-mode))
 
 (use-package vertico
-  :ensure t
+  :straight t
   :bind (("C-x M-r" . vertico-repeat)
 	 :map vertico-map
 	 ("C-l" . vertico-directory-delete-word)
@@ -770,7 +763,7 @@ one, an error is signaled."
   )
 
 (use-package orderless
-  :ensure t
+  :straight t
   :after vertico
   :config (progn
 	    (setq orderless-matching-styles '(orderless-regexp
@@ -800,7 +793,7 @@ one, an error is signaled."
 		(apply orig args)))))
 
 (use-package embark
-  :ensure t
+  :straight t
   :bind (("C-c o" . embark-dwim)
 	 ("C-."   . embark-act)
 	 :map minibuffer-local-map
@@ -859,11 +852,11 @@ one, an error is signaled."
 
 
 (use-package embark-consult
-  :ensure t
+  :straight t
   :after (embark consult))
 
 (use-package marginalia
-  :ensure t
+  :straight t
   :after vertico
   :demand t                     ; :demand applies to :bind but not
 					; :after.  We want to eagerly load
@@ -873,7 +866,7 @@ one, an error is signaled."
   :config (marginalia-mode 1))
 
 (use-package consult
-  :ensure t
+  :straight t
   :bind (:map consult-mode-map
 	      ;; M-s …
 	      ("M-s u" . consult-focus-lines)
@@ -996,7 +989,7 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 			 '(?t "TMSU" tmsu-dired-bookmark-open))))
 
 (use-package corfu
-  :ensure t
+  :straight t
   :init (global-corfu-mode 1)
   :config (progn
 	    (corfu-popupinfo-mode 1)
@@ -1045,7 +1038,7 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 		       args)))
 
 (use-package which-key
-  :ensure t
+  :straight t
   :defer t
   :diminish which-key-mode
   :init
@@ -1057,7 +1050,7 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
     "s-m ?" "top level bindings"))
 
 (use-package symbol-overlay
-  :ensure t
+  :straight t
   :defer t
   :config
   (symbol-overlay-mode +1)
@@ -1068,14 +1061,13 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
   (global-set-key (kbd "<f8>") #'symbol-overlay-remove-all)
   )
 
-(use-package expand-region
-  :ensure t)
+(use-package expand-region :straight t)
 (global-set-key (kbd "C-=") 'er/expand-region)
 
-(use-package hydra :ensure t)
+(use-package hydra :straight t)
 
 (use-package magit
-  :ensure t
+  :straight t
   :bind* (("M-m g d" . magit))
   :config
   ;; ;; 提交时候不显示提交细节
@@ -1103,10 +1095,10 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 (which-key-add-key-based-replacements "g d" "magit")
 
 (use-package blamer
-  :ensure t
+  :straight t
   :custom
   (blamer-idle-time 0.3)
-  (blamer-min-offset 70)
+  (blamer-min-offset 40)
   (blamer-author-formatter " ✎ %s ")
   (blamer-datetime-formatter "[%s]")
   (blamer-commit-formatter " ● %s")
@@ -1116,11 +1108,11 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 		   :height 120
 		   :italic t)))
   :config
-  (global-blamer-mode 1)
+  ;; (global-blamer-mode 1)
   )
 
 (use-package git-modes
-  :ensure t
+  :straight t
   :config
   (add-to-list 'auto-mode-alist
 	       (cons "/.dockerignore\\'" 'gitignore-mode))
@@ -1130,15 +1122,15 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 	       (cons "/.gitconfig\\'" 'gitconfig-mode))
   )
 
-(use-package smerge-mode)
+(use-package smerge-mode :straight t)
 
 (use-package diff-hl
-  :ensure
+  :straight t
   :config
   (global-diff-hl-mode))
 
 (use-package maple-iedit
-  :init (slot/vc-install :repo "honmaple/emacs-maple-iedit")
+  :straight (:type git :host github :repo "honmaple/emacs-maple-iedit")
   :commands (maple-iedit-match-all maple-iedit-match-next maple-iedit-match-previous)
   :config
   (setq maple-iedit-ignore-case t)
@@ -1156,11 +1148,11 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
   "C-," "iedit"
   )
 
-(use-package move-text :ensure t)
+(use-package move-text :straight t)
 (global-set-key (kbd "s-<") 'move-text-up)
 (global-set-key (kbd "s->") 'move-text-down)
 
-(use-package string-inflection :ensure t)
+(use-package string-inflection :straight t)
 (global-set-key (kbd "s-i") 'my-string-inflection-cycle-auto)
 
 (defun my-string-inflection-cycle-auto ()
@@ -1184,7 +1176,7 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
     (string-inflection-ruby-style-cycle))))
 
 (use-package parrot
-  :ensure t
+  :straight t
   :config
   (parrot-mode -1)
   (setq parrot-rotate-dict
@@ -1251,48 +1243,40 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 (global-set-key (kbd "s-I") 'parrot-rotate-next-word-at-point)
 
 (use-package toggle-quotes-plus
-  :ensure t
-  :bind* (("M-m e '" . toggle-quotes-plus))
+  :straight (toggle-quotes-plus :type git :host github :repo "jcs-elpa/toggle-quotes-plus")
+  :bind* (("C-'" . toggle-quotes-plus))
   :config
   (setq toggle-quotes-plus-chars '("\""
 				   "'"
 				   "`")))
 
-(modalka-define-kbd "C-'" "M-m e '")
-
-
-(which-key-add-key-based-replacements
-  "C-'" "toggle quotes"
-  )
-
-(use-package all-the-icons
-  :ensure t)
+(use-package all-the-icons :straight t)
 (use-package all-the-icons-dired
-  :ensure t
+  :straight t
   :hook ((dired-mode . all-the-icons-dired-mode)))
 
-;; (use-package doom-themes
-;;   :ensure t
-;;   :config
-;;   ;; Global settings (defaults)
-;;   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-;; 	doom-themes-enable-italic t) ; if nil, italics is universally disabled
-;;   (load-theme 'doom-one t)
+(use-package doom-themes
+  :straight t
+  :config
+  ;; Global settings (defaults)
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+	doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  (load-theme 'doom-one t)
 
-;; Enable flashing mode-line on errors
-;;  (doom-themes-visual-bell-config)
-;; Enable custom neotree theme (all-the-icons must be installed!)
-;;  (doom-themes-neotree-config)
-;; or for treemacs users
-;;  (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
-;;  (doom-themes-treemacs-config)
-;; Corrects (and improves) org-mode's native fontification.
-;; (doom-themes-org-config))
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  ;; Enable custom neotree theme (all-the-icons must be installed!)
+  (doom-themes-neotree-config)
+  ;; or for treemacs users
+  (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
+  (doom-themes-treemacs-config)
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
 
-;; ;; Must be used *after* the theme is loaded
+;; Must be used *after* the theme is loaded
 ;; (custom-set-faces
-;;  ;; `(mode-line ((t (:background ,(doom-color 'dark-violet)))))
-;;  `(font-lock-comment-face ((t (:foreground ,(doom-color 'base6))))))
+;; `(mode-line ((t (:background ,(doom-color 'dark-violet)))))
+;; `(font-lock-comment-face ((t (:foreground ,(doom-color 'base6))))))
 ;; 设置默认字体为等宽字体
 ;; (set-face-attribute 'default nil
 ;; 		    :family "Fira Code"
@@ -1301,30 +1285,79 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 ;; 		    :width 'normal)
 
 (use-package doom-modeline
-:ensure t
-:init (progn
-        (setq doom-modeline-env-version nil
-              doom-modeline-icon nil
-              doom-modeline-minor-modes t)
-        (doom-modeline-mode 1)))
+  :straight t
+  :init (progn
+	  (setq doom-modeline-env-version nil
+		doom-modeline-icon nil
+		doom-modeline-minor-modes t)
+	  (doom-modeline-mode 1)))
 
-;;   (use-package fanyi
-;;   :ensure t
-;;   :config
-;;   (custom-set-variables
-;;    '(fanyi-providers '(fanyi-haici-provider
-;; 			                 fanyi-youdao-thesaurus-provider
-;; 			                 fanyi-etymon-provider
-;; 			                 fanyi-longman-provider
-;; 			                 ;; fanyi-libre-provider
-;; 			                 )))
-;;   ;; 还要自动选择翻译内容 buffer
-;;   (setq fanyi-auto-select nil))
+(use-package fanyi
+  :straight t
+  :bind* (("s-y" . fanyi-dwim2))
+  :custom
+  (fanyi-providers '(;; 海词
+		     fanyi-haici-provider
+		     ;; 有道同义词词典
+		     fanyi-youdao-thesaurus-provider
+		     ;; Etymonline
+		     fanyi-etymon-provider
+		     ;; Longman
+		     fanyi-longman-provider)))
 
+;; (setq longman-ins (clone fanyi-longman-provider))
+;; (oset longman-ins :word "successful")
+;; (fanyi--spawn longman-ins)
 
-;; (use-package youdao-dictionary
-;;   :ensure t
-;;    )
+;; Wait until *fanyi* buffer has a longman section which means longman-ins has parsed the result.
+;;
+;; benchmark the render function.
+;; (benchmark-run 10 (fanyi-render longman-ins))
+;;=> (0.150839075 0 0.0)
+
+(when (version<= "9.2" (org-version))
+  (require 'org-tempo))
+
+(use-package evil-nerd-commenter
+  :straight t
+  :bind* (("M-;" . evilnc-comment-or-uncomment-lines))
+  )
+
+(use-package yaml-mode
+  :straight t
+  :mode "\\.yml\\'"
+  :mode "\\.yaml\\'"
+  :hook ((yaml-mode . yaml-imenu-enable)))
+
+(use-package yaml-imenu
+  :straight t
+  :after yaml-mode)
+
+(use-package python-mode :straight t)
+
+(use-package go-mode :straight t)
+
+(use-package dockerfile-mode :straight t)
+
+(use-package php-mode :straight t)
+
+(use-package sql-indent :straight t)
+(add-hook 'sql-mode-hook 'sqlind-minor-mode)
+
+(use-package pkg-info :straight t)
+
+(use-package lua-mode :straight t)
+
+(use-package flycheck
+  :straight t
+  :init (global-flycheck-mode))
+
+(use-package auto-save
+  :straight (auto-save :type git :host github :repo "manateelazycat/auto-save")
+  :config
+  (auto-save-enable)
+  (setq auto-save-silent t)
+  (setq auto-save-delete-trailing-whitespace t))
 
 (defun tangle-if-init ()
   "If the current buffer is 'init.org' the code-blocks are
@@ -1338,14 +1371,14 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
   (message "Tangling init")
   ;; Avoid running hooks when tangling.
   (let ((prog-mode-hook nil)
-        (src  (expand-file-name "config.org" user-emacs-directory))
-        (dest (expand-file-name "config.el"  user-emacs-directory)))
+	(src  (expand-file-name "config.org" user-emacs-directory))
+	(dest (expand-file-name "config.el"  user-emacs-directory)))
     (require 'ob-tangle)
     (org-babel-tangle-file src dest)
     (if (byte-compile-file dest)
-        (byte-compile-dest-file dest)
+	(byte-compile-dest-file dest)
       (with-current-buffer byte-compile-log-buffer
-        (buffer-string)))))
+	(buffer-string)))))
 
 (defun tangle-init ()
   "Tangle init.org asynchronously."

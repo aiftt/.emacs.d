@@ -10,28 +10,24 @@
 
 (setq gc-cons-threshold (* 500 1024 1024))
 
-(cl-defun slot/vc-install (&key (fetcher "github") repo name rev backend)
-  "Install a package from a remote if it's not already installed.
-This is a thin wrapper around `package-vc-install' in order to
-make non-interactive usage more ergonomic.  Takes the following
-named arguments:
-
-- FETCHER the remote where to get the package (e.g., \"gitlab\").
-  If omitted, this defaults to \"github\".
-
-- REPO should be the name of the repository (e.g.,
-  \"slotThe/arXiv-citation\".
-
-- NAME, REV, and BACKEND are as in `package-vc-install' (which
-  see)."
-  (let* ((url (format "https://www.%s.com/%s" fetcher repo))
-         (iname (when name (intern name)))
-         (pac-name (or iname (intern (file-name-base repo)))))
-    (unless (package-installed-p pac-name)
-      (package-vc-install url iname rev backend))))
-
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name
+        "straight/repos/straight.el/bootstrap.el"
+        (or (bound-and-true-p straight-base-dir)
+            user-emacs-directory)))
+      (bootstrap-version 7))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://radian-software.github.io/straight.el/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+(straight-use-package 'use-package)
 ;; 包管理器初始化 
-(require 'package)
+;; (require 'package)
 ;; 腾讯
 ;; (setq package-archives '(("gnu"   . "http://mirrors.cloud.tencent.com/elpa/gnu/")
 ;;                         ("melpa" . "http://mirrors.cloud.tencent.com/elpa/melpa/")))
@@ -45,11 +41,11 @@ named arguments:
 ;;         ("org"   . "http://elpa.emacs-china.org/org/")
 ;;         ("gnu"   . "http://elpa.emacs-china.org/gnu/")))
 ;; 科大
-(setq package-archives '(("gnu" . "https://mirrors.ustc.edu.cn/elpa/gnu/")
-                         ("melpa" . "https://mirrors.ustc.edu.cn/elpa/melpa/")
-                         ("nongnu" . "https://mirrors.ustc.edu.cn/elpa/nongnu/")))
+;; (setq package-archives '(("gnu" . "https://mirrors.ustc.edu.cn/elpa/gnu/")
+                         ;; ("melpa" . "https://mirrors.ustc.edu.cn/elpa/melpa/")
+                         ;; ("nongnu" . "https://mirrors.ustc.edu.cn/elpa/nongnu/")))
 
-(package-initialize)
+;; (package-initialize)
 
 ;; Make sure Org is installed
 (unless (package-installed-p 'org)
