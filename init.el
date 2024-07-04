@@ -32,8 +32,23 @@ named arguments:
 
 ;; 包管理器初始化 
 (require 'package)
-(setq package-archives '(("gnu"   . "http://mirrors.cloud.tencent.com/elpa/gnu/")
-                         ("melpa" . "http://mirrors.cloud.tencent.com/elpa/melpa/")))
+;; 腾讯
+;; (setq package-archives '(("gnu"   . "http://mirrors.cloud.tencent.com/elpa/gnu/")
+;;                         ("melpa" . "http://mirrors.cloud.tencent.com/elpa/melpa/")))
+;; 清华
+;; (setq package-archives '(("gnu"    . "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
+;;                          ("nongnu" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/nongnu/")
+;;                          ("melpa"  . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")))
+;; emacs-china
+;; (setq package-archives
+;;       '(("melpa" . "http://elpa.emacs-china.org/melpa/")
+;;         ("org"   . "http://elpa.emacs-china.org/org/")
+;;         ("gnu"   . "http://elpa.emacs-china.org/gnu/")))
+;; 科大
+(setq package-archives '(("gnu" . "https://mirrors.ustc.edu.cn/elpa/gnu/")
+                         ("melpa" . "https://mirrors.ustc.edu.cn/elpa/melpa/")
+                         ("nongnu" . "https://mirrors.ustc.edu.cn/elpa/nongnu/")))
+
 (package-initialize)
 
 ;; Make sure Org is installed

@@ -31,6 +31,146 @@
 
 (global-set-key (kbd "s-o") 'toggle-one-window)
 
+(defun max-gc-limit ()
+  (setq gc-cons-threshold most-positive-fixnum))
+
+(defun reset-gc-limit ()
+  (setq gc-cons-threshold 100000000))
+
+;; --- system
+(defmacro with-system (type &rest body)
+  "Evaluate BODY if `system-type' equals TYPE."
+  (declare (indent defun))
+  `(when (eq system-type ',type)
+     ,@body))
+
+;; time date
+(defun gcl/insert-standard-date ()
+  "Inserts standard date time string."
+  (interactive)
+  (insert (format-time-string "%Y-%m-%d %T")))
+
+(defun gcl/insert-changelog-date ()
+  "Insert changelog date, like yyyy/mm/dd."
+  (interactive)
+  (insert (format-time-string "%Y/%m/%d")))
+
+(defun gcl/insert-current-time ()
+  "Insert current time, like hh:mm:ss."
+  (interactive)
+  (insert (format-time-string "%T")))
+
+(defun gcl/consult-file-externally (file)
+  "Open the FILE externally using the system's default program."
+  (interactive "fFile to open externally: ")
+  (cond
+   ((eq system-type 'darwin) ; macOS
+    (start-process "external-program" nil "open" file))
+   ((eq system-type 'gnu/linux) ; Linux
+    (start-process "external-program" nil "xdg-open" file))
+   ((eq system-type 'windows-nt) ; Windows
+    (start-process "external-program" nil "start" "" file))
+   (t ; Other platforms
+    (message "Opening files externally is not supported on this platform."))))
+
+
+(defun gcl/open-current-directory ()
+  (interactive)
+  (gcl/consult-file-externally default-directory))
+
+(defun gcl/copy-file-full-name ()
+  "Copy the current buffer's file name to the clipboard."
+  (interactive)
+  (let ((filename (if (equal major-mode 'dired-mode)
+		      default-directory
+		    (buffer-file-name))))
+    (when filename
+      (kill-new filename)
+      (message "Copied buffer file name '%s' to the clipboard." filename))))
+
+(defun gcl/copy-file-name-only ()
+  "Copy the current buffer's file name only to the clipboard."
+  (interactive)
+  (let ((filename (if (equal major-mode 'dired-mode)
+		      default-directory
+		    (buffer-file-name))))
+    (when filename
+      (kill-new (file-name-nondirectory filename))
+      (message "Copied buffer file name '%s' to the clipboard." (file-name-nondirectory filename)))))
+
+(defun buf-move-up ()
+  "Swap the current buffer and the buffer above the split.
+If there is no split, ie now window above the current one, an
+error is signaled."
+  ;;  "Switches between the current buffer, and the buffer above the
+  ;;  split, if possible."
+  (interactive)
+  (let* ((other-win (windmove-find-other-window 'up))
+	 (buf-this-buf (window-buffer (selected-window))))
+    (if (null other-win)
+	(error "No window above this one")
+      ;; swap top with this one
+      (set-window-buffer (selected-window) (window-buffer other-win))
+      ;; move this one to top
+      (set-window-buffer other-win buf-this-buf)
+      (select-window other-win))))
+
+(defun buf-move-down ()
+  "Swap the current buffer and the buffer under the split.
+If there is no split, ie now window under the current one, an
+error is signaled."
+  (interactive)
+  (let* ((other-win (windmove-find-other-window 'down))
+	 (buf-this-buf (window-buffer (selected-window))))
+    (if (or (null other-win)
+	    (string-match "^ \\*Minibuf" (buffer-name (window-buffer other-win))))
+	(error "No window under this one")
+      ;; swap top with this one
+      (set-window-buffer (selected-window) (window-buffer other-win))
+      ;; move this one to top
+      (set-window-buffer other-win buf-this-buf)
+      (select-window other-win))))
+
+(defun buf-move-left ()
+  "Swap the current buffer and the buffer on the left of the split.
+If there is no split, ie now window on the left of the current
+one, an error is signaled."
+  (interactive)
+  (let* ((other-win (windmove-find-other-window 'left))
+	 (buf-this-buf (window-buffer (selected-window))))
+    (if (null other-win)
+	(error "No left split")
+      ;; swap top with this one
+      (set-window-buffer (selected-window) (window-buffer other-win))
+      ;; move this one to top
+      (set-window-buffer other-win buf-this-buf)
+      (select-window other-win))))
+
+(defun buf-move-right ()
+  "Swap the current buffer and the buffer on the right of the split.
+If there is no split, ie now window on the right of the current
+one, an error is signaled."
+  (interactive)
+  (let* ((other-win (windmove-find-other-window 'right))
+	 (buf-this-buf (window-buffer (selected-window))))
+    (if (null other-win)
+	(error "No right split")
+      ;; swap top with this one
+      (set-window-buffer (selected-window) (window-buffer other-win))
+      ;; move this one to top
+      (set-window-buffer other-win buf-this-buf)
+      (select-window other-win))))
+
+(defun gcl/cleanup-gc ()
+  "Clean up gc."
+  (setq gc-cons-threshold  (* 1024 200)) ; 200MB
+  (setq gc-cons-percentage 0.5) ; 0.5s
+  (garbage-collect))
+
+(defun switch-to-scratch-buffer ()
+  (interactive)
+  (switch-to-buffer (startup--get-buffer-create-scratch)))
+
 (bind-key [remap just-one-space] #'cycle-spacing)
 (bind-key [remap upcase-word] #'upcase-dwim)
 (bind-key [remap downcase-word] #'downcase-dwim)
@@ -934,6 +1074,65 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 
 (use-package hydra :ensure t)
 
+(use-package magit
+  :ensure t
+  :config
+  ;; ;; 提交时候不显示提交细节
+  (setq magit-commit-show-diff nil)
+  ;; ;; 没有焦点时候不刷新状态
+  (setq magit-refresh-status-buffer nil)
+  ;; ;; 当前buffer打开magit
+  (setq magit-display-buffer-function
+	      (lambda (buffer)
+	  (display-buffer buffer '(display-buffer-same-window))))
+  ;; (setq magit-ellipsis (get-byte 0 "."))
+  ;; ;; 加速diff
+  (setq magit-revision-insert-related-refs nil)
+  (setq magit-diff-refine-hunk t)
+  (setq magit-diff-paint-whitespace nil)
+  (setq magit-ediff-dwim-show-on-hunks t)
+  (setq magit-display-buffer-function
+	      (lambda (buffer)
+		(display-buffer buffer '(display-buffer-same-window))))
+  ;; ;; 加速diff
+  (setq magit-revision-insert-related-refs nil)
+  )
+
+(use-package blamer
+  :ensure t
+  :custom
+  (blamer-idle-time 0.3)
+  (blamer-min-offset 70)
+  (blamer-author-formatter " ✎ %s ")
+  (blamer-datetime-formatter "[%s]")
+  (blamer-commit-formatter " ● %s")
+  :custom-face
+  (blamer-face ((t :foreground "#7a88cf"
+		   ;; :background nil
+		   :height 120
+		   :italic t)))
+  :config
+  (global-blamer-mode 1)
+  )
+
+(use-package git-modes
+  :ensure t
+  :config
+  (add-to-list 'auto-mode-alist
+		     (cons "/.dockerignore\\'" 'gitignore-mode))
+  (add-to-list 'auto-mode-alist
+		     (cons "/.gitignore\\'" 'gitignore-mode))
+  (add-to-list 'auto-mode-alist
+	       (cons "/.gitconfig\\'" 'gitconfig-mode))
+  )
+
+(use-package smerge-mode)
+
+(use-package diff-hl
+  :ensure
+  :config
+  (global-diff-hl-mode))
+
 (use-package maple-iedit
   :init (slot/vc-install :repo "honmaple/emacs-maple-iedit")
   :commands (maple-iedit-match-all maple-iedit-match-next maple-iedit-match-previous)
@@ -1104,6 +1303,24 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
               doom-modeline-icon nil
               doom-modeline-minor-modes t)
         (doom-modeline-mode 1)))
+
+;;   (use-package fanyi
+;;   :ensure t
+;;   :config
+;;   (custom-set-variables
+;;    '(fanyi-providers '(fanyi-haici-provider
+;; 			                 fanyi-youdao-thesaurus-provider
+;; 			                 fanyi-etymon-provider
+;; 			                 fanyi-longman-provider
+;; 			                 ;; fanyi-libre-provider
+;; 			                 )))
+;;   ;; 还要自动选择翻译内容 buffer
+;;   (setq fanyi-auto-select nil))
+
+
+;; (use-package youdao-dictionary
+;;   :ensure t
+;;    )
 
 (defun tangle-if-init ()
   "If the current buffer is 'init.org' the code-blocks are
