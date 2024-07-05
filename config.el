@@ -1013,7 +1013,7 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 			 '(?t "TMSU" tmsu-dired-bookmark-open))))
 
 (use-package corfu
-  :init (global-corfu-mode 1)
+  :init (global-corfu-mode)
   :config (progn
 	    (corfu-popupinfo-mode 1)
 	    (corfu-echo-mode 1)
@@ -1021,44 +1021,44 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 		  corfu-echo-delay t)))
 
 ;; https://archive.is/Gj6Fu
-(autoload 'ffap-file-at-point "ffap")
-(defun complete-path-at-point+ ()
-  (let ((fn (ffap-file-at-point))
-	(fap (thing-at-point 'filename)))
-    (when (and (or fn (equal "/" fap))
-	       (save-excursion
-		 (search-backward fap (line-beginning-position) t)))
-      (list (match-beginning 0)
-	    (match-end 0)
-	    #'completion-file-name-table :exclusive 'no))))
-(add-hook 'completion-at-point-functions
-	  #'complete-path-at-point+
-	  'append)
+;; (autoload 'ffap-file-at-point "ffap")
+;; (defun complete-path-at-point+ ()
+;;   (let ((fn (ffap-file-at-point))
+;; 	(fap (thing-at-point 'filename)))
+;;     (when (and (or fn (equal "/" fap))
+;; 	       (save-excursion
+;; 		 (search-backward fap (line-beginning-position) t)))
+;;       (list (match-beginning 0)
+;; 	    (match-end 0)
+;; 	    #'completion-file-name-table :exclusive 'no))))
+;; (add-hook 'completion-at-point-functions
+;; 	  #'complete-path-at-point+
+;; 	  'append)
 
-;; Add prompt indicator to `completing-read-multiple'.
-;; We display [CRM<separator>], e.g., [CRM,] if the separator is a comma.
-;;
-;; Taken from the Vertico docs.
-(defun crm-indicator (args)
-  (cons (format "[CRM%s] %s"
-		(replace-regexp-in-string
-		 "\\`\\[.*?]\\*\\|\\[.*?]\\*\\'" ""
-		 crm-separator)
-		(car args))
-	(cdr args)))
-(advice-add #'completing-read-multiple :filter-args #'crm-indicator)
+;; ;; Add prompt indicator to `completing-read-multiple'.
+;; ;; We display [CRM<separator>], e.g., [CRM,] if the separator is a comma.
+;; ;;
+;; ;; Taken from the Vertico docs.
+;; (defun crm-indicator (args)
+;;   (cons (format "[CRM%s] %s"
+;; 		(replace-regexp-in-string
+;; 		 "\\`\\[.*?]\\*\\|\\[.*?]\\*\\'" ""
+;; 		 crm-separator)
+;; 		(car args))
+;; 	(cdr args)))
+;; (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
 
-(setq enable-recursive-minibuffers t)
-(minibuffer-depth-indicate-mode 1)
+;; (setq enable-recursive-minibuffers t)
+;; (minibuffer-depth-indicate-mode 1)
 
-;; Use the completing-read UI for the M-tab completion unless
+;; ;; Use the completing-read UI for the M-tab completion unless
 ;; overridden (for example by `corfu').
-(setq-default completion-in-region-function
-	      (lambda (&rest args)
-		(apply (if vertico-mode
-			   #'consult-completion-in-region
-			 #'completion--in-region)
-		       args)))
+;; (setq-default completion-in-region-function
+;; 		(lambda (&rest args)
+;; 		  (apply (if vertico-mode
+;; 			     #'consult-completion-in-region
+;; 			   #'completion--in-region)
+;; 			 args)))
 
 (use-package magit
   :bind* (("M-m g d" . magit))
@@ -1304,6 +1304,27 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 (when (version<= "9.2" (org-version))
   (require 'org-tempo))
 
+(use-package yasnippet
+  :diminish yas-minor-mode
+  :hook ((prog-mode org-mode) . yas-minor-mode)
+  :bind (("C-c y i" . yas-insert-snippet)
+         ("C-c y f" . yas-visit-snippet-file)
+         ("C-c y n" . yas-new-snippet)
+         ("C-c y t" . yas-tryout-snippet)
+         ("C-c y l" . yas-describe-tables)
+         ("C-c y g" . yas-global-mode)
+         ("C-c y m" . yas-minor-mode)
+         ("C-c y r" . yas-reload-all)
+         ("C-c y x" . yas-expand)
+         :map yas-keymap
+         ("C-i" . yas-next-field-or-maybe-expand))
+  :config
+  (yas-reload-all))
+
+(use-package yasnippet-snippets
+  :defer t
+  :after yasnippet)
+
 (use-package evil-nerd-commenter
   :bind* (("M-;" . evilnc-comment-or-uncomment-lines))
   )
@@ -1392,6 +1413,7 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
   :commands (lsp lsp-deferred)
   :hook (lsp-mode . gcl/lsp-mode-setup)
   :diminish lsp-mode
+  :diminish lsp-lens-mode
   :init
   (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
   :config
@@ -1401,6 +1423,15 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
   :hook (lsp-mode . lsp-ui-mode)
   :custom
   (lsp-ui-doc-position 'bottom))
+
+
+(use-package lsp-tailwindcss
+  :straight (:type git :host github :repo "merrickluo/lsp-tailwindcss")
+  :config
+  (setq lsp-tailwindcss-add-on-mode t))
+(add-hook 'before-save-hook 'lsp-tailwindcss-rustywind-before-save)
+;; 其他 buffer 中启用
+(add-to-list 'lsp-language-id-configuration '(".*\\.erb$" . "html"))
 
 (use-package company
   :after lsp-mode
@@ -1415,13 +1446,72 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
   (company-idle-delay 0.0))
 
 (use-package company-box
+  :diminish company-box-mode
   :hook (company-mode . company-box-mode))
 
 (use-package typescript-mode
-  :mode "\\.ts\\'"
+  :mode "\\.[cm]?ts\\'"
   :hook (typescript-mode . lsp-deferred)
   :config
   (setq typescript-indent-level 2))
+
+(use-package json-mode)
+
+(use-package scss-mode)
+
+(use-package css-mode)
+
+(use-package emmet-mode
+  :diminish emmet-mode
+  :hook ((sgml-mode html-mode css-mode web-mode typescript-mode js-mode) . emmet-mode)
+  :config
+  (add-hook 'emmet-mode-hook (lambda () (setq emmet-indentation 2))))
+
+(use-package web-mode
+  :mode
+  (
+   ".twig$"
+   ".html?$"
+   ".hbs$"
+   ".vue$"
+   ".blade.php$"
+   )
+  :hook (web-mode . lsp-deferred)
+  :config
+  (setq
+   web-mode-markup-indent-offset 2
+   web-mode-css-indent-offset 2
+   web-mode-code-indent-offset 2
+   web-mode-style-padding 0
+   web-mode-script-padding 0
+   web-mode-enable-auto-closing t
+   web-mode-enable-auto-opening t
+   web-mode-enable-auto-pairing nil
+   web-mode-enable-auto-indentation t
+   web-mode-tag-auto-close-style 1
+   web-mode-enable-current-element-highlight t)
+
+  ;; 设置不同类型代码的注释格式
+  (setq web-mode-comment-formats
+	'(("javascript" . "//")    ; JavaScript 注释
+	  ("jsx" . "//")           ; JSX 注释
+	  ("php" . "//")           ; PHP 注释
+	  ("css" . "/*")           ; CSS 注释
+	  ("java" . "//")          ; Java 注释
+	  ;; 添加更多类型的注释格式
+	  ))
+
+  ;; Let smartparens handle auto closing brackets, e.g. {{ }} or {% %}
+  ;; https://github.com/hlissner/doom-emacs/blob/develop/modules/lang/web/%2Bhtml.el#L56
+  (dolist (alist web-mode-engines-auto-pairs)
+    (setcdr alist
+	    (cl-loop for pair in (cdr alist)
+		     unless (string-match-p "^[a-z-]" (cdr pair))
+		     collect (cons (car pair)
+				   (string-trim-right (cdr pair)
+						      "\\(?:>\\|]\\|}\\)+\\'")))))
+  ;; (add-to-list 'lsp-language-id-configuration '(web-mode . "vue"))
+  )
 
 (defun tangle-if-init ()
   "If the current buffer is 'init.org' the code-blocks are

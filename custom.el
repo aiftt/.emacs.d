@@ -10,7 +10,9 @@
      (emacs-maple-iedit :vc-backend Git :url "https://www.github.com/honmaple/emacs-maple-iedit")
      (toggle-quotes-plus :vc-backend Git :url "https://www.github.com/jcs-elpa/toggle-quotes-plus")))
  '(safe-local-variable-values
-   '((eval when
+   '((lsp-enabled-clients vue-semantic-server tailwindcss)
+     (lsp-enabled-clients deno-ls)
+     (eval when
 	   (fboundp #'tangle-if-init)
 	   (add-hook 'after-save-hook #'tangle-if-init)))))
 (custom-set-faces
