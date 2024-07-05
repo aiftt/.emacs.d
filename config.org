@@ -483,7 +483,7 @@
 
 * which-key
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package which-key
     :defer t
     :diminish which-key-mode
@@ -498,56 +498,57 @@
 
 * Modalka(类似Evil)
 #+BEGIN_SRC emacs-lisp
-  (defun exit-modalka ()
-    (interactive)
-    (modalka-mode 0))
+    (defun exit-modalka ()
+      (interactive)
+      (modalka-mode 0))
 
-  (defun exit-on-space ()
-    (interactive)
-    (modalka-mode 0)
-    (insert-char 32))
+    (defun exit-on-space ()
+      (interactive)
+      (modalka-mode 0)
+      (insert-char 32))
 
-  (defun exit-on-newline ()
-    (interactive)
-    (modalka-mode 0)
-    (newline-and-indent))
+    (defun exit-on-newline ()
+      (interactive)
+      (modalka-mode 0)
+      (newline-and-indent))
 
-  (use-package modalka
-    :demand t
-    :bind* (("C-z" . modalka-mode))
-    :diminish (modalka-mode . "μ")
-    :init
-    (setq modalka-cursor-type 'box)
-    :config
-    (global-set-key (kbd "<escape>") #'modalka-mode)
-    (modalka-global-mode 1)
-    (add-to-list 'modalka-excluded-modes 'magit-status-mode)
-    (add-to-list 'modalka-excluded-modes 'magit-popup-mode)
-    (add-to-list 'modalka-excluded-modes 'dired-mode)
-    (add-to-list 'modalka-excluded-modes 'eshell-mode)
-    (add-to-list 'modalka-excluded-modes 'deft-mode)
-    (add-to-list 'modalka-excluded-modes 'term-mode)
-    (which-key-add-key-based-replacements
-      "M-m"     "Modalka prefix"
-      "M-m :"   "extended prefix"
-      "M-m m"   "move prefix"
-      "M-m s"   "send code prefix"
-      "M-m SPC" "user prefix"
-      "M-m g"   "global prefix"
-      "M-m o"   "org prefix"
-      "M-m a"   "expand around prefix"
-      "M-m e"   "buffer edit"
-      "M-m i"   "expand inside prefix"
-      "M-m ["   "prev nav prefix"
-      "M-m ]"   "next nav prefix"))
+    (use-package modalka
+      :demand t
+      :bind* (("C-z" . modalka-mode))
+      :diminish (modalka-mode . "μ")
+      :init
+      (setq modalka-cursor-type 'box)
+      :config
+      (global-set-key (kbd "<escape>") #'modalka-mode)
+      (modalka-global-mode 1)
+      (add-to-list 'modalka-excluded-modes 'magit-status-mode)
+      (add-to-list 'modalka-excluded-modes 'magit-popup-mode)
+      (add-to-list 'modalka-excluded-modes 'dired-mode)
+      (add-to-list 'modalka-excluded-modes 'eshell-mode)
+      (add-to-list 'modalka-excluded-modes 'deft-mode)
+      (add-to-list 'modalka-excluded-modes 'term-mode)
+      ;; (which-key-add-key-based-replacements
+      ;; 	"M-m"     "Modalka prefix"
+      ;; 	"M-m :"   "extended prefix"
+      ;; 	"M-m m"   "move prefix"
+      ;; 	"M-m s"   "send code prefix"
+      ;; 	"M-m SPC" "user prefix"
+      ;; 	"M-m g"   "global prefix"
+      ;; 	"M-m o"   "org prefix"
+      ;; 	"M-m a"   "expand around prefix"
+      ;; 	"M-m e"   "buffer edit"
+      ;; 	"M-m i"   "expand inside prefix"
+      ;; 	"M-m ["   "prev nav prefix"
+      ;; 	"M-m ]"   "next nav prefix")
+      )
 
-  (define-key modalka-mode-map (kbd "o") #'exit-on-newline)
-  (define-key modalka-mode-map (kbd "i") #'exit-modalka)
+    (define-key modalka-mode-map (kbd "o") #'exit-on-newline)
+    (define-key modalka-mode-map (kbd "i") #'exit-modalka)
 
-  (defun auto-enter-modalka-mode ()
-    (modalka-mode 1))
+    (defun auto-enter-modalka-mode ()
+      (modalka-mode 1))
 
-  (run-with-idle-timer 5 nil 'auto-enter-modalka-mode)
+    (run-with-idle-timer 5 nil 'auto-enter-modalka-mode)
 #+END_SRC
 ** 默认功能按键
 
@@ -597,17 +598,17 @@
 
 
   ;; 说明
-  (which-key-add-key-based-replacements
-    "0" "0"
-    "1" "1"
-    "2" "2"
-    "3" "3"
-    "4" "4"
-    "5" "5"
-    "6" "6"
-    "7" "7"
-    "8" "8"
-    "9" "9")
+  ;; (which-key-add-key-based-replacements
+  ;;   "0" "0"
+  ;;   "1" "1"
+  ;;   "2" "2"
+  ;;   "3" "3"
+  ;;   "4" "4"
+  ;;   "5" "5"
+  ;;   "6" "6"
+  ;;   "7" "7"
+  ;;   "8" "8"
+  ;;   "9" "9")
 #+END_SRC
 
 ** 单字符按键
@@ -660,61 +661,61 @@
   (modalka-define-kbd "|" "M-m e l")	; 复制当前行或选中区域
 
   ;; 说明
-  (which-key-add-key-based-replacements
-    "ESC" "toggle mode"
-    "DEL" "smart del"
-    "TAB" "smart tab"
-    "RET" "smart enter"
-    "c"   "upcase"
-    "C"   "downcase"
-    "h"   "prev char"
-    "j"   "next line"
-    "k"   "prev line"
-    "l"   "next char"
-    "e"   "next word"
-    "b"   "prev word"
-    "n"   "next history item"
-    "N"   "prev history item"
-    "{"   "next para"
-    "}"   "prev para"
-    "0"   "start of line"
-    "$"   "end of line"
-    "("   "start of sentence"
-    ")"   "end of sentence"
-    "/"   "search"
-    "|"   "duplicate line"
-    "E"   "exit anything"
-    "B"   "previous buffer"
-    "W"   "winner undo"
-    "w"   "other window"
-    "G"   "end of file"
-    "d"   "delete selection"
-    "y"   "copy selection"
-    "p"   "paste"
-    "P"   "paste history"
-    "x"   "delete char"
-    "D"   "delete rest of line"
-    "M"   "modify argument"
-    "z"   "scroll center/top/bot"
-    "Z"   "zoom into window"
-    "H"   "scroll left"
-    "J"   "scroll down"
-    "K"   "scroll up"
-    "L"   "scroll right"
-    "'"   "org edit separately"
-    ","   "vertico-repeat"
-    "q"   "start macro"
-    "Q"   "end macro"
-    "?"   "top level bindings"
-    "v"   "start selection"
-    "R"   "overwrite mode"
-    "X"   "exchange point and mark"
-    "+"   "set bookmark"
-    "'"   "jump to bookmark"
-    "="   "indent region"
-    "\\"  "C-c C-c"
-    "!"   "async shell command"
-    "&"   "shell command")
+  ;; (which-key-add-key-based-replacements
+  ;;   "ESC" "toggle mode"
+  ;;   "DEL" "smart del"
+  ;;   "TAB" "smart tab"
+  ;;   "RET" "smart enter"
+  ;;   "c"   "upcase"
+  ;;   "C"   "downcase"
+  ;;   "h"   "prev char"
+  ;;   "j"   "next line"
+  ;;   "k"   "prev line"
+  ;;   "l"   "next char"
+  ;;   "e"   "next word"
+  ;;   "b"   "prev word"
+  ;;   "n"   "next history item"
+  ;;   "N"   "prev history item"
+  ;;   "{"   "next para"
+  ;;   "}"   "prev para"
+  ;;   "0"   "start of line"
+  ;;   "$"   "end of line"
+  ;;   "("   "start of sentence"
+  ;;   ")"   "end of sentence"
+  ;;   "/"   "search"
+  ;;   "|"   "duplicate line"
+  ;;   "E"   "exit anything"
+  ;;   "B"   "previous buffer"
+  ;;   "W"   "winner undo"
+  ;;   "w"   "other window"
+  ;;   "G"   "end of file"
+  ;;   "d"   "delete selection"
+  ;;   "y"   "copy selection"
+  ;;   "p"   "paste"
+  ;;   "P"   "paste history"
+  ;;   "x"   "delete char"
+  ;;   "D"   "delete rest of line"
+  ;;   "M"   "modify argument"
+  ;;   "z"   "scroll center/top/bot"
+  ;;   "Z"   "zoom into window"
+  ;;   "H"   "scroll left"
+  ;;   "J"   "scroll down"
+  ;;   "K"   "scroll up"
+  ;;   "L"   "scroll right"
+  ;;   "'"   "org edit separately"
+  ;;   ","   "vertico-repeat"
+  ;;   "q"   "start macro"
+  ;;   "Q"   "end macro"
+  ;;   "?"   "top level bindings"
+  ;;   "v"   "start selection"
+  ;;   "R"   "overwrite mode"
+  ;;   "X"   "exchange point and mark"
+  ;;   "+"   "set bookmark"
+  ;;   "'"   "jump to bookmark"
+  ;;   "="   "indent region"
+  ;;   "\\"  "C-c C-c"
+  ;;   "!"   "async shell command"
+  ;;   "&"   "shell command")
 
 #+END_SRC
 ** 组合键
@@ -732,14 +733,14 @@
   (modalka-define-kbd "] s" "M-m ] s")
 
   ;; 说明
-  (which-key-add-key-based-replacements
-    "]"   "forward nav/edit"
-    "] w" "backward nav/edit"
-    "] s" "next spell error")
+  ;; (which-key-add-key-based-replacements
+  ;;   "]"   "forward nav/edit"
+  ;;   "] w" "backward nav/edit"
+  ;;   "] s" "next spell error")
 
-  (which-key-add-key-based-replacements
-    "["   "backward nav/edit"
-    "[ [" "widen region")
+  ;; (which-key-add-key-based-replacements
+  ;;   "["   "backward nav/edit"
+  ;;   "[ [" "widen region")
 #+END_SRC
 
 *** SPC
@@ -760,21 +761,21 @@
   (modalka-define-kbd "SPC ." "M-SPC")
 
   ;; 说明
-  (which-key-add-key-based-replacements
-    "SPC"   "custom prefix"
-    "SPC ." "just one space"
-    "SPC ?" "describe bindings"
-    "SPC j" "jump to cmd"
-    "SPC f" "find file"
-    "SPC a" "switch buffers"
-    "SPC g" "goto line"
-    "SPC d" "dired"
-    "SPC k" "close buffer"
-    "SPC w" "save buffer"
-    "SPC c" "load theme"
-    "SPC R" "locate"
-    "SPC q" "quit window"
-    "g U"   "simulate C-c C-k")
+  ;; (which-key-add-key-based-replacements
+  ;;   "SPC"   "custom prefix"
+  ;;   "SPC ." "just one space"
+  ;;   "SPC ?" "describe bindings"
+  ;;   "SPC j" "jump to cmd"
+  ;;   "SPC f" "find file"
+  ;;   "SPC a" "switch buffers"
+  ;;   "SPC g" "goto line"
+  ;;   "SPC d" "dired"
+  ;;   "SPC k" "close buffer"
+  ;;   "SPC w" "save buffer"
+  ;;   "SPC c" "load theme"
+  ;;   "SPC R" "locate"
+  ;;   "SPC q" "quit window"
+  ;;   "g U"   "simulate C-c C-k")
 #+END_SRC
 
 *** g
@@ -813,35 +814,35 @@
   (modalka-define-kbd "g l" "M-g M-g")	; goto line
   ;; 说明
 
-  (which-key-add-key-based-replacements
-    "g"   "global prefix"
-    "g i" "consult imenu"
-    "g r" "consult ripgrep"
-    "g g" "start of file"
-    "g m" "make frame"
-    "g M" "delete frame"
-    "g n" "select frame by name"
-    "g N" "name frame"
-    "g j" "next pdf page"
-    "g k" "previous pdf page"
-    "g f" "file/url at cursor"
-    "g F" "enable follow mode"
-    "g l" "goto line"
-    "g o" "eval elisp"
-    "g O" "eval defun"
-    "g w" "vertical split win"
-    "g -" "horizontal split win"
-    "g S" "split line"
-    "g @" "compose mail"
-    "g #" "list eww histories"
-    "g x" "browse with eww"
-    "g :" "browse with external browser"
-    "g {" "eww back"
-    "g }" "eww forward"
-    "g (" "info previous"
-    "g )" "info next"
-    "g q" "format para"
-    "g ?" "find command bound to key")
+  ;; (which-key-add-key-based-replacements
+  ;;   "g"   "global prefix"
+  ;;   "g i" "consult imenu"
+  ;;   "g r" "consult ripgrep"
+  ;;   "g g" "start of file"
+  ;;   "g m" "make frame"
+  ;;   "g M" "delete frame"
+  ;;   "g n" "select frame by name"
+  ;;   "g N" "name frame"
+  ;;   "g j" "next pdf page"
+  ;;   "g k" "previous pdf page"
+  ;;   "g f" "file/url at cursor"
+  ;;   "g F" "enable follow mode"
+  ;;   "g l" "goto line"
+  ;;   "g o" "eval elisp"
+  ;;   "g O" "eval defun"
+  ;;   "g w" "vertical split win"
+  ;;   "g -" "horizontal split win"
+  ;;   "g S" "split line"
+  ;;   "g @" "compose mail"
+  ;;   "g #" "list eww histories"
+  ;;   "g x" "browse with eww"
+  ;;   "g :" "browse with external browser"
+  ;;   "g {" "eww back"
+  ;;   "g }" "eww forward"
+  ;;   "g (" "info previous"
+  ;;   "g )" "info next"
+  ;;   "g q" "format para"
+  ;;   "g ?" "find command bound to key")
 #+END_SRC
 
 *** i
@@ -963,66 +964,71 @@
 ** embark
 
 #+BEGIN_SRC emacs-lisp
-  (use-package embark
-    :bind (("C-c o" . embark-dwim)
-	   ("C-."   . embark-act)
-	   :map minibuffer-local-map
-	   ("M-o"   . embark-act)
-	   :map embark-command-map
-	   ;; Unbind the dangerous `global-set-key' and `local-set-key'
-	   ;; actions.  It's far too easy to accidentally bind over some
-	   ;; `self-insert-command' binding or even over
-	   ;; \\[keyboard-quit].
-	   ("g" . nil)
-	   ("l" . nil)
-	   :map embark-collect-mode-map
-	   ("m" . vifon/embark-select-and-forward))
-    :config (progn
-	      (setq embark-mixed-indicator-delay 2)
+    (use-package embark
+      :bind (("C-c o" . embark-dwim)
+	     ("C-."   . embark-act)
+	     :map minibuffer-local-map
+	     ("M-o"   . embark-act)
+	     :map embark-command-map
+	     ;; Unbind the dangerous `global-set-key' and `local-set-key'
+	     ;; actions.  It's far too easy to accidentally bind over some
+	     ;; `self-insert-command' binding or even over
+	     ;; \\[keyboard-quit].
+	     ("g" . nil)
+	     ("l" . nil)
+	     :map embark-collect-mode-map
+	     ("m" . vifon/embark-select-and-forward))
+      :init
+      ;; Optionally replace the key help with a completing-(region-end)ad interface
+      (setq prefix-help-command #'embark-prefix-help-command)
+      :config (progn
+		(setq embark-mixed-indicator-delay 2)
 
-	      ;; Make the eval action editable.  Evaluating code
-	      ;; in-place is simple enough without Embark, if I invoke
-	      ;; it with Embark, I almost definitely want to edit the
-	      ;; expression beforehand.  And even if not, I can
-	      ;; just confirm.
-	      (cl-pushnew 'embark--allow-edit
-			  (alist-get 'pp-eval-expression embark-target-injection-hooks))
+		;; Make the eval action editable.  Evaluating code
+		;; in-place is simple enough without Embark, if I invoke
+		;; it with Embark, I almost definitely want to edit the
+		;; expression beforehand.  And even if not, I can
+		;; just confirm.
+		(cl-pushnew 'embark--allow-edit
+			    (alist-get 'pp-eval-expression embark-target-injection-hooks))
 
-	      ;; Reload the project list after using
-	      ;; C-u `embark-act' with `project-forget-project'.
-	      (cl-pushnew 'embark--restart
-			  (alist-get 'project-forget-project embark-post-action-hooks))
+		;; Reload the project list after using
+		;; C-u `embark-act' with `project-forget-project'.
+		(cl-pushnew 'embark--restart
+			    (alist-get 'project-forget-project embark-post-action-hooks))
 
-	      (defun embark-act-with-eval (expression)
-		"Evaluate EXPRESSION and call `embark-act' on the result."
-		(interactive "sExpression: ")
-		(with-temp-buffer
-		  (let ((expr-value (eval (read expression))))
-		    (insert (if (stringp expr-value)
-				expr-value
-			      (format "%S" expr-value))))
-		  (embark-act)))
+		(defun embark-act-with-eval (expression)
+		  "Evaluate EXPRESSION and call `embark-act' on the result."
+		  (interactive "sExpression: ")
+		  (with-temp-buffer
+		    (let ((expr-value (eval (read expression))))
+		      (insert (if (stringp expr-value)
+				  expr-value
+				(format "%S" expr-value))))
+		    (embark-act)))
 
-	      (dolist (keymap (list embark-variable-map embark-expression-map))
-		(define-key keymap (kbd "v") #'embark-act-with-eval))
+		(dolist (keymap (list embark-variable-map embark-expression-map))
+		  (define-key keymap (kbd "v") #'embark-act-with-eval))
 
-	      ;; Source: https://github.com/oantolin/embark/wiki/Additional-Actions#attaching-file-to-an-email-message
-	      (autoload 'gnus-dired-attach "gnus-dired" nil t)
-	      (defun embark-attach-file (file)
-		"Attach FILE to an email message."
-		(interactive "fAttach: ")
-		(cl-letf (((symbol-function 'y-or-n-p) #'always))
-		  (gnus-dired-attach (list file))))
-	      (bind-key "a" #'embark-attach-file embark-file-map)
+		;; Source: https://github.com/oantolin/embark/wiki/Additional-Actions#attaching-file-to-an-email-message
+		(autoload 'gnus-dired-attach "gnus-dired" nil t)
+		(defun embark-attach-file (file)
+		  "Attach FILE to an email message."
+		  (interactive "fAttach: ")
+		  (cl-letf (((symbol-function 'y-or-n-p) #'always))
+		    (gnus-dired-attach (list file))))
+		(bind-key "a" #'embark-attach-file embark-file-map)
 
-	      (defun vifon/embark-select-and-forward ()
-		(interactive)
-		(embark-select)
-		(forward-button 1))))
+		(defun vifon/embark-select-and-forward ()
+		  (interactive)
+		  (embark-select)
+		  (forward-button 1))))
 
 
-  (use-package embark-consult
-    :after (embark consult))
+    (use-package embark-consult
+      :after (embark consult)
+      :hook
+      (embark-collect-mode . consult-preview-at-point-mode))
 #+END_SRC
 
 ** marginalia
@@ -1242,7 +1248,7 @@
     )
 
   (modalka-define-kbd "g d" "M-m g d")
-  (which-key-add-key-based-replacements "g d" "magit")
+  ;; (which-key-add-key-based-replacements "g d" "magit")
 
   (use-package blamer
     :custom
@@ -1316,9 +1322,9 @@
 
   (modalka-define-kbd "C-," "M-m e i")
 
-  (which-key-add-key-based-replacements
-    "C-," "iedit"
-    )
+  ;; (which-key-add-key-based-replacements
+  ;;   "C-," "iedit"
+  ;;   )
 
 #+END_SRC
 ** move-text
@@ -1633,7 +1639,8 @@
     (persp-mode)
     :config
     (setq persp-state-default-file (expand-file-name ".gcl" user-emacs-directory))
-    (setq persp-show-modestring 'header)
+    (setq persp-show-modestring nil)
+    ;; (setq persp-modestring-short t)
     (add-hook 'kill-emacs-hook #'persp-state-save)
     (use-package persp-projectile)
     )
@@ -1657,51 +1664,66 @@
 
 ** lsp-mode
 #+begin_src emacs-lisp
-      (defun gcl/lsp-mode-setup ()
-	(setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
-	(lsp-headerline-breadcrumb-mode))
+	(defun gcl/lsp-mode-setup ()
+	  (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+	  (lsp-headerline-breadcrumb-mode))
 
-      (use-package lsp-mode
-	:commands (lsp lsp-deferred)
-	:hook (lsp-mode . gcl/lsp-mode-setup)
-	:diminish lsp-mode
-	:diminish lsp-lens-mode
-	:init
-	(setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
-	:config
-	(lsp-enable-which-key-integration t))
+	(use-package lsp-mode
+	  :commands (lsp lsp-deferred)
+	  :hook (lsp-mode . gcl/lsp-mode-setup)
+	  :diminish lsp-mode
+	  :diminish lsp-lens-mode
+	  :init
+	  (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
+	  :config
+	  ;; (lsp-enable-which-key-integration t)
+	  )
 
-      (use-package lsp-ui
-	:hook (lsp-mode . lsp-ui-mode)
-	:custom
-	(lsp-ui-doc-position 'bottom))
+	(use-package lsp-ui
+	  :hook (lsp-mode . lsp-ui-mode)
+	  :custom
+	  (lsp-ui-doc-position 'bottom))
 
 
-      (use-package lsp-tailwindcss
-	:straight (:type git :host github :repo "merrickluo/lsp-tailwindcss")
-	:config
-	(setq lsp-tailwindcss-add-on-mode t))
-      (add-hook 'before-save-hook 'lsp-tailwindcss-rustywind-before-save)
-      ;; 其他 buffer 中启用
-      (add-to-list 'lsp-language-id-configuration '(".*\\.erb$" . "html"))
+	(use-package lsp-tailwindcss
+	  :straight (:type git :host github :repo "merrickluo/lsp-tailwindcss")
+	  :config
+	  (setq lsp-tailwindcss-add-on-mode t))
+	(add-hook 'before-save-hook 'lsp-tailwindcss-rustywind-before-save)
+	;; 其他 buffer 中启用
+	(add-to-list 'lsp-language-id-configuration '(".*\\.erb$" . "html"))
 
-      (use-package company
-	:after lsp-mode
-	:hook (lsp-mode . company-mode)
-	:diminish company-mode
-	:bind (:map company-active-map
-		    ("<tab>" . company-complete-selection))
-	(:map lsp-mode-map
-	      ("<tab>" . company-indent-or-complete-common))
-	:custom
-	(company-minimum-prefix-length 1)
-	(company-idle-delay 0.0))
+	(use-package company
+	  :after lsp-mode
+	  :hook (lsp-mode . company-mode)
+	  :diminish company-mode
+	  :bind (:map company-active-map
+		      ("<tab>" . company-complete-selection))
+	  (:map lsp-mode-map
+		("<tab>" . company-indent-or-complete-common))
+	  :custom
+	  (company-minimum-prefix-length 1)
+	  (company-idle-delay 0.0))
 
-      (use-package company-box
-	:diminish company-box-mode
-	:hook (company-mode . company-box-mode))
+	(use-package company-box
+	  :diminish company-box-mode
+	  :hook (company-mode . company-box-mode))
 #+end_src
 ** web 开发
+*** javascript
+#+begin_src emacs-lisp
+  (use-package js2-mode
+    :mode "\\.jsx?\\'"
+    :config
+    ;; Use js2-mode for Node scripts
+    (add-to-list 'magic-mode-alist '("#!/usr/bin/env node" . js2-mode))
+
+    ;; Don't use built-in syntax checking
+    (setq js2-mode-show-strict-warnings nil)
+
+    ;; Set up proper indentation in JavaScript and JSON files
+    (setq-default js-indent-level 2))
+#+end_src
 *** typescript
 #+begin_src emacs-lisp
 (use-package typescript-mode

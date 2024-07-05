@@ -403,17 +403,6 @@ one, an error is signaled."
   :config
   (add-hook 'dired-mode-hook 'dired-hide-details-mode))
 
-(use-package which-key
-  :defer t
-  :diminish which-key-mode
-  :init
-  (setq which-key-sort-order 'which-key-key-order-alpha)
-  :bind* (("M-m ?" . which-key-show-top-level))
-  :config
-  (which-key-mode)
-  (which-key-add-key-based-replacements
-    "M-m ?" "top level bindings"))
-
 (defun exit-modalka ()
   (interactive)
   (modalka-mode 0))
@@ -443,19 +432,20 @@ one, an error is signaled."
   (add-to-list 'modalka-excluded-modes 'eshell-mode)
   (add-to-list 'modalka-excluded-modes 'deft-mode)
   (add-to-list 'modalka-excluded-modes 'term-mode)
-  (which-key-add-key-based-replacements
-    "M-m"     "Modalka prefix"
-    "M-m :"   "extended prefix"
-    "M-m m"   "move prefix"
-    "M-m s"   "send code prefix"
-    "M-m SPC" "user prefix"
-    "M-m g"   "global prefix"
-    "M-m o"   "org prefix"
-    "M-m a"   "expand around prefix"
-    "M-m e"   "buffer edit"
-    "M-m i"   "expand inside prefix"
-    "M-m ["   "prev nav prefix"
-    "M-m ]"   "next nav prefix"))
+  ;; (which-key-add-key-based-replacements
+  ;; 	"M-m"     "Modalka prefix"
+  ;; 	"M-m :"   "extended prefix"
+  ;; 	"M-m m"   "move prefix"
+  ;; 	"M-m s"   "send code prefix"
+  ;; 	"M-m SPC" "user prefix"
+  ;; 	"M-m g"   "global prefix"
+  ;; 	"M-m o"   "org prefix"
+  ;; 	"M-m a"   "expand around prefix"
+  ;; 	"M-m e"   "buffer edit"
+  ;; 	"M-m i"   "expand inside prefix"
+  ;; 	"M-m ["   "prev nav prefix"
+  ;; 	"M-m ]"   "next nav prefix")
+  )
 
 (define-key modalka-mode-map (kbd "o") #'exit-on-newline)
 (define-key modalka-mode-map (kbd "i") #'exit-modalka)
@@ -506,17 +496,17 @@ one, an error is signaled."
 
 
 ;; 说明
-(which-key-add-key-based-replacements
-  "0" "0"
-  "1" "1"
-  "2" "2"
-  "3" "3"
-  "4" "4"
-  "5" "5"
-  "6" "6"
-  "7" "7"
-  "8" "8"
-  "9" "9")
+;; (which-key-add-key-based-replacements
+;;   "0" "0"
+;;   "1" "1"
+;;   "2" "2"
+;;   "3" "3"
+;;   "4" "4"
+;;   "5" "5"
+;;   "6" "6"
+;;   "7" "7"
+;;   "8" "8"
+;;   "9" "9")
 
 (modalka-define-kbd "c" "M-m g c")	; 单词大写
 (modalka-define-kbd "C" "M-m g d")	; 单词小写，M-c 首字母大写
@@ -566,61 +556,61 @@ one, an error is signaled."
 (modalka-define-kbd "|" "M-m e l")	; 复制当前行或选中区域
 
 ;; 说明
-(which-key-add-key-based-replacements
-  "ESC" "toggle mode"
-  "DEL" "smart del"
-  "TAB" "smart tab"
-  "RET" "smart enter"
-  "c"   "upcase"
-  "C"   "downcase"
-  "h"   "prev char"
-  "j"   "next line"
-  "k"   "prev line"
-  "l"   "next char"
-  "e"   "next word"
-  "b"   "prev word"
-  "n"   "next history item"
-  "N"   "prev history item"
-  "{"   "next para"
-  "}"   "prev para"
-  "0"   "start of line"
-  "$"   "end of line"
-  "("   "start of sentence"
-  ")"   "end of sentence"
-  "/"   "search"
-  "|"   "duplicate line"
-  "E"   "exit anything"
-  "B"   "previous buffer"
-  "W"   "winner undo"
-  "w"   "other window"
-  "G"   "end of file"
-  "d"   "delete selection"
-  "y"   "copy selection"
-  "p"   "paste"
-  "P"   "paste history"
-  "x"   "delete char"
-  "D"   "delete rest of line"
-  "M"   "modify argument"
-  "z"   "scroll center/top/bot"
-  "Z"   "zoom into window"
-  "H"   "scroll left"
-  "J"   "scroll down"
-  "K"   "scroll up"
-  "L"   "scroll right"
-  "'"   "org edit separately"
-  ","   "vertico-repeat"
-  "q"   "start macro"
-  "Q"   "end macro"
-  "?"   "top level bindings"
-  "v"   "start selection"
-  "R"   "overwrite mode"
-  "X"   "exchange point and mark"
-  "+"   "set bookmark"
-  "'"   "jump to bookmark"
-  "="   "indent region"
-  "\\"  "C-c C-c"
-  "!"   "async shell command"
-  "&"   "shell command")
+;; (which-key-add-key-based-replacements
+;;   "ESC" "toggle mode"
+;;   "DEL" "smart del"
+;;   "TAB" "smart tab"
+;;   "RET" "smart enter"
+;;   "c"   "upcase"
+;;   "C"   "downcase"
+;;   "h"   "prev char"
+;;   "j"   "next line"
+;;   "k"   "prev line"
+;;   "l"   "next char"
+;;   "e"   "next word"
+;;   "b"   "prev word"
+;;   "n"   "next history item"
+;;   "N"   "prev history item"
+;;   "{"   "next para"
+;;   "}"   "prev para"
+;;   "0"   "start of line"
+;;   "$"   "end of line"
+;;   "("   "start of sentence"
+;;   ")"   "end of sentence"
+;;   "/"   "search"
+;;   "|"   "duplicate line"
+;;   "E"   "exit anything"
+;;   "B"   "previous buffer"
+;;   "W"   "winner undo"
+;;   "w"   "other window"
+;;   "G"   "end of file"
+;;   "d"   "delete selection"
+;;   "y"   "copy selection"
+;;   "p"   "paste"
+;;   "P"   "paste history"
+;;   "x"   "delete char"
+;;   "D"   "delete rest of line"
+;;   "M"   "modify argument"
+;;   "z"   "scroll center/top/bot"
+;;   "Z"   "zoom into window"
+;;   "H"   "scroll left"
+;;   "J"   "scroll down"
+;;   "K"   "scroll up"
+;;   "L"   "scroll right"
+;;   "'"   "org edit separately"
+;;   ","   "vertico-repeat"
+;;   "q"   "start macro"
+;;   "Q"   "end macro"
+;;   "?"   "top level bindings"
+;;   "v"   "start selection"
+;;   "R"   "overwrite mode"
+;;   "X"   "exchange point and mark"
+;;   "+"   "set bookmark"
+;;   "'"   "jump to bookmark"
+;;   "="   "indent region"
+;;   "\\"  "C-c C-c"
+;;   "!"   "async shell command"
+;;   "&"   "shell command")
 
 (modalka-define-kbd ": q" "C-x C-c")
 (modalka-define-kbd ": r" "C-x M-c")
@@ -631,14 +621,14 @@ one, an error is signaled."
 (modalka-define-kbd "] s" "M-m ] s")
 
 ;; 说明
-(which-key-add-key-based-replacements
-  "]"   "forward nav/edit"
-  "] w" "backward nav/edit"
-  "] s" "next spell error")
+;; (which-key-add-key-based-replacements
+;;   "]"   "forward nav/edit"
+;;   "] w" "backward nav/edit"
+;;   "] s" "next spell error")
 
-(which-key-add-key-based-replacements
-  "["   "backward nav/edit"
-  "[ [" "widen region")
+;; (which-key-add-key-based-replacements
+;;   "["   "backward nav/edit"
+;;   "[ [" "widen region")
 
 (modalka-define-kbd "g U" "C-c C-k")
 (modalka-define-kbd "SPC SPC" "M-x")
@@ -655,21 +645,21 @@ one, an error is signaled."
 (modalka-define-kbd "SPC ." "M-SPC")
 
 ;; 说明
-(which-key-add-key-based-replacements
-  "SPC"   "custom prefix"
-  "SPC ." "just one space"
-  "SPC ?" "describe bindings"
-  "SPC j" "jump to cmd"
-  "SPC f" "find file"
-  "SPC a" "switch buffers"
-  "SPC g" "goto line"
-  "SPC d" "dired"
-  "SPC k" "close buffer"
-  "SPC w" "save buffer"
-  "SPC c" "load theme"
-  "SPC R" "locate"
-  "SPC q" "quit window"
-  "g U"   "simulate C-c C-k")
+;; (which-key-add-key-based-replacements
+;;   "SPC"   "custom prefix"
+;;   "SPC ." "just one space"
+;;   "SPC ?" "describe bindings"
+;;   "SPC j" "jump to cmd"
+;;   "SPC f" "find file"
+;;   "SPC a" "switch buffers"
+;;   "SPC g" "goto line"
+;;   "SPC d" "dired"
+;;   "SPC k" "close buffer"
+;;   "SPC w" "save buffer"
+;;   "SPC c" "load theme"
+;;   "SPC R" "locate"
+;;   "SPC q" "quit window"
+;;   "g U"   "simulate C-c C-k")
 
 (modalka-define-kbd "g g" "M-<")
 (modalka-define-kbd "g o" "C-x C-e")
@@ -704,35 +694,35 @@ one, an error is signaled."
 (modalka-define-kbd "g l" "M-g M-g")	; goto line
 ;; 说明
 
-(which-key-add-key-based-replacements
-  "g"   "global prefix"
-  "g i" "consult imenu"
-  "g r" "consult ripgrep"
-  "g g" "start of file"
-  "g m" "make frame"
-  "g M" "delete frame"
-  "g n" "select frame by name"
-  "g N" "name frame"
-  "g j" "next pdf page"
-  "g k" "previous pdf page"
-  "g f" "file/url at cursor"
-  "g F" "enable follow mode"
-  "g l" "goto line"
-  "g o" "eval elisp"
-  "g O" "eval defun"
-  "g w" "vertical split win"
-  "g -" "horizontal split win"
-  "g S" "split line"
-  "g @" "compose mail"
-  "g #" "list eww histories"
-  "g x" "browse with eww"
-  "g :" "browse with external browser"
-  "g {" "eww back"
-  "g }" "eww forward"
-  "g (" "info previous"
-  "g )" "info next"
-  "g q" "format para"
-  "g ?" "find command bound to key")
+;; (which-key-add-key-based-replacements
+;;   "g"   "global prefix"
+;;   "g i" "consult imenu"
+;;   "g r" "consult ripgrep"
+;;   "g g" "start of file"
+;;   "g m" "make frame"
+;;   "g M" "delete frame"
+;;   "g n" "select frame by name"
+;;   "g N" "name frame"
+;;   "g j" "next pdf page"
+;;   "g k" "previous pdf page"
+;;   "g f" "file/url at cursor"
+;;   "g F" "enable follow mode"
+;;   "g l" "goto line"
+;;   "g o" "eval elisp"
+;;   "g O" "eval defun"
+;;   "g w" "vertical split win"
+;;   "g -" "horizontal split win"
+;;   "g S" "split line"
+;;   "g @" "compose mail"
+;;   "g #" "list eww histories"
+;;   "g x" "browse with eww"
+;;   "g :" "browse with external browser"
+;;   "g {" "eww back"
+;;   "g }" "eww forward"
+;;   "g (" "info previous"
+;;   "g )" "info next"
+;;   "g q" "format para"
+;;   "g ?" "find command bound to key")
 
 ;; (modalka-define-kbd "i a" "C-x h")
 
@@ -834,6 +824,9 @@ one, an error is signaled."
 	 ("l" . nil)
 	 :map embark-collect-mode-map
 	 ("m" . vifon/embark-select-and-forward))
+  :init
+  ;; Optionally replace the key help with a completing-(region-end)ad interface
+  (setq prefix-help-command #'embark-prefix-help-command)
   :config (progn
 	    (setq embark-mixed-indicator-delay 2)
 
@@ -879,7 +872,9 @@ one, an error is signaled."
 
 
 (use-package embark-consult
-  :after (embark consult))
+  :after (embark consult)
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
 
 (use-package marginalia
   :after vertico
@@ -1085,7 +1080,7 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
   )
 
 (modalka-define-kbd "g d" "M-m g d")
-(which-key-add-key-based-replacements "g d" "magit")
+;; (which-key-add-key-based-replacements "g d" "magit")
 
 (use-package blamer
   :custom
@@ -1148,9 +1143,9 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 
 (modalka-define-kbd "C-," "M-m e i")
 
-(which-key-add-key-based-replacements
-  "C-," "iedit"
-  )
+;; (which-key-add-key-based-replacements
+;;   "C-," "iedit"
+;;   )
 
 (use-package move-text)
 (global-set-key (kbd "s-<") 'move-text-up)
@@ -1388,7 +1383,8 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
   (persp-mode)
   :config
   (setq persp-state-default-file (expand-file-name ".gcl" user-emacs-directory))
-  (setq persp-show-modestring 'header)
+  (setq persp-show-modestring nil)
+  ;; (setq persp-modestring-short t)
   (add-hook 'kill-emacs-hook #'persp-state-save)
   (use-package persp-projectile)
   )
@@ -1417,7 +1413,8 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
   :init
   (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
   :config
-  (lsp-enable-which-key-integration t))
+  ;; (lsp-enable-which-key-integration t)
+  )
 
 (use-package lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
@@ -1448,6 +1445,18 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 (use-package company-box
   :diminish company-box-mode
   :hook (company-mode . company-box-mode))
+
+(use-package js2-mode
+  :mode "\\.jsx?\\'"
+  :config
+  ;; Use js2-mode for Node scripts
+  (add-to-list 'magic-mode-alist '("#!/usr/bin/env node" . js2-mode))
+
+  ;; Don't use built-in syntax checking
+  (setq js2-mode-show-strict-warnings nil)
+
+  ;; Set up proper indentation in JavaScript and JSON files
+  (setq-default js-indent-level 2))
 
 (use-package typescript-mode
   :mode "\\.[cm]?ts\\'"
