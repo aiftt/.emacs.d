@@ -1,6 +1,12 @@
 (setq user-full-name "Lee ZhiCheng"
       user-mail-address "ftt.loves@gmail.com")
 
+(defvar gcl/default-font-size 150)
+(defvar gcl/default-variable-font-size 150)
+
+;; Make frame transparency overridable
+(defvar gcl/frame-transparency '(90 . 90))
+
 (defun vifon/buffer-file-or-directory-name (buf)
   "The file BUF is visiting, works also if it's a `dired' buffer."
   (with-current-buffer buf
@@ -171,6 +177,15 @@ one, an error is signaled."
   (interactive)
   (switch-to-buffer (startup--get-buffer-create-scratch)))
 
+(defun efs/display-startup-time ()
+  (message "Emacs loaded in %s with %d garbage collections."
+           (format "%.2f seconds"
+                   (float-time
+                     (time-subtract after-init-time before-init-time)))
+           gcs-done))
+
+(add-hook 'emacs-startup-hook #'efs/display-startup-time)
+
 (bind-key [remap just-one-space] #'cycle-spacing)
 (bind-key [remap upcase-word] #'upcase-dwim)
 (bind-key [remap downcase-word] #'downcase-dwim)
@@ -188,18 +203,18 @@ one, an error is signaled."
   (load-file "~/.emacs.d/init.el"))
 
 (global-set-key (kbd "<f1>")
-              (lambda ()
-                (interactive)
-                (find-file "~/.emacs.d/config.org")))
+		(lambda ()
+		  (interactive)
+		  (find-file "~/.emacs.d/config.org")))
 
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (when (file-exists-p custom-file)
   (load custom-file))
 
 (when window-system
-(tool-bar-mode 0)
-(scroll-bar-mode 0)
-(tooltip-mode 0))
+  (tool-bar-mode 0)
+  (scroll-bar-mode 0)
+  (tooltip-mode 0))
 
 ;; Bar cursor
 (setq-default cursor-type '(bar . 1))
@@ -207,9 +222,9 @@ one, an error is signaled."
 (blink-cursor-mode -1)
 
 (setq inhibit-startup-message t
-    initial-scratch-message ""
-    initial-major-mode 'fundamental-mode
-    inhibit-splash-screen t)
+      initial-scratch-message ""
+      initial-major-mode 'fundamental-mode
+      inhibit-splash-screen t)
 
 ;; - 选中粘贴时能覆盖选中的内容
 (delete-selection-mode 1)
@@ -330,13 +345,65 @@ one, an error is signaled."
       (setq exec-path (append (parse-colon-path path) (list exec-directory))))
   (error (warn "%s" (error-message-string err))))
 
-(use-package async :straight t :commands (async-start))
+(use-package async :commands (async-start))
 (use-package cl-lib)
-(use-package dash :straight t)
-(use-package s :straight t)
+(use-package dash)
+(use-package s)
+
+(use-package restart-emacs
+  :bind* (("<f2>" . restart-emacs)))
+
+(use-package flyspell
+  :diminish (flyspell-mode . "φ")
+  :bind* (("M-m ] s" . flyspell-goto-next-error)))
+
+(use-package exec-path-from-shell
+  :config
+  (setq exec-path-from-shell-variables '("PATH" "MANPATH" "LSP_USE_PLISTS" "NODE_PATH")
+	exec-path-from-shell-arguments '("-l"))
+  (exec-path-from-shell-initialize))
+
+(use-package hydra)
+
+(use-package discover-my-major
+  :bind (("C-h C-m" . discover-my-major)
+	 ("C-h s-m" . discover-my-mode)))
+
+(use-package fanyi
+  :bind* (("s-y" . fanyi-dwim2))
+  :custom
+  (fanyi-providers '(;; 海词
+		     fanyi-haici-provider
+		     ;; 有道同义词词典
+		     fanyi-youdao-thesaurus-provider
+		     ;; Etymonline
+		     fanyi-etymon-provider
+		     ;; Longman
+		     fanyi-longman-provider)))
+
+;; (setq longman-ins (clone fanyi-longman-provider))
+;; (oset longman-ins :word "successful")
+;; (fanyi--spawn longman-ins)
+
+;; Wait until *fanyi* buffer has a longman section which means longman-ins has parsed the result.
+;;
+;; benchmark the render function.
+;; (benchmark-run 10 (fanyi-render longman-ins))
+;;=> (0.150839075 0 0.0)
+
+(use-package dired
+  :straight (:type built-in)
+  :bind (:map dired-mode-map
+	      ("C-c C-e" . wdired-change-to-wdired-mode))
+  :init
+  (setq dired-dwim-target t
+	dired-recursive-copies 'top
+	dired-recursive-deletes 'top
+	dired-listing-switches "-alh")
+  :config
+  (add-hook 'dired-mode-hook 'dired-hide-details-mode))
 
 (use-package which-key
-  :straight t
   :defer t
   :diminish which-key-mode
   :init
@@ -346,10 +413,6 @@ one, an error is signaled."
   (which-key-mode)
   (which-key-add-key-based-replacements
     "M-m ?" "top level bindings"))
-
-(use-package restart-emacs
-  :straight t
-  :bind* (("<f2>" . restart-emacs)))
 
 (defun exit-modalka ()
   (interactive)
@@ -366,7 +429,6 @@ one, an error is signaled."
   (newline-and-indent))
 
 (use-package modalka
-  :straight t
   :demand t
   :bind* (("C-z" . modalka-mode))
   :diminish (modalka-mode . "μ")
@@ -377,6 +439,7 @@ one, an error is signaled."
   (modalka-global-mode 1)
   (add-to-list 'modalka-excluded-modes 'magit-status-mode)
   (add-to-list 'modalka-excluded-modes 'magit-popup-mode)
+  (add-to-list 'modalka-excluded-modes 'dired-mode)
   (add-to-list 'modalka-excluded-modes 'eshell-mode)
   (add-to-list 'modalka-excluded-modes 'deft-mode)
   (add-to-list 'modalka-excluded-modes 'term-mode)
@@ -677,32 +740,7 @@ one, an error is signaled."
 ;;  "i"   "expand prefix"
 ;;  "i a" "expand entire buffer")
 
-(use-package flyspell
-  :straight t
-  :diminish (flyspell-mode . "φ")
-  :bind* (("M-m ] s" . flyspell-goto-next-error)))
-
-(use-package dired
-  :straight (:type built-in)
-  :bind (:map dired-mode-map
-	    ("C-c C-e" . wdired-change-to-wdired-mode))
-  :init
-  (setq dired-dwim-target t
-      dired-recursive-copies 'top
-      dired-recursive-deletes 'top
-      dired-listing-switches "-alh")
-  :config
-  (add-hook 'dired-mode-hook 'dired-hide-details-mode))
-
-(use-package exec-path-from-shell
-  :straight t
-  :config
-  (setq exec-path-from-shell-variables '("PATH" "MANPATH" "LSP_USE_PLISTS" "NODE_PATH")
-	exec-path-from-shell-arguments '("-l"))
-  (exec-path-from-shell-initialize))
-
 (use-package diminish
-  :straight t
   :demand t
   :diminish (visual-line-mode . "ω")
   :diminish hs-minor-mode
@@ -722,22 +760,13 @@ one, an error is signaled."
   (diminish 'auto-revert-mode ""))
 (add-hook 'auto-revert-mode-hook 'sk/diminish-auto-revert)
 
-(use-package discover-my-major
-  :straight t
-  :bind (("C-h C-m" . discover-my-major)
-	 ("C-h s-m" . discover-my-mode)))
-
-(use-package hydra :straight t)
-
 (use-package all-the-icons-completion
-  :straight t
   :after (marginalia all-the-icons)
   :hook (marginalia-mode . all-the-icons-completion-marginalia-setup)
   :init
   (all-the-icons-completion-mode))
 
 (use-package vertico
-  :straight t
   :bind (("C-x M-r" . vertico-repeat)
 	 :map vertico-map
 	 ("C-l" . vertico-directory-delete-word)
@@ -763,7 +792,6 @@ one, an error is signaled."
   )
 
 (use-package orderless
-  :straight t
   :after vertico
   :config (progn
 	    (setq orderless-matching-styles '(orderless-regexp
@@ -793,7 +821,6 @@ one, an error is signaled."
 		(apply orig args)))))
 
 (use-package embark
-  :straight t
   :bind (("C-c o" . embark-dwim)
 	 ("C-."   . embark-act)
 	 :map minibuffer-local-map
@@ -852,11 +879,9 @@ one, an error is signaled."
 
 
 (use-package embark-consult
-  :straight t
   :after (embark consult))
 
 (use-package marginalia
-  :straight t
   :after vertico
   :demand t                     ; :demand applies to :bind but not
 					; :after.  We want to eagerly load
@@ -866,7 +891,6 @@ one, an error is signaled."
   :config (marginalia-mode 1))
 
 (use-package consult
-  :straight t
   :bind (:map consult-mode-map
 	      ;; M-s …
 	      ("M-s u" . consult-focus-lines)
@@ -989,7 +1013,6 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 			 '(?t "TMSU" tmsu-dired-bookmark-open))))
 
 (use-package corfu
-  :straight t
   :init (global-corfu-mode 1)
   :config (progn
 	    (corfu-popupinfo-mode 1)
@@ -1037,37 +1060,7 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 			 #'completion--in-region)
 		       args)))
 
-(use-package which-key
-  :straight t
-  :defer t
-  :diminish which-key-mode
-  :init
-  (setq which-key-sort-order 'which-key-key-order-alpha)
-  :bind* (("s-m ?" . which-key-show-top-level))
-  :config
-  (which-key-mode)
-  (which-key-add-key-based-replacements
-    "s-m ?" "top level bindings"))
-
-(use-package symbol-overlay
-  :straight t
-  :defer t
-  :config
-  (symbol-overlay-mode +1)
-  (global-set-key (kbd "M-i") #'symbol-overlay-put)
-  (global-set-key (kbd "M-n") #'symbol-overlay-switch-forward)
-  (global-set-key (kbd "M-p") #'symbol-overlay-switch-backward)
-  (global-set-key (kbd "<f7>") #'symbol-overlay-mode)
-  (global-set-key (kbd "<f8>") #'symbol-overlay-remove-all)
-  )
-
-(use-package expand-region :straight t)
-(global-set-key (kbd "C-=") 'er/expand-region)
-
-(use-package hydra :straight t)
-
 (use-package magit
-  :straight t
   :bind* (("M-m g d" . magit))
   :config
   ;; ;; 提交时候不显示提交细节
@@ -1095,7 +1088,6 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 (which-key-add-key-based-replacements "g d" "magit")
 
 (use-package blamer
-  :straight t
   :custom
   (blamer-idle-time 0.3)
   (blamer-min-offset 40)
@@ -1112,7 +1104,6 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
   )
 
 (use-package git-modes
-  :straight t
   :config
   (add-to-list 'auto-mode-alist
 	       (cons "/.dockerignore\\'" 'gitignore-mode))
@@ -1122,12 +1113,25 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 	       (cons "/.gitconfig\\'" 'gitconfig-mode))
   )
 
-(use-package smerge-mode :straight t)
+(use-package smerge-mode)
 
 (use-package diff-hl
-  :straight t
   :config
   (global-diff-hl-mode))
+
+(use-package expand-region)
+(global-set-key (kbd "C-=") 'er/expand-region)
+
+(use-package symbol-overlay
+  :defer t
+  :config
+  (symbol-overlay-mode +1)
+  (global-set-key (kbd "M-i") #'symbol-overlay-put)
+  (global-set-key (kbd "M-n") #'symbol-overlay-switch-forward)
+  (global-set-key (kbd "M-p") #'symbol-overlay-switch-backward)
+  (global-set-key (kbd "<f7>") #'symbol-overlay-mode)
+  (global-set-key (kbd "<f8>") #'symbol-overlay-remove-all)
+  )
 
 (use-package maple-iedit
   :straight (:type git :host github :repo "honmaple/emacs-maple-iedit")
@@ -1148,11 +1152,11 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
   "C-," "iedit"
   )
 
-(use-package move-text :straight t)
+(use-package move-text)
 (global-set-key (kbd "s-<") 'move-text-up)
 (global-set-key (kbd "s->") 'move-text-down)
 
-(use-package string-inflection :straight t)
+(use-package string-inflection)
 (global-set-key (kbd "s-i") 'my-string-inflection-cycle-auto)
 
 (defun my-string-inflection-cycle-auto ()
@@ -1176,7 +1180,6 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
     (string-inflection-ruby-style-cycle))))
 
 (use-package parrot
-  :straight t
   :config
   (parrot-mode -1)
   (setq parrot-rotate-dict
@@ -1250,13 +1253,20 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 				   "'"
 				   "`")))
 
-(use-package all-the-icons :straight t)
+(set-face-attribute 'default nil :font "Fira Code Retina" :height gcl/default-font-size)
+
+;; Set the fixed pitch face
+(set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height gcl/default-font-size)
+
+;; Set the variable pitch face
+(set-face-attribute 'variable-pitch nil :font "Cantarell" :height gcl/default-variable-font-size :weight 'regular)
+
+(use-package all-the-icons)
 (use-package all-the-icons-dired
-  :straight t
+  :diminish all-the-icons-dired-mode
   :hook ((dired-mode . all-the-icons-dired-mode)))
 
 (use-package doom-themes
-  :straight t
   :config
   ;; Global settings (defaults)
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
@@ -1285,71 +1295,44 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 ;; 		    :width 'normal)
 
 (use-package doom-modeline
-  :straight t
   :init (progn
 	  (setq doom-modeline-env-version nil
 		doom-modeline-icon nil
 		doom-modeline-minor-modes t)
 	  (doom-modeline-mode 1)))
 
-(use-package fanyi
-  :straight t
-  :bind* (("s-y" . fanyi-dwim2))
-  :custom
-  (fanyi-providers '(;; 海词
-		     fanyi-haici-provider
-		     ;; 有道同义词词典
-		     fanyi-youdao-thesaurus-provider
-		     ;; Etymonline
-		     fanyi-etymon-provider
-		     ;; Longman
-		     fanyi-longman-provider)))
-
-;; (setq longman-ins (clone fanyi-longman-provider))
-;; (oset longman-ins :word "successful")
-;; (fanyi--spawn longman-ins)
-
-;; Wait until *fanyi* buffer has a longman section which means longman-ins has parsed the result.
-;;
-;; benchmark the render function.
-;; (benchmark-run 10 (fanyi-render longman-ins))
-;;=> (0.150839075 0 0.0)
-
 (when (version<= "9.2" (org-version))
   (require 'org-tempo))
 
 (use-package evil-nerd-commenter
-  :straight t
   :bind* (("M-;" . evilnc-comment-or-uncomment-lines))
   )
 
 (use-package yaml-mode
-  :straight t
   :mode "\\.yml\\'"
   :mode "\\.yaml\\'"
   :hook ((yaml-mode . yaml-imenu-enable)))
 
 (use-package yaml-imenu
-  :straight t
   :after yaml-mode)
 
-(use-package python-mode :straight t)
+(use-package python-mode)
 
-(use-package go-mode :straight t)
+(use-package go-mode)
 
-(use-package dockerfile-mode :straight t)
+(use-package dockerfile-mode)
 
-(use-package php-mode :straight t)
+(use-package php-mode)
 
-(use-package sql-indent :straight t)
+(use-package sql-indent)
 (add-hook 'sql-mode-hook 'sqlind-minor-mode)
 
-(use-package pkg-info :straight t)
+(use-package pkg-info)
 
-(use-package lua-mode :straight t)
+(use-package lua-mode)
 
 (use-package flycheck
-  :straight t
+  :diminish flycheck-mode
   :init (global-flycheck-mode))
 
 (use-package auto-save
@@ -1358,6 +1341,87 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
   (auto-save-enable)
   (setq auto-save-silent t)
   (setq auto-save-delete-trailing-whitespace t))
+
+(use-package highlight-parentheses
+  :hook (prog-mode . highlight-parentheses-mode)
+  :diminish highlight-parentheses-mode
+  :config
+  (add-hook 'minibuffer-setup-hook #'highlight-parentheses-minibuffer-setup)
+  )
+
+(use-package rainbow-delimiters
+  :config
+  (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
+
+(use-package rainbow-mode
+  :diminish rainbow-mode
+  :defer t
+  :hook ((prog-mode org-mode) . rainbow-mode))
+
+(use-package perspective
+  :bind
+  ("C-x C-b" . persp-list-buffers)         ; or use a nicer switcher, see below
+  :custom
+  (persp-mode-prefix-key (kbd "C-c TAB"))  ; pick your own prefix key here
+  :init
+  (persp-mode)
+  :config
+  (setq persp-state-default-file (expand-file-name ".gcl" user-emacs-directory))
+  (setq persp-show-modestring 'header)
+  (add-hook 'kill-emacs-hook #'persp-state-save)
+  (use-package persp-projectile)
+  )
+
+(use-package projectile
+  :diminish projectile-mode
+  :init
+  (projectile-mode +1)
+  :config
+  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+  (autoload 'projectile-project-root "projectile")
+  (setq consult-project-function (lambda (_) (projectile-project-root)))
+  ;; alien, hybrid
+  (setq projectile-indexing-method 'alien projectile-enable-caching t)
+  )
+
+(defun gcl/lsp-mode-setup ()
+  (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+  (lsp-headerline-breadcrumb-mode))
+
+(use-package lsp-mode
+  :commands (lsp lsp-deferred)
+  :hook (lsp-mode . gcl/lsp-mode-setup)
+  :diminish lsp-mode
+  :init
+  (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
+  :config
+  (lsp-enable-which-key-integration t))
+
+(use-package lsp-ui
+  :hook (lsp-mode . lsp-ui-mode)
+  :custom
+  (lsp-ui-doc-position 'bottom))
+
+(use-package company
+  :after lsp-mode
+  :hook (lsp-mode . company-mode)
+  :diminish company-mode
+  :bind (:map company-active-map
+	      ("<tab>" . company-complete-selection))
+  (:map lsp-mode-map
+	("<tab>" . company-indent-or-complete-common))
+  :custom
+  (company-minimum-prefix-length 1)
+  (company-idle-delay 0.0))
+
+(use-package company-box
+  :hook (company-mode . company-box-mode))
+
+(use-package typescript-mode
+  :mode "\\.ts\\'"
+  :hook (typescript-mode . lsp-deferred)
+  :config
+  (setq typescript-indent-level 2))
 
 (defun tangle-if-init ()
   "If the current buffer is 'init.org' the code-blocks are

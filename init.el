@@ -25,8 +25,10 @@
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
+(setq-default straight-vc-git-default-clone-depth 1)
 (straight-use-package 'use-package)
-;; 包管理器初始化 
+(setq straight-use-package-by-default t)
+;; 包管理器初始化
 ;; (require 'package)
 ;; 腾讯
 ;; (setq package-archives '(("gnu"   . "http://mirrors.cloud.tencent.com/elpa/gnu/")
