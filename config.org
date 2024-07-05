@@ -1,16 +1,20 @@
 * 个人信息
 
 #+BEGIN_SRC emacs-lisp
-    (setq user-full-name "Lee ZhiCheng"
-	  user-mail-address "ftt.loves@gmail.com")
+  (setq user-full-name "Lee ZhiCheng"
+	user-mail-address "ftt.loves@gmail.com")
 #+END_SRC
 * 变量声明
 #+begin_src emacs-lisp
-(defvar gcl/default-font-size 150)
-(defvar gcl/default-variable-font-size 150)
+  (defvar gcl/default-font-size 150)
+  (defvar gcl/default-variable-font-size 150)
 
-;; Make frame transparency overridable
-(defvar gcl/frame-transparency '(90 . 90))
+  ;; Make frame transparency overridable
+  (defvar gcl/frame-transparency '(90 . 90))
+
+  (defvar gcl/variable-pitch-size 120)
+  (defvar gcl/org-heading-font "Iosevka Aile"
+    "The font used for Org Mode headings.")
 #+end_src
 * 函数定义
 
@@ -73,24 +77,6 @@
     "Insert current time, like hh:mm:ss."
     (interactive)
     (insert (format-time-string "%T")))
-
-  (defun gcl/consult-file-externally (file)
-    "Open the FILE externally using the system's default program."
-    (interactive "fFile to open externally: ")
-    (cond
-     ((eq system-type 'darwin) ; macOS
-      (start-process "external-program" nil "open" file))
-     ((eq system-type 'gnu/linux) ; Linux
-      (start-process "external-program" nil "xdg-open" file))
-     ((eq system-type 'windows-nt) ; Windows
-      (start-process "external-program" nil "start" "" file))
-     (t ; Other platforms
-      (message "Opening files externally is not supported on this platform."))))
-
-
-  (defun gcl/open-current-directory ()
-    (interactive)
-    (gcl/consult-file-externally default-directory))
 
   (defun gcl/copy-file-full-name ()
     "Copy the current buffer's file name to the clipboard."
@@ -189,14 +175,34 @@
 ** 显示启动时间
 
 #+begin_src emacs-lisp
-(defun efs/display-startup-time ()
-  (message "Emacs loaded in %s with %d garbage collections."
-           (format "%.2f seconds"
-                   (float-time
-                     (time-subtract after-init-time before-init-time)))
-           gcs-done))
+  (defun efs/display-startup-time ()
+    (message "Emacs loaded in %s with %d garbage collections."
+	     (format "%.2f seconds"
+		     (float-time
+		      (time-subtract after-init-time before-init-time)))
+	     gcs-done))
 
-(add-hook 'emacs-startup-hook #'efs/display-startup-time)
+  (add-hook 'emacs-startup-hook #'efs/display-startup-time)
+#+end_src
+** 打开当前所在目录
+#+begin_src emacs-lisp
+(defun gcl/consult-file-externally (file)
+  "Open the FILE externally using the system's default program."
+  (interactive "File to open externally: ")
+  (cond
+   ((eq system-type 'darwin) ; macOS
+    (start-process "external-program" nil "open" file))
+   ((eq system-type 'gnu/linux) ; Linux
+    (start-process "external-program" nil "xdg-open" file))
+   ((eq system-type 'windows-nt) ; Windows
+    (start-process "external-program" nil "start" "" file))
+   (t ; Other platforms
+    (message "Opening files externally is not supported on this platform."))))
+
+
+(defun gcl/open-current-directory ()
+  (interactive)
+  (gcl/consult-file-externally default-directory))
 #+end_src
 * 函数重映射
 #+BEGIN_SRC emacs-lisp
@@ -464,6 +470,11 @@
   ;; (benchmark-run 10 (fanyi-render longman-ins))
   ;;=> (0.150839075 0 0.0)
 #+END_SRC
+** 媒体工具
+*** mpv
+#+begin_src emacs-lisp
+(use-package mpv)
+#+end_src
 * 内置包
 ** dired
 
@@ -493,62 +504,63 @@
     :config
     (which-key-mode)
     (which-key-add-key-based-replacements
-      "M-m ?" "top level bindings"))
+     "M-m ?" "top level bindings"))
 #+END_SRC
 
 * Modalka(类似Evil)
 #+BEGIN_SRC emacs-lisp
-    (defun exit-modalka ()
-      (interactive)
-      (modalka-mode 0))
+  (defun exit-modalka ()
+    (interactive)
+    (modalka-mode 0))
 
-    (defun exit-on-space ()
-      (interactive)
-      (modalka-mode 0)
-      (insert-char 32))
+  (defun exit-on-space ()
+    (interactive)
+    (modalka-mode 0)
+    (insert-char 32))
 
-    (defun exit-on-newline ()
-      (interactive)
-      (modalka-mode 0)
-      (newline-and-indent))
+  (defun exit-on-newline ()
+    (interactive)
+    (modalka-mode 0)
+    (newline-and-indent))
 
-    (use-package modalka
-      :demand t
-      :bind* (("C-z" . modalka-mode))
-      :diminish (modalka-mode . "μ")
-      :init
-      (setq modalka-cursor-type 'box)
-      :config
-      (global-set-key (kbd "<escape>") #'modalka-mode)
-      (modalka-global-mode 1)
-      (add-to-list 'modalka-excluded-modes 'magit-status-mode)
-      (add-to-list 'modalka-excluded-modes 'magit-popup-mode)
-      (add-to-list 'modalka-excluded-modes 'dired-mode)
-      (add-to-list 'modalka-excluded-modes 'eshell-mode)
-      (add-to-list 'modalka-excluded-modes 'deft-mode)
-      (add-to-list 'modalka-excluded-modes 'term-mode)
-      ;; (which-key-add-key-based-replacements
-      ;; 	"M-m"     "Modalka prefix"
-      ;; 	"M-m :"   "extended prefix"
-      ;; 	"M-m m"   "move prefix"
-      ;; 	"M-m s"   "send code prefix"
-      ;; 	"M-m SPC" "user prefix"
-      ;; 	"M-m g"   "global prefix"
-      ;; 	"M-m o"   "org prefix"
-      ;; 	"M-m a"   "expand around prefix"
-      ;; 	"M-m e"   "buffer edit"
-      ;; 	"M-m i"   "expand inside prefix"
-      ;; 	"M-m ["   "prev nav prefix"
-      ;; 	"M-m ]"   "next nav prefix")
-      )
+  (use-package modalka
+    :demand t
+    :bind* (("C-z" . modalka-mode))
+    :diminish (modalka-mode . "μ")
+    :init
+    (setq modalka-cursor-type 'box)
+    :config
+    (global-set-key (kbd "<escape>") #'modalka-mode)
+    (modalka-global-mode 1)
+    (add-to-list 'modalka-excluded-modes 'magit-status-mode)
+    (add-to-list 'modalka-excluded-modes 'magit-popup-mode)
+    (add-to-list 'modalka-excluded-modes 'dired-mode)
+    (add-to-list 'modalka-excluded-modes 'eshell-mode)
+    (add-to-list 'modalka-excluded-modes 'deft-mode)
+    (add-to-list 'modalka-excluded-modes 'term-mode)
+    (add-to-list 'modalka-excluded-modes 'vterm-mode)
+    ;; (which-key-add-key-based-replacements
+    ;; 	"M-m"     "Modalka prefix"
+    ;; 	"M-m :"   "extended prefix"
+    ;; 	"M-m m"   "move prefix"
+    ;; 	"M-m s"   "send code prefix"
+    ;; 	"M-m SPC" "user prefix"
+    ;; 	"M-m g"   "global prefix"
+    ;; 	"M-m o"   "org prefix"
+    ;; 	"M-m a"   "expand around prefix"
+    ;; 	"M-m e"   "buffer edit"
+    ;; 	"M-m i"   "expand inside prefix"
+    ;; 	"M-m ["   "prev nav prefix"
+    ;; 	"M-m ]"   "next nav prefix")
+    )
 
-    (define-key modalka-mode-map (kbd "o") #'exit-on-newline)
-    (define-key modalka-mode-map (kbd "i") #'exit-modalka)
+  (define-key modalka-mode-map (kbd "o") #'exit-on-newline)
+  (define-key modalka-mode-map (kbd "i") #'exit-modalka)
 
-    (defun auto-enter-modalka-mode ()
-      (modalka-mode 1))
+  (defun auto-enter-modalka-mode ()
+    (modalka-mode 1))
 
-    (run-with-idle-timer 5 nil 'auto-enter-modalka-mode)
+  (run-with-idle-timer 5 nil 'auto-enter-modalka-mode)
 #+END_SRC
 ** 默认功能按键
 
@@ -579,6 +591,8 @@
    ("M-m SPC ?" . describe-bindings)
 
    ("M-m e l" . duplicate-dwim)
+
+   ("C-c k" . kill-this-buffer)
    )
 #+END_SRC
 
@@ -932,7 +946,7 @@
 
 #+BEGIN_SRC emacs-lisp
   (use-package orderless
-    :after vertico
+    :demand t
     :config (progn
 	      (setq orderless-matching-styles '(orderless-regexp
 						orderless-initialism
@@ -964,71 +978,71 @@
 ** embark
 
 #+BEGIN_SRC emacs-lisp
-    (use-package embark
-      :bind (("C-c o" . embark-dwim)
-	     ("C-."   . embark-act)
-	     :map minibuffer-local-map
-	     ("M-o"   . embark-act)
-	     :map embark-command-map
-	     ;; Unbind the dangerous `global-set-key' and `local-set-key'
-	     ;; actions.  It's far too easy to accidentally bind over some
-	     ;; `self-insert-command' binding or even over
-	     ;; \\[keyboard-quit].
-	     ("g" . nil)
-	     ("l" . nil)
-	     :map embark-collect-mode-map
-	     ("m" . vifon/embark-select-and-forward))
-      :init
-      ;; Optionally replace the key help with a completing-(region-end)ad interface
-      (setq prefix-help-command #'embark-prefix-help-command)
-      :config (progn
-		(setq embark-mixed-indicator-delay 2)
+  (use-package embark
+    :bind (("C-c o" . embark-dwim)
+	   ("C-."   . embark-act)
+	   :map minibuffer-local-map
+	   ("M-o"   . embark-act)
+	   :map embark-command-map
+	   ;; Unbind the dangerous `global-set-key' and `local-set-key'
+	   ;; actions.  It's far too easy to accidentally bind over some
+	   ;; `self-insert-command' binding or even over
+	   ;; \\[keyboard-quit].
+	   ("g" . nil)
+	   ("l" . nil)
+	   :map embark-collect-mode-map
+	   ("m" . vifon/embark-select-and-forward))
+    :init
+    ;; Optionally replace the key help with a completing-(region-end)ad interface
+    (setq prefix-help-command #'embark-prefix-help-command)
+    :config (progn
+	      (setq embark-mixed-indicator-delay 2)
 
-		;; Make the eval action editable.  Evaluating code
-		;; in-place is simple enough without Embark, if I invoke
-		;; it with Embark, I almost definitely want to edit the
-		;; expression beforehand.  And even if not, I can
-		;; just confirm.
-		(cl-pushnew 'embark--allow-edit
-			    (alist-get 'pp-eval-expression embark-target-injection-hooks))
+	      ;; Make the eval action editable.  Evaluating code
+	      ;; in-place is simple enough without Embark, if I invoke
+	      ;; it with Embark, I almost definitely want to edit the
+	      ;; expression beforehand.  And even if not, I can
+	      ;; just confirm.
+	      (cl-pushnew 'embark--allow-edit
+			  (alist-get 'pp-eval-expression embark-target-injection-hooks))
 
-		;; Reload the project list after using
-		;; C-u `embark-act' with `project-forget-project'.
-		(cl-pushnew 'embark--restart
-			    (alist-get 'project-forget-project embark-post-action-hooks))
+	      ;; Reload the project list after using
+	      ;; C-u `embark-act' with `project-forget-project'.
+	      (cl-pushnew 'embark--restart
+			  (alist-get 'project-forget-project embark-post-action-hooks))
 
-		(defun embark-act-with-eval (expression)
-		  "Evaluate EXPRESSION and call `embark-act' on the result."
-		  (interactive "sExpression: ")
-		  (with-temp-buffer
-		    (let ((expr-value (eval (read expression))))
-		      (insert (if (stringp expr-value)
-				  expr-value
-				(format "%S" expr-value))))
-		    (embark-act)))
+	      (defun embark-act-with-eval (expression)
+		"Evaluate EXPRESSION and call `embark-act' on the result."
+		(interactive "sExpression: ")
+		(with-temp-buffer
+		  (let ((expr-value (eval (read expression))))
+		    (insert (if (stringp expr-value)
+				expr-value
+			      (format "%S" expr-value))))
+		  (embark-act)))
 
-		(dolist (keymap (list embark-variable-map embark-expression-map))
-		  (define-key keymap (kbd "v") #'embark-act-with-eval))
+	      (dolist (keymap (list embark-variable-map embark-expression-map))
+		(define-key keymap (kbd "v") #'embark-act-with-eval))
 
-		;; Source: https://github.com/oantolin/embark/wiki/Additional-Actions#attaching-file-to-an-email-message
-		(autoload 'gnus-dired-attach "gnus-dired" nil t)
-		(defun embark-attach-file (file)
-		  "Attach FILE to an email message."
-		  (interactive "fAttach: ")
-		  (cl-letf (((symbol-function 'y-or-n-p) #'always))
-		    (gnus-dired-attach (list file))))
-		(bind-key "a" #'embark-attach-file embark-file-map)
+	      ;; Source: https://github.com/oantolin/embark/wiki/Additional-Actions#attaching-file-to-an-email-message
+	      (autoload 'gnus-dired-attach "gnus-dired" nil t)
+	      (defun embark-attach-file (file)
+		"Attach FILE to an email message."
+		(interactive "fAttach: ")
+		(cl-letf (((symbol-function 'y-or-n-p) #'always))
+		  (gnus-dired-attach (list file))))
+	      (bind-key "a" #'embark-attach-file embark-file-map)
 
-		(defun vifon/embark-select-and-forward ()
-		  (interactive)
-		  (embark-select)
-		  (forward-button 1))))
+	      (defun vifon/embark-select-and-forward ()
+		(interactive)
+		(embark-select)
+		(forward-button 1))))
 
 
-    (use-package embark-consult
-      :after (embark consult)
-      :hook
-      (embark-collect-mode . consult-preview-at-point-mode))
+  (use-package embark-consult
+    :after (embark consult)
+    :hook
+    (embark-collect-mode . consult-preview-at-point-mode))
 #+END_SRC
 
 ** marginalia
@@ -1061,6 +1075,7 @@
 		("M-g i" . consult-imenu)
 		("M-g I" . consult-info)
 		("M-g r" . consult-ripgrep)
+		("<f6>" . consult-ripgrep)
 		("M-g m" . consult-mark)
 		("M-g M" . consult-global-mark)
 		;; Misc.
@@ -1173,54 +1188,41 @@
 
 #+BEGIN_SRC emacs-lisp
   (use-package corfu
-    :init (global-corfu-mode)
-    :config (progn
-	      (corfu-popupinfo-mode 1)
-	      (corfu-echo-mode 1)
-	      (setq corfu-popupinfo-delay '(nil . t)
-		    corfu-echo-delay t)))
+    :bind (:map corfu-map
+		("C-j" . corfu-next)
+		("C-k" . corfu-previous)
+		("TAB" . corfu-insert)
+		([tab] . corfu-insert)
+		("C-f" . corfu-insert))
+    :custom
+    (corfu-cycle t)
+    (corfu-auto t)
+    (corfu-preview-current nil)
+    (corfu-quit-at-boundary t)
+    (corfu-quit-no-match t)
 
-  ;; https://archive.is/Gj6Fu
-  ;; (autoload 'ffap-file-at-point "ffap")
-  ;; (defun complete-path-at-point+ ()
-  ;;   (let ((fn (ffap-file-at-point))
-  ;; 	(fap (thing-at-point 'filename)))
-  ;;     (when (and (or fn (equal "/" fap))
-  ;; 	       (save-excursion
-  ;; 		 (search-backward fap (line-beginning-position) t)))
-  ;;       (list (match-beginning 0)
-  ;; 	    (match-end 0)
-  ;; 	    #'completion-file-name-table :exclusive 'no))))
-  ;; (add-hook 'completion-at-point-functions
-  ;; 	  #'complete-path-at-point+
-  ;; 	  'append)
+    :config
+    (global-corfu-mode 1)
 
-  ;; ;; Add prompt indicator to `completing-read-multiple'.
-  ;; ;; We display [CRM<separator>], e.g., [CRM,] if the separator is a comma.
-  ;; ;;
-  ;; ;; Taken from the Vertico docs.
-  ;; (defun crm-indicator (args)
-  ;;   (cons (format "[CRM%s] %s"
-  ;; 		(replace-regexp-in-string
-  ;; 		 "\\`\\[.*?]\\*\\|\\[.*?]\\*\\'" ""
-  ;; 		 crm-separator)
-  ;; 		(car args))
-  ;; 	(cdr args)))
-  ;; (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
+    (defun corfu-enable-in-minibuffer ()
+      "Enable Corfu in the minibuffer if `completion-at-point' is bound."
+      (when (where-is-internal #'completion-at-point (list (current-local-map)))
+	;; (setq-local corfu-auto nil) ;; Enable/disable auto completion
+	(setq-local corfu-echo-delay nil ;; Disable automatic echo and popup
+		    corfu-popupinfo-delay nil)
+	(corfu-mode 1)))
 
-  ;; (setq enable-recursive-minibuffers t)
-  ;; (minibuffer-depth-indicate-mode 1)
-
-  ;; ;; Use the completing-read UI for the M-tab completion unless
-  ;; overridden (for example by `corfu').
-  ;; (setq-default completion-in-region-function
-  ;; 		(lambda (&rest args)
-  ;; 		  (apply (if vertico-mode
-  ;; 			     #'consult-completion-in-region
-  ;; 			   #'completion--in-region)
-  ;; 			 args)))
+    (add-hook 'minibuffer-setup-hook #'corfu-enable-in-minibuffer))
 #+END_SRC
 
+** kind-icon
+#+begin_src emacs-lisp
+(use-package kind-icon
+  :after corfu
+  :custom (kind-icon-default-face 'corfu-default)
+  :config
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+#+end_src
 * magit
 #+BEGIN_SRC emacs-lisp
   (use-package magit
@@ -1282,7 +1284,16 @@
     :config
     (global-diff-hl-mode))
 #+END_SRC
-
+** smerge
+#+begin_src emacs-lisp
+(defhydra gcl/smerge-panel ()
+  "smerge"
+  ("k" (smerge-prev) "prev change" )
+  ("j" (smerge-next) "next change")
+  ("u" (smerge-keep-upper) "keep upper")
+  ("l" (smerge-keep-lower) "keep lower")
+  ("q" nil "quit" :exit t))
+#+end_src
 * 文本编辑
 ** expand-region
 
@@ -1488,7 +1499,6 @@
   ;; 		    :width 'normal)
 #+END_SRC
 ** mode line
-
 #+BEGIN_SRC emacs-lisp
   (use-package doom-modeline
     :init (progn
@@ -1501,30 +1511,175 @@
 #+BEGIN_SRC emacs-lisp
   (when (version<= "9.2" (org-version))
     (require 'org-tempo))
+
+  (setq org-directory "~/.gclrc/org")
+
+  (defun gcl/org-path (path)
+    (expand-file-name path org-directory))
+
+  ;; Turn on indentation and auto-fill mode for Org files
+  (defun dw/org-mode-setup ()
+    ;; (variable-pitch-mode 1)
+    (org-indent-mode 1)
+    (auto-fill-mode 0)
+    (visual-line-mode 1)
+    (setq corfu-auto nil)
+    (setq evil-auto-indent nil))
+
+  (defun dw/org-move-done-tasks-to-bottom ()
+    "Sort all tasks in the topmost heading by TODO state."
+    (interactive)
+    (save-excursion
+      (while (org-up-heading-safe))
+      (org-sort-entries nil ?o))
+
+    ;; Reset the view of TODO items
+    (org-overview)
+    (org-show-entry)
+    (org-show-children))
+
+
+  (defun dw/org-todo-state-change-hook ()
+    (when (string= org-state "DONE")
+      (dw/org-move-done-tasks-to-bottom)))
+  ;; (add-hook 'org-after-todo-state-change-hook 'dw/org-todo-state-change-hook)
+  (use-package org
+    :straight (:type built-in)
+    :hook (org-mode . dw/org-mode-setup)
+    :bind (:map org-mode-map
+		("M-n" . org-move-subtree-down)
+		("M-p" . org-move-subtree-up))
+    :config
+    (setq org-ellipsis "..."
+	  org-hide-emphasis-markers t
+	  org-src-fontify-natively t
+	  org-fontify-quote-and-verse-blocks t
+	  org-src-tab-acts-natively t
+	  org-edit-src-content-indentation 2
+	  org-hide-block-startup nil
+	  org-src-preserve-indentation nil
+	  org-startup-folded 'content
+	  org-cycle-separator-lines 2
+	  org-capture-bookmark nil
+	  )
+
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((emacs-lisp . t)))
+    )
 #+END_SRC
+** org-face
+#+begin_src emacs-lisp
+  (use-package org-faces
+    :straight (:type built-in)
+    :after org
+    :config
+    ;; Increase the size of various headings
+    (set-face-attribute 'org-document-title nil :font gcl/org-heading-font :weight 'medium :height 1.3)
+    (dolist (face '((org-level-1 . 1.2)
+                    (org-level-2 . 1.1)
+                    (org-level-3 . 1.05)
+                    (org-level-4 . 1.0)
+                    (org-level-5 . 1.1)
+                    (org-level-6 . 1.1)
+                    (org-level-7 . 1.1)
+                    (org-level-8 . 1.1)))
+      (set-face-attribute (car face) nil :font gcl/org-heading-font :weight 'medium :height (cdr face))))
+#+end_src
+** org-modern
+#+begin_src emacs-lisp
+(use-package org-modern
+  :hook (org-mode . org-modern-mode))
+#+end_src
+
+*** DONE [100%] 任务列表 [1/3]  :tag:test:
+- [X] done
+- [-] doing
+- [ ] todo
+*** TODO 列表
+
+- 张三
++ 李四
+1. 王五
+
+*** TODO [#A] 特殊链接
+
+<<外部链接>>
+
+<<<radio link>>>
+
+[[external link]]
+
+脚注链接 [fn:1] 命名脚注 [fn:foo]
+*** TODO [#B] 进度条
+- 几分制 [1/13]
+- 几分制 [3/13]
+- 几分制 [7/13]
+- 几分制 [10/13]
+- 几分制 [13/13]
+- 百分制 [0%]
+- 百分制 [10%]
+- 百分制 [20%]
+- 百分制 [50%]
+- 百分制 [100%]
+- 溢出 [200%]
+- 溢出 [20/13]
+*** TODO [#C] 时间日期
+日期星期: <2022-01-01 Tue>
+日期时间： <2022-01-01 10:00>
+日期范围： <2022-01-01>--<2022-02-01>
+时间范围： [2022-01-01 Tue 10:00-11:00]
+日期时间星期：[2022-01-01 Tue 10:00]
+重复日期： <2022-01-01 Sat .+1d/2d +3d>
+重复时间： <2022-01-01 Sat 10:00 .+1d/2d>
+** org-tempo
+#+begin_src emacs-lisp
+  (use-package org-tempo
+    :straight (:type built-in)
+    :after org
+    :config
+    (dolist (item '(("sh" . "src sh")
+		    ("el" . "src emacs-lisp")
+		    ("li" . "src lisp")
+		    ("sc" . "src scheme")
+		    ("ts" . "src typescript")
+		    ("py" . "src python")
+		    ("html" . "src html")
+		    ("vue" . "src vue")
+		    ("go" . "src go")
+		    ("einit" . "src emacs-lisp :tangle ~/.config/emacs/init.el :mkdirp yes")
+		    ("emodule" . "src emacs-lisp :tangle ~/.config/emacs/modules/dw-MODULE.el :mkdirp yes")
+		    ("yaml" . "src yaml")
+		    ("json" . "src json")))
+      (add-to-list 'org-structure-template-alist item)))
+#+end_src
+** bindings
+#+begin_src emacs-lisp
+(define-key org-mode-map (kbd "s-t") 'org-todo)
+#+end_src
 * 开发配置
 ** yasnippet
 #+begin_src emacs-lisp
-(use-package yasnippet
-  :diminish yas-minor-mode
-  :hook ((prog-mode org-mode) . yas-minor-mode)
-  :bind (("C-c y i" . yas-insert-snippet)
-         ("C-c y f" . yas-visit-snippet-file)
-         ("C-c y n" . yas-new-snippet)
-         ("C-c y t" . yas-tryout-snippet)
-         ("C-c y l" . yas-describe-tables)
-         ("C-c y g" . yas-global-mode)
-         ("C-c y m" . yas-minor-mode)
-         ("C-c y r" . yas-reload-all)
-         ("C-c y x" . yas-expand)
-         :map yas-keymap
-         ("C-i" . yas-next-field-or-maybe-expand))
-  :config
-  (yas-reload-all))
+  (use-package yasnippet
+    :diminish yas-minor-mode
+    :hook ((prog-mode org-mode) . yas-minor-mode)
+    :bind (("C-c y i" . yas-insert-snippet)
+	   ("C-c y f" . yas-visit-snippet-file)
+	   ("C-c y n" . yas-new-snippet)
+	   ("C-c y t" . yas-tryout-snippet)
+	   ("C-c y l" . yas-describe-tables)
+	   ("C-c y g" . yas-global-mode)
+	   ("C-c y m" . yas-minor-mode)
+	   ("C-c y r" . yas-reload-all)
+	   ("C-c y x" . yas-expand)
+	   :map yas-keymap
+	   ("C-i" . yas-next-field-or-maybe-expand))
+    :config
+    (yas-reload-all))
 
-(use-package yasnippet-snippets
-  :defer t
-  :after yasnippet)
+  (use-package yasnippet-snippets
+    :defer t
+    :after yasnippet)
 #+end_src
 ** [un]comment
 
@@ -1653,65 +1808,62 @@
     :init
     (projectile-mode +1)
     :config
-    (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+    (define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
     (autoload 'projectile-project-root "projectile")
     (setq consult-project-function (lambda (_) (projectile-project-root)))
     ;; alien, hybrid
     (setq projectile-indexing-method 'alien projectile-enable-caching t)
     )
-
 #+end_src
 
 ** lsp-mode
 #+begin_src emacs-lisp
-	(defun gcl/lsp-mode-setup ()
-	  (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
-	  (lsp-headerline-breadcrumb-mode))
+    (defun gcl/lsp-mode-setup ()
+      (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+      (lsp-headerline-breadcrumb-mode))
+    (use-package lsp-mode
+      :init
+      ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+      (setq lsp-keymap-prefix "s-l")
+      :commands (lsp lsp-deferred)
+      :hook (lsp-mode . gcl/lsp-mode-setup)
+      :diminish lsp-mode
+      :diminish lsp-lens-mode
+      )
 
-	(use-package lsp-mode
-	  :commands (lsp lsp-deferred)
-	  :hook (lsp-mode . gcl/lsp-mode-setup)
-	  :diminish lsp-mode
-	  :diminish lsp-lens-mode
-	  :init
-	  (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
-	  :config
-	  ;; (lsp-enable-which-key-integration t)
-	  )
-
-	(use-package lsp-ui
-	  :hook (lsp-mode . lsp-ui-mode)
-	  :custom
-	  (lsp-ui-doc-position 'bottom))
+    (use-package lsp-ui
+      :hook (lsp-mode . lsp-ui-mode)
+      :custom
+      (lsp-ui-doc-position 'bottom))
 
 
-	(use-package lsp-tailwindcss
-	  :straight (:type git :host github :repo "merrickluo/lsp-tailwindcss")
-	  :config
-	  (setq lsp-tailwindcss-add-on-mode t))
-	(add-hook 'before-save-hook 'lsp-tailwindcss-rustywind-before-save)
-	;; 其他 buffer 中启用
-	(add-to-list 'lsp-language-id-configuration '(".*\\.erb$" . "html"))
+    (use-package lsp-tailwindcss
+      :straight (:type git :host github :repo "merrickluo/lsp-tailwindcss")
+      :config
+      (setq lsp-tailwindcss-add-on-mode t))
+    (add-hook 'before-save-hook 'lsp-tailwindcss-rustywind-before-save)
+    ;; 其他 buffer 中启用
+    (add-to-list 'lsp-language-id-configuration '(".*\\.erb$" . "html"))
 
-	(use-package company
-	  :after lsp-mode
-	  :hook (lsp-mode . company-mode)
-	  :diminish company-mode
-	  :bind (:map company-active-map
-		      ("<tab>" . company-complete-selection))
-	  (:map lsp-mode-map
-		("<tab>" . company-indent-or-complete-common))
-	  :custom
-	  (company-minimum-prefix-length 1)
-	  (company-idle-delay 0.0))
+    (use-package company
+      :after lsp-mode
+      :hook (lsp-mode . company-mode)
+      :diminish company-mode
+      :bind (:map company-active-map
+		  ("<tab>" . company-complete-selection))
+      (:map lsp-mode-map
+	    ("<tab>" . company-indent-or-complete-common))
+      :custom
+      (company-minimum-prefix-length 1)
+      (company-idle-delay 0.0))
 
-	(use-package company-box
-	  :diminish company-box-mode
-	  :hook (company-mode . company-box-mode))
+    (use-package company-box
+      :diminish company-box-mode
+      :hook (company-mode . company-box-mode))
 #+end_src
 ** web 开发
 *** javascript
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package js2-mode
     :mode "\\.jsx?\\'"
     :config
@@ -1755,14 +1907,7 @@
 *** web-mode
 #+begin_src emacs-lisp
   (use-package web-mode
-    :mode
-    (
-     ".twig$"
-     ".html?$"
-     ".hbs$"
-     ".vue$"
-     ".blade.php$"
-     )
+    :mode "(\\.\\(html?\\|ejs\\|tsx\\|jsx\\|vue\\)\\'"
     :hook (web-mode . lsp-deferred)
     :config
     (setq
@@ -1800,6 +1945,120 @@
     ;; (add-to-list 'lsp-language-id-configuration '(web-mode . "vue"))
     )
 #+end_src
+*** js-doc
+#+begin_src emacs-lisp
+  (use-package js-doc
+    :config
+    (setq js-doc-mail-address user-mail-address
+	  js-doc-author (format "<%s> <%s>" user-full-name js-doc-mail-address)
+	  ;; js-doc-url user-blog-url
+	  ;; js-doc-license "MIT"
+	  ))
+#+end_src
+** markdown-mode
+#+begin_src emacs-lisp
+(defun dw/setup-markdown-mode ()
+  (visual-fill-column-mode 1)
+  (display-line-numbers-mode 0))
+
+(use-package markdown-mode
+  :mode "\\.md\\'"
+  :config
+  (setq markdown-command "marked")
+  (add-hook 'markdown-mode-hook #'dw/setup-markdown-mode)
+  (dolist (face '((markdown-header-face-1 . 1.2)
+                  (markdown-header-face-2 . 1.1)
+                  (markdown-header-face-3 . 1.0)
+                  (markdown-header-face-4 . 1.0)
+                  (markdown-header-face-5 . 1.0)))
+    (set-face-attribute (car face) nil :weight 'normal :height (cdr face))))
+#+end_src
+** smartparens
+#+begin_src emacs-lisp
+(use-package smartparens
+  :hook (prog-mode . smartparens-mode)
+  :config
+  (sp-use-smartparens-bindings))
+
+#+end_src
+* 终端工具
+#+begin_src emacs-lisp
+  (use-package vterm)
+  (use-package multi-vterm)
+  (use-package vterm-toggle)
+  (with-eval-after-load 'vterm
+    (define-key vterm-mode-map [return] #'vterm-send-return)
+    (define-key vterm-mode-map [(control return)]   #'vterm-toggle-insert-cd)
+    (define-key vterm-mode-map (kbd "s-n")   'vterm-toggle-forward)
+    (define-key vterm-mode-map (kbd "s-p")   'vterm-toggle-backward)
+    (setq vterm-toggle-fullscreen-p nil)
+    (add-to-list 'display-buffer-alist
+		 '((lambda (buffer-or-name _)
+		     (let ((buffer (get-buffer buffer-or-name)))
+		       (with-current-buffer buffer
+			 (or (equal major-mode 'vterm-mode)
+			     (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
+		   (display-buffer-reuse-window display-buffer-at-bottom)
+		   ;;(display-buffer-reuse-window display-buffer-in-direction)
+		   ;;display-buffer-in-direction/direction/dedicated is added in emacs27
+		   ;;(direction . bottom)
+		   ;;(dedicated . t) ;dedicated is supported in emacs27
+		   (reusable-frames . visible)
+		   (window-height . 0.3))))
+
+  (global-set-key (kbd "C-`") 'vterm-toggle)
+  (global-set-key (kbd "s-<return>") 'multi-vterm-project)
+#+end_src
+* 搜索引擎
+** search-engine
+#+begin_src emacs-lisp
+(use-package engine-mode
+  :config
+  (engine-mode t)
+  (engine/set-keymap-prefix (kbd "C-c s"))
+  (defengine baidu "https://www.baidu.com/s?wd=%s"
+	           :keybinding "b")
+  (defengine github
+    "https://github.com/search?ref=simplesearch&q=%s"
+    :keybinding "g")
+  (defengine qwant
+    "https://www.qwant.com/?q=%s"
+    :docstring "什么都能搜到哦~~😍😍"
+    :keybinding "q")
+  (defengine rfcs
+    "http://pretty-rfc.herokuapp.com/search?q=%s"
+    :keybinding "r")
+  (defengine stack-overflow
+    "https://stackoverflow.com/search?q=%s"
+    :keybinding "s")
+  (defengine twitter
+    "https://twitter.com/search?q=%s"
+    :keybinding "t")
+  (defengine wolfram-alpha
+    "http://www.wolframalpha.com/input/?i=%s"
+    :docstring "数学搜索引擎，公式，坐标图等。"
+    :keybinding "w")
+  (defengine google
+    "http://www.google.com/search?ie=utf-8&oe=utf-8&q=%s"
+    :keybinding "/")
+  (defengine youtube
+    "http://www.youtube.com/results?aq=f&oq=&search_query=%s"
+    :keybinding "y")
+  )
+#+end_src
+** wgrep
+#+begin_src emacs-lisp
+(use-package wgrep)
+(setq wgrep-auto-save-buffer t)
+#+end_src
+** visual regexp
+#+begin_src emacs-lisp
+  (use-package visual-regexp)
+  (use-package visual-regexp-steroids)
+(global-set-key (kbd "C-c r") 'vr/replace)
+(global-set-key (kbd "C-c q") 'vr/query-replace)
+(global-set-key (kbd "C-c m") 'vr/mc-mark)
+#+end_src
 * 保存时自动转换配置
 
 #+BEGIN_SRC emacs-lisp
@@ -1835,19 +2094,15 @@
        (message "Init tangling completed: %s" result))))
 #+END_SRC
 * 按键绑定表
-
-** 单键
-| modalka   | normal        | function                            |
-|-----------+---------------+-------------------------------------|
-| ~0...9~   | ~C-0...9~     | -                                   |
-| ~o~       | -             | exit modalka and newline            |
-| ~i~       | -             | exit modalka and insert             |
+** 字母键
+| modalka | normal      | function                            |
+|---------+-------------+-------------------------------------|
+| ~o~       | -           | exit modalka and newline            |
+| ~i~       | -           | exit modalka and insert             |
 | ~c~       | ~M-m g c~     | upcase word or region               |
 | ~C~       | ~M-m g d~     | downcase word or region             |
 | ~h/j/k/l~ | ~C-b/n/p/f~   | move cursor left/down/up/right      |
 | ~e/b~     | ~M-f/b~       | move to word end/begin              |
-| ~{}~      | ~M-{}~        | move to begin/end of paragraph      |
-| ~0$~      | ~C-a/e~       | move to begin/end of line           |
 | ~G~       | ~M->~         | move to file end                    |
 | ~y~       | ~M-w~         | yank                                |
 | ~p~       | ~C-y~         | paste                               |
@@ -1855,10 +2110,7 @@
 | ~x~       | ~C-d~         | delete char                         |
 | ~D~       | ~C-k~         | delete line from current position   |
 | ~z~       | ~C-l~         | locate to center                    |
-| ~!~       | ~M-&~         | execute command async               |
 | ~J/K~     | ~C/M-v~       | turn page down/up                   |
-| ~()~      | ~M-a/e~       | move to sentence begin/end          |
-| ~/~       | ~C-s~         | search line in buffer               |
 | ~E~       | ~C-g~         | quit mode                           |
 | ~d~       | ~C-w~         | delete region                       |
 | ~w~       | ~C-x o~       | switch window                       |
@@ -1869,76 +2121,127 @@
 | ~Z~       | ~C-x 1~       | close other windows                 |
 | ~q/Q~     | ~C-x ()~      | macro on/off                        |
 | ~v~       | ~C-SPC~       | mark start                          |
-| ~?~       | ~M-m ?~       | which key                           |
-| ~=~       | ~M-m =~       | indent region                       |
 | ~X~       | ~C-x C-x~     | exchange cursor between mark region |
-| ~+~       | ~C-x r m~     | add bookmark                        |
-| ~'~       | ~C-x r b~     | visit bookmark                      |
-| ~\~       | ~C-c C-c~     | execute codeblock                   |
-| ~,~       | ~C-x M-r~     | repeat vertico search result        |
-| ~vline~   | ~M-m e l~     | duplicate line                      |
-| ~`~       | ~M-m e i~     | iedit                               |
-|           |               |                                     |
+|         |             |                                     |
+** 数字键
+| modalka | normal  | function |
+|---------+---------+----------|
+| ~0...9~   | ~C-0...9~ | -        |
+
+** 符号键
+| modalka | normal  | function                       |
+|---------+---------+--------------------------------|
+| ~{}~      | ~M-{}~    | move to begin/end of paragraph |
+| ~0$~      | ~C-a/e~   | move to begin/end of line      |
+| ~!~       | ~M-&~     | execute command async          |
+| ~()~      | ~M-a/e~   | move to sentence begin/end     |
+| ~/~       | ~C-s~     | search line in buffer          |
+| ~?~       | ~M-m ?~   | which key                      |
+| ~=~       | ~M-m =~   | indent region                  |
+| ~+~       | ~C-x r m~ | add bookmark                   |
+| ~'~       | ~C-x r b~ | visit bookmark                 |
+| ~\~       | ~C-c C-c~ | execute codeblock              |
+| ~,~       | ~C-x M-r~ | repeat vertico search result   |
+| ~vline~   | ~M-m e l~ | duplicate line                 |
+| ~`~       | ~M-m e i~ | iedit                          |
+
 ** 组合键
-| modalka    | normal      | function                     |
-|------------+-------------+------------------------------|
-| ~:q~       | ~C-x C-c~   | quit emacs                   |
-| ~:t~       | ~C-x M-c~   | emacs init time              |
-|------------+-------------+------------------------------|
-| ~]]~       | ~C-x n n~   | focus line                   |
-| ~]w~       | ~C-x n w~   | exit focus line              |
-| ~]s~       | ~M-m ] s~   | next spell error             |
-|------------+-------------+------------------------------|
-| ~SPC SPC~  | ~M-x~       | execute command              |
-| ~SPC a~    | ~C-x b~     | switch buffer                |
-| ~SPC k~    | ~C-x k~     | kill buffer                  |
-| ~SPC g~    | ~M-g g~     | goto line                    |
-| ~SPC d~    | ~C-x d~     | dired                        |
-| ~SPC q~    | ~C-x 0~     | quit window                  |
-| ~SPC f~    | ~C-x C-f~   | find file                    |
-| ~SPC w~    | ~C-x C-s~   | save buffer                  |
-| ~SPC c~    | ~M-m SPC c~ | load theme                   |
-| ~SPC R~    | ~M-m SPC R~ | locate                       |
-| ~SPC ?~    | ~M-m SPC ?~ | describe bindings            |
-| ~SPC .~    | ~M-SPC~     | just one space               |
-|------------+-------------+------------------------------|
-| ~g i~      | ~M-g i~     | imenu                        |
-| ~g r~      | ~M-g r~     | consult ripgrep              |
-| ~g d~      | ~M-m g d~   | magit                        |
-| ~g g~      | ~M-<~       | goto start of buffer         |
-| ~g o~      | ~C-x C-e~   | eval elisp                   |
-| ~g O~      | ~C-M-x~     | eval defun                   |
-| ~g m~      | ~M-m g m~   | make frame                   |
-| ~g M~      | ~M-m g M~   | delete frame                 |
-| ~g n~      | ~M-m g n~   | select frame by name         |
-| ~g N~      | ~M-m g N~   | name frame                   |
-| ~g f~      | ~M-m g f~   | file/url at cursor           |
-| ~g l~      | ~M-g M-g~   | goto line                    |
-| ~g j~      | ~M-m g j~   | next pdf page                |
-| ~g k~      | ~M-m g k~   | prev pdf page                |
-| ~g q~      | ~M-m g q~   | format paragraph             |
-| ~g w~      | ~C-x 3~     | vertical split window        |
-| ~g -~      | ~C-x 2~     | horizaontal split window     |
-| ~g S~      | ~C-j~       | split line                   |
-| ~g @~      | ~M-m g @~   | compose mail                 |
-| ~g ;~      | ~M-m g ;~   | browse with external browser |
-| ~g {}~     | ~M-m g {}~  | eww back/forward             |
-| ~g ()~     | ~M-m g ()~  | info prev/next               |
-| ~g ?~      | ~~          | find bound key               |
-|------------+-------------+------------------------------|
-| s, Command |             |                              |
-| -          | ~s i~       | string inflection            |
-| -          | ~s I~       | parrot, switch word          |
-| -          | ~s o~       | toggle one window            |
-| -          | ~s y~       | fanyi                        |
-| -          | ~s k~       | kill current buffer          |
-|------------+-------------+------------------------------|
-| C, Control |             |                              |
-| -          | ~C-'~       | toggle quotes                |
-|------------+-------------+------------------------------|
-| C-c        |             |                              |
-| -          | ~C-c TAB~   | switch workspace             |
-| -          | ~C-c p~     | switch project               |
+*** :, 冒号
+
+| modalka | normal  | function        |
+|---------+---------+-----------------|
+| ~:q~      | ~C-x C-c~ | quit emacs      |
+| ~:t~      | ~C-x M-c~ | emacs init time |
+
+*** ], 中括号
+| modalka | normal  | function         |
+|---------+---------+------------------|
+| ~]]~      | ~C-x n n~ | focus line       |
+| ~]w~      | ~C-x n w~ | exit focus line  |
+| ~]s~      | ~M-m ] s~ | next spell error |
+
+*** SPC, 空格
+| modalka | normal    | function          |
+|---------+-----------+-------------------|
+| ~SPC SPC~ | ~M-x~       | execute command   |
+| ~SPC a~   | ~C-x b~     | switch buffer     |
+| ~SPC k~   | ~C-x k~     | kill buffer       |
+| ~SPC g~   | ~M-g g~     | goto line         |
+| ~SPC d~   | ~C-x d~     | dired             |
+| ~SPC q~   | ~C-x 0~     | quit window       |
+| ~SPC f~   | ~C-x C-f~   | find file         |
+| ~SPC w~   | ~C-x C-s~   | save buffer       |
+| ~SPC c~   | ~M-m SPC c~ | load theme        |
+| ~SPC R~   | ~M-m SPC R~ | locate            |
+| ~SPC ?~   | ~M-m SPC ?~ | describe bindings |
+| ~SPC .~   | ~M-SPC~     | just one space    |
+
+*** g, 字符
+| modalka | normal   | function                     |
+|---------+----------+------------------------------|
+| ~g i~     | ~M-g i~    | imenu                        |
+| ~g r~     | ~M-g r~    | consult ripgrep              |
+| ~g d~     | ~M-m g d~  | magit                        |
+| ~g g~     | ~M-<~      | goto start of buffer         |
+| ~g o~     | ~C-x C-e~  | eval elisp                   |
+| ~g O~     | ~C-M-x~    | eval defun                   |
+| ~g m~     | ~M-m g m~  | make frame                   |
+| ~g M~     | ~M-m g M~  | delete frame                 |
+| ~g n~     | ~M-m g n~  | select frame by name         |
+| ~g N~     | ~M-m g N~  | name frame                   |
+| ~g f~     | ~M-m g f~  | file/url at cursor           |
+| ~g l~     | ~M-g M-g~  | goto line                    |
+| ~g j~     | ~M-m g j~  | next pdf page                |
+| ~g k~     | ~M-m g k~  | prev pdf page                |
+| ~g q~     | ~M-m g q~  | format paragraph             |
+| ~g w~     | ~C-x 3~    | vertical split window        |
+| ~g -~     | ~C-x 2~    | horizaontal split window     |
+| ~g S~     | ~C-j~      | split line                   |
+| ~g @~     | ~M-m g @~  | compose mail                 |
+| ~g ;~     | ~M-m g ;~  | browse with external browser |
+| ~g {}~    | ~M-m g {}~ | eww back/forward             |
+| ~g ()~    | ~M-m g ()~ | info prev/next               |
+| ~g ?~     | -        | find bound key               |
+
+*** s, Command
+| modalka | normal     | function            | mode     |
+|---------+------------+---------------------+----------|
+| -       | ~s-i~        | string inflection   |          |
+| -       | ~s-I~        | parrot, switch word |          |
+| -       | ~s-o~        | toggle one window   |          |
+| -       | ~s-y~        | fanyi               |          |
+| -       | ~s-k~        | kill current buffer |          |
+| -       | ~s-l~        | lsp prefix          |          |
+| -       | ~s-<return>~ | new vterm           |          |
+| -       | ~s-p~        | project prefix      |          |
+| -       | ~s-t~        | org-todo            | org-mode |
+
+*** C, Control
+
+| modalka    | normal | function      |
+|------------+--------+---------------|
+| C, Control |        |               |
+| -          | ~C-'~    | toggle quotes |
+| -          | ~C-`~    | toggle vterm  |
+
+*** M, Meta/Option
+| modalka | normal | function          | mode     |
+|---------+--------+-------------------+----------|
+| -       | ~M-n~    | move subtree down | org-mode |
+| -       | ~M-p~    | move subtree up   | org-mode |
+
+*** C-c, Control-c
+| modalka | normal  | function             |
+|---------+---------+----------------------|
+| C-c     |         |                      |
+| -       | ~C-c TAB~ | switch workspace     |
+| -       | ~C-c p~   | switch project       |
+|---------+---------+----------------------|
+| -       | ~C-c s~   | search engine prefix |
+| -       | ~C-c r~   | regexp replace       |
+| -       | ~C-c q~   | query regexp replace |
+| -       | ~C-c o~   | embark dwim          |
+| -       | ~C-c k~   | kill this buffer     |
 
 
 # Local Variables:

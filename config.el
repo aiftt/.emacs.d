@@ -7,6 +7,10 @@
 ;; Make frame transparency overridable
 (defvar gcl/frame-transparency '(90 . 90))
 
+(defvar gcl/variable-pitch-size 120)
+(defvar gcl/org-heading-font "Iosevka Aile"
+  "The font used for Org Mode headings.")
+
 (defun vifon/buffer-file-or-directory-name (buf)
   "The file BUF is visiting, works also if it's a `dired' buffer."
   (with-current-buffer buf
@@ -65,24 +69,6 @@
   "Insert current time, like hh:mm:ss."
   (interactive)
   (insert (format-time-string "%T")))
-
-(defun gcl/consult-file-externally (file)
-  "Open the FILE externally using the system's default program."
-  (interactive "fFile to open externally: ")
-  (cond
-   ((eq system-type 'darwin) ; macOS
-    (start-process "external-program" nil "open" file))
-   ((eq system-type 'gnu/linux) ; Linux
-    (start-process "external-program" nil "xdg-open" file))
-   ((eq system-type 'windows-nt) ; Windows
-    (start-process "external-program" nil "start" "" file))
-   (t ; Other platforms
-    (message "Opening files externally is not supported on this platform."))))
-
-
-(defun gcl/open-current-directory ()
-  (interactive)
-  (gcl/consult-file-externally default-directory))
 
 (defun gcl/copy-file-full-name ()
   "Copy the current buffer's file name to the clipboard."
@@ -179,12 +165,30 @@ one, an error is signaled."
 
 (defun efs/display-startup-time ()
   (message "Emacs loaded in %s with %d garbage collections."
-           (format "%.2f seconds"
-                   (float-time
-                     (time-subtract after-init-time before-init-time)))
-           gcs-done))
+	   (format "%.2f seconds"
+		   (float-time
+		    (time-subtract after-init-time before-init-time)))
+	   gcs-done))
 
 (add-hook 'emacs-startup-hook #'efs/display-startup-time)
+
+(defun gcl/consult-file-externally (file)
+  "Open the FILE externally using the system's default program."
+  (interactive "File to open externally: ")
+  (cond
+   ((eq system-type 'darwin) ; macOS
+    (start-process "external-program" nil "open" file))
+   ((eq system-type 'gnu/linux) ; Linux
+    (start-process "external-program" nil "xdg-open" file))
+   ((eq system-type 'windows-nt) ; Windows
+    (start-process "external-program" nil "start" "" file))
+   (t ; Other platforms
+    (message "Opening files externally is not supported on this platform."))))
+
+
+(defun gcl/open-current-directory ()
+  (interactive)
+  (gcl/consult-file-externally default-directory))
 
 (bind-key [remap just-one-space] #'cycle-spacing)
 (bind-key [remap upcase-word] #'upcase-dwim)
@@ -391,6 +395,8 @@ one, an error is signaled."
 ;; (benchmark-run 10 (fanyi-render longman-ins))
 ;;=> (0.150839075 0 0.0)
 
+(use-package mpv)
+
 (use-package dired
   :straight (:type built-in)
   :bind (:map dired-mode-map
@@ -432,6 +438,7 @@ one, an error is signaled."
   (add-to-list 'modalka-excluded-modes 'eshell-mode)
   (add-to-list 'modalka-excluded-modes 'deft-mode)
   (add-to-list 'modalka-excluded-modes 'term-mode)
+  (add-to-list 'modalka-excluded-modes 'vterm-mode)
   ;; (which-key-add-key-based-replacements
   ;; 	"M-m"     "Modalka prefix"
   ;; 	"M-m :"   "extended prefix"
@@ -481,6 +488,8 @@ one, an error is signaled."
  ("M-m SPC ?" . describe-bindings)
 
  ("M-m e l" . duplicate-dwim)
+
+ ("C-c k" . kill-this-buffer)
  )
 
 (modalka-define-kbd "0" "C-0")
@@ -782,7 +791,7 @@ one, an error is signaled."
   )
 
 (use-package orderless
-  :after vertico
+  :demand t
   :config (progn
 	    (setq orderless-matching-styles '(orderless-regexp
 					      orderless-initialism
@@ -899,6 +908,7 @@ one, an error is signaled."
 	      ("M-g i" . consult-imenu)
 	      ("M-g I" . consult-info)
 	      ("M-g r" . consult-ripgrep)
+	      ("<f6>" . consult-ripgrep)
 	      ("M-g m" . consult-mark)
 	      ("M-g M" . consult-global-mark)
 	      ;; Misc.
@@ -1008,52 +1018,37 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 			 '(?t "TMSU" tmsu-dired-bookmark-open))))
 
 (use-package corfu
-  :init (global-corfu-mode)
-  :config (progn
-	    (corfu-popupinfo-mode 1)
-	    (corfu-echo-mode 1)
-	    (setq corfu-popupinfo-delay '(nil . t)
-		  corfu-echo-delay t)))
+  :bind (:map corfu-map
+	      ("C-j" . corfu-next)
+	      ("C-k" . corfu-previous)
+	      ("TAB" . corfu-insert)
+	      ([tab] . corfu-insert)
+	      ("C-f" . corfu-insert))
+  :custom
+  (corfu-cycle t)
+  (corfu-auto t)
+  (corfu-preview-current nil)
+  (corfu-quit-at-boundary t)
+  (corfu-quit-no-match t)
 
-;; https://archive.is/Gj6Fu
-;; (autoload 'ffap-file-at-point "ffap")
-;; (defun complete-path-at-point+ ()
-;;   (let ((fn (ffap-file-at-point))
-;; 	(fap (thing-at-point 'filename)))
-;;     (when (and (or fn (equal "/" fap))
-;; 	       (save-excursion
-;; 		 (search-backward fap (line-beginning-position) t)))
-;;       (list (match-beginning 0)
-;; 	    (match-end 0)
-;; 	    #'completion-file-name-table :exclusive 'no))))
-;; (add-hook 'completion-at-point-functions
-;; 	  #'complete-path-at-point+
-;; 	  'append)
+  :config
+  (global-corfu-mode 1)
 
-;; ;; Add prompt indicator to `completing-read-multiple'.
-;; ;; We display [CRM<separator>], e.g., [CRM,] if the separator is a comma.
-;; ;;
-;; ;; Taken from the Vertico docs.
-;; (defun crm-indicator (args)
-;;   (cons (format "[CRM%s] %s"
-;; 		(replace-regexp-in-string
-;; 		 "\\`\\[.*?]\\*\\|\\[.*?]\\*\\'" ""
-;; 		 crm-separator)
-;; 		(car args))
-;; 	(cdr args)))
-;; (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
+  (defun corfu-enable-in-minibuffer ()
+    "Enable Corfu in the minibuffer if `completion-at-point' is bound."
+    (when (where-is-internal #'completion-at-point (list (current-local-map)))
+      ;; (setq-local corfu-auto nil) ;; Enable/disable auto completion
+      (setq-local corfu-echo-delay nil ;; Disable automatic echo and popup
+		  corfu-popupinfo-delay nil)
+      (corfu-mode 1)))
 
-;; (setq enable-recursive-minibuffers t)
-;; (minibuffer-depth-indicate-mode 1)
+  (add-hook 'minibuffer-setup-hook #'corfu-enable-in-minibuffer))
 
-;; ;; Use the completing-read UI for the M-tab completion unless
-;; overridden (for example by `corfu').
-;; (setq-default completion-in-region-function
-;; 		(lambda (&rest args)
-;; 		  (apply (if vertico-mode
-;; 			     #'consult-completion-in-region
-;; 			   #'completion--in-region)
-;; 			 args)))
+(use-package kind-icon
+  :after corfu
+  :custom (kind-icon-default-face 'corfu-default)
+  :config
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
 
 (use-package magit
   :bind* (("M-m g d" . magit))
@@ -1113,6 +1108,14 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 (use-package diff-hl
   :config
   (global-diff-hl-mode))
+
+(defhydra gcl/smerge-panel ()
+  "smerge"
+  ("k" (smerge-prev) "prev change" )
+  ("j" (smerge-next) "next change")
+  ("u" (smerge-keep-upper) "keep upper")
+  ("l" (smerge-keep-lower) "keep lower")
+  ("q" nil "quit" :exit t))
 
 (use-package expand-region)
 (global-set-key (kbd "C-=") 'er/expand-region)
@@ -1299,20 +1302,116 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 (when (version<= "9.2" (org-version))
   (require 'org-tempo))
 
+(setq org-directory "~/.gclrc/org")
+
+(defun gcl/org-path (path)
+  (expand-file-name path org-directory))
+
+;; Turn on indentation and auto-fill mode for Org files
+(defun dw/org-mode-setup ()
+  ;; (variable-pitch-mode 1)
+  (org-indent-mode 1)
+  (auto-fill-mode 0)
+  (visual-line-mode 1)
+  (setq corfu-auto nil)
+  (setq evil-auto-indent nil))
+
+(defun dw/org-move-done-tasks-to-bottom ()
+  "Sort all tasks in the topmost heading by TODO state."
+  (interactive)
+  (save-excursion
+    (while (org-up-heading-safe))
+    (org-sort-entries nil ?o))
+
+  ;; Reset the view of TODO items
+  (org-overview)
+  (org-show-entry)
+  (org-show-children))
+
+
+(defun dw/org-todo-state-change-hook ()
+  (when (string= org-state "DONE")
+    (dw/org-move-done-tasks-to-bottom)))
+;; (add-hook 'org-after-todo-state-change-hook 'dw/org-todo-state-change-hook)
+(use-package org
+  :straight (:type built-in)
+  :hook (org-mode . dw/org-mode-setup)
+  :bind (:map org-mode-map
+	      ("M-n" . org-move-subtree-down)
+	      ("M-p" . org-move-subtree-up))
+  :config
+  (setq org-ellipsis "..."
+	org-hide-emphasis-markers t
+	org-src-fontify-natively t
+	org-fontify-quote-and-verse-blocks t
+	org-src-tab-acts-natively t
+	org-edit-src-content-indentation 2
+	org-hide-block-startup nil
+	org-src-preserve-indentation nil
+	org-startup-folded 'content
+	org-cycle-separator-lines 2
+	org-capture-bookmark nil
+	)
+
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)))
+  )
+
+(use-package org-faces
+  :straight (:type built-in)
+  :after org
+  :config
+  ;; Increase the size of various headings
+  (set-face-attribute 'org-document-title nil :font gcl/org-heading-font :weight 'medium :height 1.3)
+  (dolist (face '((org-level-1 . 1.2)
+                  (org-level-2 . 1.1)
+                  (org-level-3 . 1.05)
+                  (org-level-4 . 1.0)
+                  (org-level-5 . 1.1)
+                  (org-level-6 . 1.1)
+                  (org-level-7 . 1.1)
+                  (org-level-8 . 1.1)))
+    (set-face-attribute (car face) nil :font gcl/org-heading-font :weight 'medium :height (cdr face))))
+
+(use-package org-modern
+  :hook (org-mode . org-modern-mode))
+
+(use-package org-tempo
+  :straight (:type built-in)
+  :after org
+  :config
+  (dolist (item '(("sh" . "src sh")
+		  ("el" . "src emacs-lisp")
+		  ("li" . "src lisp")
+		  ("sc" . "src scheme")
+		  ("ts" . "src typescript")
+		  ("py" . "src python")
+		  ("html" . "src html")
+		  ("vue" . "src vue")
+		  ("go" . "src go")
+		  ("einit" . "src emacs-lisp :tangle ~/.config/emacs/init.el :mkdirp yes")
+		  ("emodule" . "src emacs-lisp :tangle ~/.config/emacs/modules/dw-MODULE.el :mkdirp yes")
+		  ("yaml" . "src yaml")
+		  ("json" . "src json")))
+    (add-to-list 'org-structure-template-alist item)))
+
+(define-key org-mode-map (kbd "s-t") 'org-todo)
+
 (use-package yasnippet
   :diminish yas-minor-mode
   :hook ((prog-mode org-mode) . yas-minor-mode)
   :bind (("C-c y i" . yas-insert-snippet)
-         ("C-c y f" . yas-visit-snippet-file)
-         ("C-c y n" . yas-new-snippet)
-         ("C-c y t" . yas-tryout-snippet)
-         ("C-c y l" . yas-describe-tables)
-         ("C-c y g" . yas-global-mode)
-         ("C-c y m" . yas-minor-mode)
-         ("C-c y r" . yas-reload-all)
-         ("C-c y x" . yas-expand)
-         :map yas-keymap
-         ("C-i" . yas-next-field-or-maybe-expand))
+	 ("C-c y f" . yas-visit-snippet-file)
+	 ("C-c y n" . yas-new-snippet)
+	 ("C-c y t" . yas-tryout-snippet)
+	 ("C-c y l" . yas-describe-tables)
+	 ("C-c y g" . yas-global-mode)
+	 ("C-c y m" . yas-minor-mode)
+	 ("C-c y r" . yas-reload-all)
+	 ("C-c y x" . yas-expand)
+	 :map yas-keymap
+	 ("C-i" . yas-next-field-or-maybe-expand))
   :config
   (yas-reload-all))
 
@@ -1394,7 +1493,7 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
   :init
   (projectile-mode +1)
   :config
-  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+  (define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
   (autoload 'projectile-project-root "projectile")
   (setq consult-project-function (lambda (_) (projectile-project-root)))
   ;; alien, hybrid
@@ -1404,16 +1503,14 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 (defun gcl/lsp-mode-setup ()
   (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
   (lsp-headerline-breadcrumb-mode))
-
 (use-package lsp-mode
+  :init
+  ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+  (setq lsp-keymap-prefix "s-l")
   :commands (lsp lsp-deferred)
   :hook (lsp-mode . gcl/lsp-mode-setup)
   :diminish lsp-mode
   :diminish lsp-lens-mode
-  :init
-  (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
-  :config
-  ;; (lsp-enable-which-key-integration t)
   )
 
 (use-package lsp-ui
@@ -1446,18 +1543,6 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
   :diminish company-box-mode
   :hook (company-mode . company-box-mode))
 
-(use-package js2-mode
-  :mode "\\.jsx?\\'"
-  :config
-  ;; Use js2-mode for Node scripts
-  (add-to-list 'magic-mode-alist '("#!/usr/bin/env node" . js2-mode))
-
-  ;; Don't use built-in syntax checking
-  (setq js2-mode-show-strict-warnings nil)
-
-  ;; Set up proper indentation in JavaScript and JSON files
-  (setq-default js-indent-level 2))
-
 (use-package typescript-mode
   :mode "\\.[cm]?ts\\'"
   :hook (typescript-mode . lsp-deferred)
@@ -1477,14 +1562,7 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
   (add-hook 'emmet-mode-hook (lambda () (setq emmet-indentation 2))))
 
 (use-package web-mode
-  :mode
-  (
-   ".twig$"
-   ".html?$"
-   ".hbs$"
-   ".vue$"
-   ".blade.php$"
-   )
+  :mode "(\\.\\(html?\\|ejs\\|tsx\\|jsx\\|vue\\)\\'"
   :hook (web-mode . lsp-deferred)
   :config
   (setq
@@ -1521,6 +1599,104 @@ Inspired by: `ibuffer-mark-dissociated-buffers'."))
 						      "\\(?:>\\|]\\|}\\)+\\'")))))
   ;; (add-to-list 'lsp-language-id-configuration '(web-mode . "vue"))
   )
+
+(use-package js-doc
+  :config
+  (setq js-doc-mail-address user-mail-address
+	js-doc-author (format "<%s> <%s>" user-full-name js-doc-mail-address)
+	;; js-doc-url user-blog-url
+	;; js-doc-license "MIT"
+	))
+
+(defun dw/setup-markdown-mode ()
+  (visual-fill-column-mode 1)
+  (display-line-numbers-mode 0))
+
+(use-package markdown-mode
+  :mode "\\.md\\'"
+  :config
+  (setq markdown-command "marked")
+  (add-hook 'markdown-mode-hook #'dw/setup-markdown-mode)
+  (dolist (face '((markdown-header-face-1 . 1.2)
+                  (markdown-header-face-2 . 1.1)
+                  (markdown-header-face-3 . 1.0)
+                  (markdown-header-face-4 . 1.0)
+                  (markdown-header-face-5 . 1.0)))
+    (set-face-attribute (car face) nil :weight 'normal :height (cdr face))))
+
+(use-package smartparens
+  :hook (prog-mode . smartparens-mode)
+  :config
+  (sp-use-smartparens-bindings))
+
+(use-package vterm)
+(use-package multi-vterm)
+(use-package vterm-toggle)
+(with-eval-after-load 'vterm
+  (define-key vterm-mode-map [return] #'vterm-send-return)
+  (define-key vterm-mode-map [(control return)]   #'vterm-toggle-insert-cd)
+  (define-key vterm-mode-map (kbd "s-n")   'vterm-toggle-forward)
+  (define-key vterm-mode-map (kbd "s-p")   'vterm-toggle-backward)
+  (setq vterm-toggle-fullscreen-p nil)
+  (add-to-list 'display-buffer-alist
+	       '((lambda (buffer-or-name _)
+		   (let ((buffer (get-buffer buffer-or-name)))
+		     (with-current-buffer buffer
+		       (or (equal major-mode 'vterm-mode)
+			   (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
+		 (display-buffer-reuse-window display-buffer-at-bottom)
+		 ;;(display-buffer-reuse-window display-buffer-in-direction)
+		 ;;display-buffer-in-direction/direction/dedicated is added in emacs27
+		 ;;(direction . bottom)
+		 ;;(dedicated . t) ;dedicated is supported in emacs27
+		 (reusable-frames . visible)
+		 (window-height . 0.3))))
+
+(global-set-key (kbd "C-`") 'vterm-toggle)
+(global-set-key (kbd "s-<return>") 'multi-vterm-project)
+
+(use-package engine-mode
+  :config
+  (engine-mode t)
+  (engine/set-keymap-prefix (kbd "C-c s"))
+  (defengine baidu "https://www.baidu.com/s?wd=%s"
+	           :keybinding "b")
+  (defengine github
+    "https://github.com/search?ref=simplesearch&q=%s"
+    :keybinding "g")
+  (defengine qwant
+    "https://www.qwant.com/?q=%s"
+    :docstring "什么都能搜到哦~~😍😍"
+    :keybinding "q")
+  (defengine rfcs
+    "http://pretty-rfc.herokuapp.com/search?q=%s"
+    :keybinding "r")
+  (defengine stack-overflow
+    "https://stackoverflow.com/search?q=%s"
+    :keybinding "s")
+  (defengine twitter
+    "https://twitter.com/search?q=%s"
+    :keybinding "t")
+  (defengine wolfram-alpha
+    "http://www.wolframalpha.com/input/?i=%s"
+    :docstring "数学搜索引擎，公式，坐标图等。"
+    :keybinding "w")
+  (defengine google
+    "http://www.google.com/search?ie=utf-8&oe=utf-8&q=%s"
+    :keybinding "/")
+  (defengine youtube
+    "http://www.youtube.com/results?aq=f&oq=&search_query=%s"
+    :keybinding "y")
+  )
+
+(use-package wgrep)
+(setq wgrep-auto-save-buffer t)
+
+(use-package visual-regexp)
+  (use-package visual-regexp-steroids)
+(global-set-key (kbd "C-c r") 'vr/replace)
+(global-set-key (kbd "C-c q") 'vr/query-replace)
+(global-set-key (kbd "C-c m") 'vr/mc-mark)
 
 (defun tangle-if-init ()
   "If the current buffer is 'init.org' the code-blocks are
