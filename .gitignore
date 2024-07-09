@@ -45,3 +45,5 @@ tramp
 /tmp/
 /tree-sitter/
 config.elc
+.lsp-session
+_config.org
