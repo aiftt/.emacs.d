@@ -179,6 +179,21 @@
   (global-set-key (kbd "<f8>") #'symbol-overlay-remove-all)
   )
 #+end_src
+** iedit
+#+begin_src emacs-lisp
+(use-package maple-iedit
+  :straight (:type git :host github :repo "honmaple/emacs-maple-iedit")
+  :commands (maple-iedit-match-all maple-iedit-match-next maple-iedit-match-previous)
+  :config
+  (setq maple-iedit-ignore-case t)
+
+  (defhydra maple/iedit ()
+    ("n" maple-iedit-match-next "next")
+    ("t" maple-iedit-skip-and-match-next "skip and next")
+    ("T" maple-iedit-skip-and-match-previous "skip and previous")
+    ("p" maple-iedit-match-previous "prev"))
+  :bind* (("C-," . maple/iedit/body)))
+#+end_src
 ** expand region
 #+begin_src emacs-lisp
 (use-package expand-region)
@@ -303,6 +318,7 @@
 |--------------+-----------------------|
 | ~C-%, C-5~   | bounce between parens |
 | ~C-=~        | expand region         |
+| ~C-,~        | iedit                 |
 |--------------+-----------------------|
 | ~M-i~        | imenu                 |
 | ~M-o~        | other window          |

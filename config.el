@@ -151,6 +151,19 @@
   (global-set-key (kbd "<f8>") #'symbol-overlay-remove-all)
   )
 
+(use-package maple-iedit
+  :straight (:type git :host github :repo "honmaple/emacs-maple-iedit")
+  :commands (maple-iedit-match-all maple-iedit-match-next maple-iedit-match-previous)
+  :config
+  (setq maple-iedit-ignore-case t)
+
+  (defhydra maple/iedit ()
+    ("n" maple-iedit-match-next "next")
+    ("t" maple-iedit-skip-and-match-next "skip and next")
+    ("T" maple-iedit-skip-and-match-previous "skip and previous")
+    ("p" maple-iedit-match-previous "prev"))
+  :bind* (("C-," . maple/iedit/body)))
+
 (use-package expand-region)
 (global-set-key (kbd "C-=") 'er/expand-region)
 
