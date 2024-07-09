@@ -151,6 +151,107 @@
   (global-set-key (kbd "<f8>") #'symbol-overlay-remove-all)
   )
 
+(use-package toggle-quotes-plus
+  :straight (toggle-quotes-plus :type git :host github :repo "jcs-elpa/toggle-quotes-plus")
+  :bind* (("C-'" . toggle-quotes-plus))
+  :config
+  (setq toggle-quotes-plus-chars '("\""
+                                   "'"
+                                   "`")))
+
+(use-package parrot
+  :config
+  (parrot-mode -1)
+  (setq parrot-rotate-dict
+        '(
+          (:rot ("alpha" "beta") :caps t :lower nil)
+          ;; => rotations are "Alpha" "Beta"
+
+          (:rot ("snek" "snake" "stawp"))
+          ;; => rotations are "snek" "snake" "stawp"
+
+          (:rot ("yes" "no") :caps t :upcase t)
+          ;; => rotations are "yes" "no", "Yes" "No", "YES" "NO"
+
+          (:rot ("&" "|"))
+          ;; => rotations are "&" "|"
+
+          ;; default dictionary starts here ('v')
+          (:rot ("begin" "end") :caps t :upcase t)
+          (:rot ("enable" "disable") :caps t :upcase t)
+          (:rot ("enter" "exit") :caps t :upcase t)
+          (:rot ("forward" "backward") :caps t :upcase t)
+          (:rot ("front" "rear" "back") :caps t :upcase t)
+          ;; (:rot ("get" "set") :caps t :upcase t)
+          (:rot ("high" "low") :caps t :upcase t)
+          (:rot ("in" "out") :caps t :upcase t)
+          (:rot ("left" "right") :caps t :upcase t)
+          (:rot ("min" "max") :caps t :upcase t)
+          (:rot ("on" "off") :caps t :upcase t)
+          (:rot ("prev" "next"))
+          (:rot ("start" "stop") :caps t :upcase t)
+          (:rot ("true" "false") :caps t :upcase t)
+          (:rot ("&&" "||"))
+          (:rot ("==" "!="))
+          (:rot ("." "->"))
+          (:rot ("if" "else" "elif"))
+          (:rot ("ifdef" "ifndef"))
+          (:rot ("int8_t" "int16_t" "int32_t" "int64_t"))
+          (:rot ("uint8_t" "uint16_t" "uint32_t" "uint64_t"))
+          (:rot ("1" "2" "3" "4" "5" "6" "7" "8" "9" "10"))
+          (:rot ("1st" "2nd" "3rd" "4th" "5th" "6th" "7th" "8th" "9th" "10th"))
+
+          ;; mine
+          (:rot ("let" "const" "var"))
+          (:rot ("sm" "md" "lg" "xl" "2xl" "3xl"))
+          (:rot ("aspect-auto" "aspect-square" "aspect-video"))
+          (:rot ("break-after-auto" "break-after-avoid" "break-after-all" "break-after-avoid-page" "break-after-page" "break-after-left" "break-after-right" "break-after-column"))
+          (:rot ("box-border" "box-content"))
+          (:rot ("block" "inline-block" "inline" "flex" "inline-flex" "table" "inline-table" "table-caption" "table-cell" "table-column" "table-column-group" "table-footer-group" "table-header-group" "table-row-group" "table-row" "flow-root" "grid" "inline-grid" "contents" "list-item" "hidden"))
+          (:rot ("float-right" "float-left" "float-none"))
+          (:rot ("clear-left" "clear-right" "clear-both" "clear-none"))
+          (:rot ("object-contain" "object-cover" "object-fill" "object-none" "object-scale-down"))
+          (:rot ("object-bottom" "object-center" "object-left" "object-left-bottom" "object-left-top" "object-right" "object-right-bottom" "object-right-top" "object-top"))
+          (:rot ("overflow-auto" "overflow-hidden" "overflow-clip" "overflow-visible" "overflow-scroll"))
+          (:rot ("static" "fixed" "absolute" "relative" "sticky"))
+          (:rot ("visible" "invisible" "collapse"))
+          (:rot ("flex-row" "flex-row-reverse" "flex-col" "flex-col-reverse"))
+          (:rot ("flex-wrap" "flex-wrap-reverse" "flex-nowrap"))
+          (:rot ("flex-1" "flex-auto" "flex-initial" "flex-none"))
+          (:rot ("grow" "grow-0"))
+          (:rot ("shrink" "shrink-0"))
+          (:rot ("get" "post" "set") :caps t :upcase t)
+          )))
+
+(global-set-key (kbd "s-I") 'parrot-rotate-next-word-at-point)
+
+(use-package string-inflection)
+(global-set-key (kbd "s-i") 'my-string-inflection-cycle-auto)
+
+(defun my-string-inflection-cycle-auto ()
+  "switching by major-mode"
+  (interactive)
+  (cond
+   ;; for emacs-lisp-mode
+   ((eq major-mode 'emacs-lisp-mode)
+    (string-inflection-all-cycle))
+   ;; for python
+   ((eq major-mode 'python-mode)
+    (string-inflection-python-style-cycle))
+   ;; for java
+   ((eq major-mode 'java-mode)
+    (string-inflection-java-style-cycle))
+   ;; for elixir
+   ((eq major-mode 'elixir-mode)
+    (string-inflection-elixir-style-cycle))
+   (t
+    ;; default
+    (string-inflection-ruby-style-cycle))))
+
+(use-package move-text)
+(global-set-key (kbd "s-<") 'move-text-up)
+(global-set-key (kbd "s->") 'move-text-down)
+
 (use-package maple-iedit
   :straight (:type git :host github :repo "honmaple/emacs-maple-iedit")
   :commands (maple-iedit-match-all maple-iedit-match-next maple-iedit-match-previous)
