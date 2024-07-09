@@ -32,6 +32,79 @@
 
   ;; 启动全屏
   (set-frame-parameter (selected-frame) 'fullscreen 'maximized)
+
+  ;; 启动界面
+  (setq inhibit-startup-message t
+	initial-scratch-message ""
+	initial-major-mode 'emacs-lisp-mode
+	initial-buffer-choice t
+	inhibit-splash-screen t)
+
+  ;; - 选中粘贴时能覆盖选中的内容
+  (delete-selection-mode 1)
+
+  ;; - 文件编码
+  (prefer-coding-system 'utf-8)
+  (setq-default buffer-file-coding-system 'utf-8-auto-unix)
+
+  ;; - 错误信息
+  (setq visible-bell nil)
+  (setq ring-bell-function 'ignore)
+
+  ;; - 截断行
+  (setq-default truncate-lines t)
+  ;; - yes or no
+  (fset 'yes-or-no-p 'y-or-n-p)
+  ;; - 驼峰单词里移动
+  (subword-mode)
+  ;; - 默认认为两个空格开头为一个段落，关闭此选项
+  (setq sentence-end-double-space nil)
+  ;; - 更好的通配符搜索
+  (setq search-whitespace-regexp ".*?")
+  ;; - 历史记录
+  (savehist-mode)
+  ;; - 窗口管理
+  (when (fboundp 'winner-mode)
+    (winner-mode 1))
+
+  ;; - 在 mac 上，当进入一个新的工作空间时，会默认全屏
+  (setq ns-use-native-fullscreen nil)
+
+  ;; - 不生成备份文件
+  (setq make-backup-files nil)
+  ;; 分割窗口的时候自动切换到该窗口
+  ;; (defadvice split-window (after move-point-to-new-window activate)
+  ;;   "Moves the point to the newly created window after splitting."
+  ;;   (other-window 1))
+#+end_src
+** 性能优化
+#+begin_src emacs-lisp
+(setq
+ ;; 缩短更新 screen 的时间
+ idle-update-delay 0.1
+ ;; 加速启动
+ auto-mode-case-fold nil
+ ;; 加快快捷键提示的速度
+ process-adaptive-read-buffering nil
+ ;; 提升 IO 性能
+ echo-keystrokes 0.1
+ ;; 增加单次读取进程输出的数据量（缺省 4KB)
+ read-process-output-max (* 1024 1024)
+
+ ;; 性能优化
+ gc-cons-threshold 100000000
+
+ ;; 括号匹配显示但不是烦人的跳到另一个括号
+ show-paren-style 'parentheses
+ ;; 当插入右括号时显示匹配的左括号
+ blink-matching-paren t
+
+ ;; 不自动添加换行符到末尾, 有些情况会出现错误
+ require-final-newline nil
+
+ ;; 比较窗口设置在同一个 frame 里
+ ediff-window-setup-function (quote ediff-setup-windows-plain)
+ )
 #+end_src
 ** 显示启动时间
 #+begin_src emacs-lisp
@@ -60,13 +133,71 @@
     (interactive)
     (load-file "~/.emacs.d/init.el"))
 #+END_SRC
+** 环境变量路径
+#+begin_src emacs-lisp
+  ;; 直接将环境变量拷贝到 ~/.path 中
+  ;; sh -c 'printf "%s" "$PATH"' > ~/.path
+  (condition-case err
+      (let ((path (with-temp-buffer
+		    (insert-file-contents-literally "~/.path")
+		    (buffer-string))))
+	(setenv "PATH" path)
+	(setq exec-path (append (parse-colon-path path) (list exec-directory))))
+    (error (warn "%s" (error-message-string err))))
+
+  (use-package exec-path-from-shell
+    :config
+    (setq exec-path-from-shell-variables '("PATH" "MANPATH" "LSP_USE_PLISTS" "NODE_PATH")
+	  exec-path-from-shell-arguments '("-l"))
+    (exec-path-from-shell-initialize))
+#+end_src
+** 自动更新 buffer
+#+begin_src emacs-lisp
+(defun sk/diminish-auto-revert ()
+  (interactive)
+  (diminish 'auto-revert-mode ""))
+(add-hook 'auto-revert-mode-hook 'sk/diminish-auto-revert)
+#+end_src
 * 工具集
 #+BEGIN_SRC emacs-lisp
   (use-package async :commands (async-start))
   (use-package cl-lib)
   (use-package dash)
   (use-package s)
+  (use-package hydra)
 #+END_SRC
+** 符号高亮
+#+begin_src emacs-lisp
+(use-package symbol-overlay
+  :defer t
+  :config
+  (symbol-overlay-mode +1)
+  (global-set-key (kbd "M-i") #'symbol-overlay-put)
+  (global-set-key (kbd "M-n") #'symbol-overlay-switch-forward)
+  (global-set-key (kbd "M-p") #'symbol-overlay-switch-backward)
+  (global-set-key (kbd "<f7>") #'symbol-overlay-mode)
+  (global-set-key (kbd "<f8>") #'symbol-overlay-remove-all)
+  )
+#+end_src
+** expand region
+#+begin_src emacs-lisp
+(use-package expand-region)
+(global-set-key (kbd "C-=") 'er/expand-region)
+#+end_src
+** diminish
+#+begin_src emacs-lisp
+(use-package diminish
+  :demand t
+  :diminish (visual-line-mode . "ω")
+  :diminish hs-minor-mode
+  :diminish abbrev-mode
+  :diminish auto-fill-function
+  :diminish subword-mode
+  :diminish eldoc-mode
+  :diminish which-key-mode
+  :diminish persp-mode
+  )
+#+end_src
 ** 重启Emacs
 #+begin_src emacs-lisp
 (use-package restart-emacs
@@ -156,12 +287,14 @@
 #+end_src
 * 我的键值表
 ** fn
-| key  | function           |
-|------+--------------------|
-| ~f1~ | open config.org    |
-| ~f2~ | restart emacs      |
-| ~f5~ | reload init config |
-|      |                    |
+| key  | function                   |
+|------+----------------------------|
+| ~f1~ | open config.org            |
+| ~f2~ | restart emacs              |
+| ~f5~ | reload init config         |
+| ~f7~ | symbol overlay mode        |
+| ~f8~ | remove all symbol overlays |
+|      |                            |
 ** C/s/M-[key]
 | key          | function              |
 |--------------+-----------------------|
@@ -173,6 +306,9 @@
 |--------------+-----------------------|
 | ~M-i~        | imenu                 |
 | ~M-o~        | other window          |
+| ~M-i~        | symbol highlight      |
+| ~M-n~        | symbol next           |
+| ~M-p~        | symbol prev           |
 
 
 ** C-S, Control-Shift
