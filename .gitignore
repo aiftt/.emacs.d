@@ -42,3 +42,6 @@ tramp
 /mind-wave/
 /org-ai-images/
 *.elc
+/tmp/
+/tree-sitter/
+config.elc
