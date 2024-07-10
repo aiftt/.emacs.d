@@ -17,6 +17,45 @@
         (expand-file-name "node_modules/.bin/eslint" root)
       "eslint")))  ;; 默认使用全局 eslint
 
+(defvar toggle-one-window-window-configuration nil
+  "The window configuration use for `toggle-one-window'.")
+
+(defun toggle-one-window ()
+  "Toggle between window layout and one window."
+  (interactive)
+  (if (equal (length (cl-remove-if #'window-dedicated-p (window-list))) 1)
+       (if toggle-one-window-window-configuration
+           (progn
+             (set-window-configuration toggle-one-window-window-configuration)
+             (setq toggle-one-window-window-configuration nil))
+         (message "No other windows exist."))
+    (setq toggle-one-window-window-configuration (current-window-configuration))
+    (delete-other-windows)))
+
+(global-set-key (kbd "s-o") 'toggle-one-window)
+
+(defun gcl/copy-file-full-name ()
+  "Copy the current buffer's file name to the clipboard."
+  (interactive)
+  (let ((filename (if (equal major-mode 'dired-mode)
+		       default-directory
+		     (buffer-file-name))))
+    (when filename
+       (kill-new filename)
+       (message "Copied buffer file name '%s' to the clipboard." filename))))
+
+(defun gcl/copy-file-name-only ()
+  "Copy the current buffer's file name only to the clipboard."
+  (interactive)
+  (let ((filename (if (equal major-mode 'dired-mode)
+		       default-directory
+		     (buffer-file-name))))
+    (when filename
+       (kill-new (file-name-nondirectory filename))
+       (message "Copied buffer file name '%s' to the clipboard." (file-name-nondirectory filename)))))
+
+(global-unset-key (kbd "s-g"))
+
 ;; 光标样式
 (setq-default cursor-type '(bar . 1))
 ;; 光标不闪烁
@@ -73,10 +112,12 @@
 
 ;; - 不生成备份文件
 (setq make-backup-files nil)
+
+;; 自动保存
+;; (auto-save-visited-mode 1)
+;; (setq auto-save-visited-interval 3) ; 设置保存延迟为 5 秒钟
 ;; 分割窗口的时候自动切换到该窗口
-;; (defadvice split-window (after move-point-to-new-window activate)
-;;   "Moves the point to the newly created window after splitting."
-;;   (other-window 1))
+;; (add-hook 'window-setup-hook 'select-window)
 
 (setq
  ;; 缩短更新 screen 的时间
@@ -152,6 +193,16 @@
 (use-package dash)
 (use-package s)
 (use-package hydra)
+
+(use-package dashboard
+  :init
+  (setq dashboard-items '((recents  . 11)
+                          (bookmarks . 5)
+                          (registers . 5))
+	dashboard-banner-logo-title "我总在不经意之间觉得自己很傻比🤪🤪🤪!"
+	dashboard-startup-banner 'official)
+  :config
+  (dashboard-setup-startup-hook))
 
 (use-package which-key
   :defer t
@@ -339,6 +390,54 @@ all-the-icons-ibuffer-mode
   :bind (("C-h C-m" . discover-my-major)
          ("C-h s-m" . discover-my-mode)))
 
+(use-package visual-fill-column)
+
+(use-package avy
+  :bind
+  ("s-g x" . avy-copy-line) ; 将指定行复制到光标位置
+  ("s-g m" . avy-move-line) ; 将指定行移动到光标位置
+  ("s-g w" . avy-goto-word-or-subword-1)
+  ("s-g l" . avy-goto-line)
+  ("s-g c" . avy-goto-char)
+  )
+
+(use-package undo-fu
+  :config
+  (global-unset-key (kbd "C-z"))
+  (global-set-key (kbd "s-z")   'undo-fu-only-undo)
+  (global-set-key (kbd "C-z") 'undo-fu-only-redo))
+
+(use-package duplicate-thing
+  :straight (duplicate-thing :type git :host github :repo "artemkovalyov/duplicate-thing")
+  :bind
+  ("C-S-l" . duplicate-thing))
+
+(use-package smart-hungry-delete
+  :bind (([remap backward-delete-char-untabify] . smart-hungry-delete-backward-char)
+         ([remap delete-backward-char] . smart-hungry-delete-backward-char)
+         ([remap delete-char] . smart-hungry-delete-forward-char))
+  :init (smart-hungry-delete-add-default-hooks))
+(global-set-key (kbd "<backspace>") 'smart-hungry-delete-backward-char)
+(global-set-key (kbd "<delete>") 'smart-hungry-delete-backward-char)
+(global-set-key (kbd "C-d") 'smart-hungry-delete-forward-char)
+
+(use-package windmove
+  :bind
+  ("s-h" . windmove-left)
+  ("s-l" . windmove-right)
+  ("s-j" . windmove-down)
+  ("s-k" . windmove-up)
+  ("s-w" . delete-other-windows)
+  ("s-q" . delete-window)
+  ("s-0" . delete-window)
+  ;; ("A-s-i" . enlarge-window)
+  ;; ("A-s-k" . shrink-window)
+  ;; ("A-s-j" . shrink-window-horizontally)
+  ;; ("A-s-l" . enlarge-window-horizontally)
+  ("s--" . split-window-horizontally)
+  ("s-=" . split-window-vertically)
+  )
+
 (use-package engine-mode
   :config
   (engine-mode t)
@@ -375,6 +474,54 @@ all-the-icons-ibuffer-mode
 
 (use-package wgrep)
 (setq wgrep-auto-save-buffer t)
+
+(defun mc/my-quit ()
+  "Quit from mark mode."
+  (interactive)
+  (mc/keyboard-quit)
+  (multiple-cursors-mode 0))
+
+(defun mc/mark-all-symbols-like-this-toggle ()
+  "Toogle when only one matches!"
+  (interactive)
+  (if (region-active-p)
+      (mc/my-quit)
+    (mc/mark-all-symbols-like-this)))
+
+(use-package multiple-cursors
+  :bind (("C->"           . mc/mark-next-like-this)
+         ("C-<"           . mc/mark-previous-like-this)
+         ("C-M->"         . mc/skip-to-next-like-this)
+         ("C-M-<"         . mc/skip-to-previous-like-this)
+         ("C-c C-<"       . mc/mark-all-like-this)
+         ("C-S-<mouse-1>" . mc/add-cursor-on-click)
+         ;; ("C-;"           . mc/mark-all-symbols-like-this-toggle)
+         ("C-:"           . mc/mark-all-symbols-like-this-in-defun)
+         :map mc/keymap
+         ("C-|" . mc/vertical-align-with-space)
+         ("C-_" . undo)                 ;undo-tree-undo point position wrong.
+         ;; ("C-;" . mc/my-quit)
+         ("M-n" . mc/cycle-forward)
+         ("M-p" . mc/cycle-backward))
+  :config
+  (setq mc/insert-numbers-default 1))
+
+(use-package visual-regexp)
+  (use-package visual-regexp-steroids)
+(global-set-key (kbd "C-c r") 'vr/replace)
+(global-set-key (kbd "C-c q") 'vr/query-replace)
+(global-set-key (kbd "C-c m") 'vr/mc-mark)
+
+(use-package color-rg
+  :straight (:type git :host github :repo "manateelazycat/color-rg")
+  :bind (("M-s i" . color-rg-search-input)
+         ("M-s s" . color-rg-search-symbol)
+         ("M-s M-i" . color-rg-search-input-in-project)
+         ("M-s M-s" . color-rg-search-symbol-in-project)
+         ("M-s f" . color-rg-search-input-in-current-file)
+         ("M-s F" . color-rg-search-symbol-in-current-file)
+         ("M-s e" . color-rg-search-symbol-with-type)
+         ("M-s M-e" . color-rg-search-project-with-type)))
 
 (defvar gcl/default-font-size 150)
 (defvar gcl/default-variable-font-size 150)
@@ -582,9 +729,6 @@ all-the-icons-ibuffer-mode
          ;; M-s bindings in `search-map'
          ("s-d" . consult-find)                  ;; Alternative: consult-fd
          ;; ("M-s c" . consult-locate)
-         ;; ("M-s g" . consult-grep)
-         ;; ("M-s G" . consult-git-grep)
-         ;; ("M-s r" . consult-ripgrep)
          ;; ("M-s L" . consult-line-multi)
          ;; ("M-s k" . consult-keep-lines)
          ;; ("M-s u" . consult-focus-lines)
@@ -664,6 +808,31 @@ all-the-icons-ibuffer-mode
   ;; (setq consult-project-function nil)
   )
 
+(use-package consult-dir
+      :bind (("C-x C-d" . consult-dir)
+         :map minibuffer-local-completion-map
+         ("C-x C-d" . consult-dir)
+         ("C-x C-j" . consult-dir-jump-file))
+      :config
+;; A function that returns a list of directories
+(defun consult-dir--fasd-dirs ()
+  "Return list of fasd dirs."
+  (split-string (shell-command-to-string "fasd -ld") "\n" t))
+
+;; A consult source that calls this function
+(defvar consult-dir--source-fasd
+  `(:name     "Fasd dirs"
+              :narrow   ?f
+              :category file
+              :face     consult-file
+              :history  file-name-history
+              :enabled  ,(lambda () (executable-find "fasd"))
+              :items    ,#'consult-dir--fasd-dirs)
+  "Fasd directory source for `consult-dir'.")
+
+;; Adding to the list of consult-dir sources
+(add-to-list 'consult-dir-sources 'consult-dir--source-fasd t))
+
 ;; 自定义的模式集合
 (defvar my-web-modes
   '(tsx-ts-mode
@@ -672,6 +841,11 @@ all-the-icons-ibuffer-mode
     js-ts-mode
     prisma-ts-mode
     typescript-mode
+    js2-mode
+    web-mode
+    html-mode
+    css-mode
+    scss-mode
     go-ts-mode)
   "List of modes for web development.")
 
@@ -681,33 +855,18 @@ all-the-icons-ibuffer-mode
   (dolist (mode modes)
     (add-hook (intern (concat (symbol-name mode) "-hook")) hook-fn)))
 
-;; 自动查找项目中的 ESLint 配置文件
-(defun find-eslint-config ()
-  "Find ESLint configuration file in project root."
-  (let ((root (get-project-root)))
-    (when root
-      (or (and (file-exists-p (expand-file-name ".eslintrc" root))
-               (expand-file-name ".eslintrc" root))
-          (and (file-exists-p (expand-file-name ".eslintrc.js" root))
-               (expand-file-name ".eslintrc.js" root))
-          (and (file-exists-p (expand-file-name ".eslintrc.json" root))
-               (expand-file-name ".eslintrc.json" root))
-          (and (file-exists-p (expand-file-name "package.json" root))
-               (let* ((package-json (expand-file-name "package.json" root))
-                      (eslint-config (and (file-readable-p package-json)
-                                          (with-temp-buffer
-                                            (insert-file-contents package-json)
-                                            (goto-char (point-min))
-                                            (and (search-forward "\"eslintConfig\"" nil t)
-                                                 (search-forward-regexp ": ?{")
-                                                 (json-read-object)))))))
-               (and eslint-config (concat root "/.eslintrc")))))))
-
 (add-to-list 'auto-mode-alist '("\\.[cm]?js\\'" . js2-mode))
-(add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))       ;
+  (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.vue\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
 
 (use-package smartparens
   :hook (prog-mode . smartparens-mode)
+  :bind
+  ("s-(" . sp-backward-sexp)
+  ("s-)" . sp-forward-sexp)
+  ("C-(" . sp-down-sexp)
+  ("C-)" . sp-up-sexp)
   :config
   (sp-use-smartparens-bindings))
 
@@ -761,7 +920,7 @@ all-the-icons-ibuffer-mode
 	  ))
 
 (use-package web-mode
-  ;; :hook (web-mode . lsp-deferred)
+  :mode ("\\.html?\\'" "\\.vue\\'")
   :config
   (setq
    web-mode-markup-indent-offset 2
@@ -778,23 +937,23 @@ all-the-icons-ibuffer-mode
 
   ;; 设置不同类型代码的注释格式
   (setq web-mode-comment-formats
-	  '(("javascript" . "//")    ; JavaScript 注释
-	    ("jsx" . "//")           ; JSX 注释
-	    ("php" . "//")           ; PHP 注释
-	    ("css" . "/*")           ; CSS 注释
-	    ("java" . "//")          ; Java 注释
-	    ;; 添加更多类型的注释格式
-	    ))
+          '(("javascript" . "//")    ; JavaScript 注释
+            ("jsx" . "//")           ; JSX 注释
+            ("php" . "//")           ; PHP 注释
+            ("css" . "/*")           ; CSS 注释
+            ("java" . "//")          ; Java 注释
+            ;; 添加更多类型的注释格式
+            ))
 
   ;; Let smartparens handle auto closing brackets, e.g. {{ }} or {% %}
   ;; https://github.com/hlissner/doom-emacs/blob/develop/modules/lang/web/%2Bhtml.el#L56
   (dolist (alist web-mode-engines-auto-pairs)
     (setcdr alist
-	      (cl-loop for pair in (cdr alist)
-		       unless (string-match-p "^[a-z-]" (cdr pair))
-		       collect (cons (car pair)
-				     (string-trim-right (cdr pair)
-							"\\(?:>\\|]\\|}\\)+\\'")))))
+              (cl-loop for pair in (cdr alist)
+                       unless (string-match-p "^[a-z-]" (cdr pair))
+                       collect (cons (car pair)
+                                     (string-trim-right (cdr pair)
+                                                        "\\(?:>\\|]\\|}\\)+\\'")))))
   ;; (add-to-list 'lsp-language-id-configuration '(web-mode . "vue"))
   )
 
@@ -825,7 +984,9 @@ all-the-icons-ibuffer-mode
   :config
   (add-hook 'emmet-mode-hook (lambda () (setq emmet-indentation 2))))
 
-(use-package json-mode)
+(use-package json-mode
+  :defer t
+  :mode ("\\.json$" . json-mode))
 
 (use-package yaml-mode
   :mode "\\.yml\\'"
@@ -854,6 +1015,30 @@ all-the-icons-ibuffer-mode
   :diminish flycheck-mode
   :init (global-flycheck-mode))
 
+(use-package apheleia
+  :defer t
+  :init
+  (apheleia-global-mode +1)
+  :config
+  ;;    (add-to-list 'apheleia-formatters '(prettier-svelte . ("prettier" "--stdin-filepath" filepath "--parser=svelte")))
+  ;; (setf  (alist-get 'svelte-mode apheleia-mode-alist) '(prettier-svelte))
+  ;; (setf  (alist-get 'typescript-mode apheleia-mode-alist) '(prettier))
+  ;; (setf  (alist-get 'html-mode apheleia-mode-alist) '(prettier))
+  ;; (setf  (alist-get 'js-mode apheleia-mode-alist) '(prettier))
+  ;; (setf  (alist-get 'web-mode apheleia-mode-alist) '(prettier))
+  ;; (setf  (alist-get 'markdown-mode apheleia-mode-alist) '(prettier))
+
+  (setf (alist-get 'prettier apheleia-formatters)     '("prettier"))
+
+  (push '(prettier . ("prettier"
+                      file
+                      ))
+        apheleia-formatters)
+
+  (setf (alist-get 'web-mode apheleia-mode-alist)
+        '(prettier))
+  )
+
 (use-package highlight-parentheses
   :hook (prog-mode . highlight-parentheses-mode)
   :diminish highlight-parentheses-mode
@@ -869,20 +1054,6 @@ all-the-icons-ibuffer-mode
   :diminish rainbow-mode
   :defer t
   :hook ((prog-mode org-mode) . rainbow-mode))
-
-(use-package corfu
-  :custom
-  (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-  (corfu-auto t)                 ;; Enable auto completion
-  ;; (corfu-separator ?\s)          ;; Orderless field separator
-  ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
-  (corfu-quit-no-match 'separator)      ;; Never quit, even if there is no match
-  ;; (corfu-preview-current nil)    ;; Disable current candidate preview
-  ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
-  ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
-  ;; (corfu-scroll-margin 5)        ;; Use scroll margin
-  :init
-  (global-corfu-mode))
 
 (use-package kind-icon
   :after corfu
@@ -915,7 +1086,9 @@ all-the-icons-ibuffer-mode
   ;; (setq vertico-resize t)
 
   ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
-  ;; (setq vertico-cycle t)
+  (setq vertico-cycle t)
+  :config
+  (add-hook 'minibuffer-setup-hook #'vertico-repeat-save)
   )
 
 (use-package vertico-directory
@@ -954,7 +1127,7 @@ all-the-icons-ibuffer-mode
 
   :bind
   (("C-." . embark-act)         ;; pick some comfortable binding
-   ("C-;" . embark-dwim)        ;; good alternative: M-.
+   ;; ("C-;" . embark-dwim)        ;; good alternative: M-.
    ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
 
   :init
@@ -979,75 +1152,41 @@ all-the-icons-ibuffer-mode
                  nil
                  (window-parameters (mode-line-format . none)))))
 
-(defun gcl/lsp-mode-setup ()
-  (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
-  (lsp-headerline-breadcrumb-mode))
-
-(use-package lsp-mode
-  :commands (lsp lsp-deferred)
-  :hook ((lsp-mode . gcl/lsp-mode-setup)
-         (lsp-mode . lsp-enable-which-key-integration)
-         (lsp-mode . lsp-diagnostics-mode))
-  :diminish lsp-mode
-  :diminish lsp-lens-mode
+(use-package lsp-bridge
+  :straight '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
+                         :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
+                         :build (:not compile))
+  :init
+  (global-lsp-bridge-mode)
+  :diminish lsp-bridge-mode
   :config
-  (my-enable-hooks my-web-modes 'lsp-deferred)
-  (defvar-local lsp-format-on-save t
-    "Format `lsp-mode'-managed buffer before save.")
-  (defun lsp-format-on-save-not-apheleia ()
-    "Format on save using LSP server, not `apheleia'."
-    (if lsp-format-on-save
-        (progn
-          (add-hook 'before-save-hook #'lsp-format-buffer nil 'local)
-          (setq-local apheleia-mode nil))))
-  (add-hook 'lsp-configure-hook #'lsp-format-on-save-not-apheleia)
-  ;; --no-eslintrc 使用全局配置
-  (setq lsp-eslint-server-command
-      `(, (executable-find "node")
-        , (get-eslint-executable)
-        "--config" ,(or (find-eslint-config) "eslint.config.mjs")
-        "--fix"
-        "--stdin"
-        "--stdin-filename"
-        "--format"
-        "json"))
-  :custom
-  (lsp-prefer-flymake nil) ; 使用 lsp-ui 和 flycheck 而不是 flymake
-  (lsp-keymap-prefix "C-c l")
-  (lsp-completion-provider :none) ;; we use Corfu
-  (lsp-diagnostics-provider :flycheck)
-  (lsp-log-io nil) ; only for debug
-  (lsp-idle-delay 0.5)
-  (lsp-enable-file-watchers nil) ; 只监听当前项目中的文件
-  ;; (lsp-enable-folding nil)
+  (require 'lsp-bridge-jdtls)
+  (setq lsp-bridge-python-command "/usr/bin/python3")
+  ;; 打开日志，开发者才需要
+  (setq lsp-bridge-enable-log t)
+  (setq lsp-bridge-enable-debug nil)
+  (setq acm-backend-lsp-candidate-min-length 2)
+  (setq acm-backend-elisp-candidate-min-length 2)
+  (setq acm-backend-yas-candidate-min-length 1)
+  (setq acm-backend-codeium-candidate-min-length 2)
+  (add-to-list 'lsp-bridge-multi-lang-server-extension-list '(("html") . "html_tailwindcss"))
+  (add-to-list 'lsp-bridge-multi-lang-server-extension-list '(("css") . "css_tailwindcss"))
+  (defun my/bridge-server-setup ()
+    (with-current-buffer (current-buffer)
+      (when (bound-and-true-p acm-backend-lsp-server-names)
+        (let ((servers acm-backend-lsp-server-names))
+          ;; enable : in emmet completion
+          (when (member "emmet-ls" servers)
+            (setq-local lsp-bridge-completion-hide-characters
+                        (delete ":" lsp-bridge-completion-hide-characters)))
+          ;; enable - in tailwindcss completion
+          (when (member "tailwindcss" servers)
+            (modify-syntax-entry ?- "w"))))))
+
+  (add-hook 'lsp-bridge-mode-hook
+            (lambda ()
+              (run-with-timer 3 nil #'my/bridge-server-setup)))
   )
-
-;; 安装和配置 lsp-eslint
-(use-package lsp-eslint
-  :straight lsp-mode
-  :commands lsp-eslint-enable
-  :config
-  (my-enable-hooks my-web-modes 'lsp-eslint-enable))
-
-(use-package lsp-ui
-  :hook (lsp-mode . lsp-ui-mode)
-  :config
-  (setq lsp-ui-sideline-enable nil
-        lsp-ui-doc-enable nil)
-  :custom
-  (lsp-ui-doc-position 'bottom))
-
-(use-package lsp-tailwindcss
-  :straight (:type git :host github :repo "merrickluo/lsp-tailwindcss")
-  :config
-  (setq lsp-tailwindcss-add-on-mode t))
-(add-hook 'before-save-hook 'lsp-tailwindcss-rustywind-before-save)
-
-;; 其他 buffer 中启用
-(add-to-list 'lsp-language-id-configuration '(".*\\.erb$" . "html"))
-
-(use-package lsp-treemacs
-:commands lsp-treemacs-errors-list)
 
 (use-package magit
   :bind* (("C-S-g" . magit))
@@ -1146,7 +1285,7 @@ all-the-icons-ibuffer-mode
 (define-key org-mode-map (kbd "s-t") 'org-todo)
 (bind-keys*
  ("C-x ="     . indent-region)
- ("s-o" . other-window))
+ ("M-o" . other-window))
 
 (defun tangle-if-init ()
   "If the current buffer is 'config.org' the code-blocks are
