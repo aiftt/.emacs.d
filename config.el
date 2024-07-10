@@ -373,6 +373,9 @@ all-the-icons-ibuffer-mode
     :keybinding "y")
   )
 
+(use-package wgrep)
+(setq wgrep-auto-save-buffer t)
+
 (defvar gcl/default-font-size 150)
 (defvar gcl/default-variable-font-size 150)
 

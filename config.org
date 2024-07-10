@@ -11,20 +11,20 @@
 (when (file-exists-p custom-file)
   (load custom-file))
 #+end_src
-* 函数变量
-** 个人信息
+* Definitions
+** personal
 #+begin_src emacs-lisp
   (setq user-mail-address "ftt.loves@gmail.com")
 (setq user-full-name "Lee ZhiCheng")
 #+end_src
-** 获取项目根目录
+** get project root
 #+begin_src emacs-lisp
 (defun get-project-root ()
   "Get the root directory of the current project."
   (or (locate-dominating-file default-directory "package.json")
       (locate-dominating-file default-directory ".git")))
 #+end_src
-** 获取 eslint 可执行文件路径
+** get eslint executable
 #+begin_src emacs-lisp
 (defun get-eslint-executable ()
   "Get the path to the eslint executable in the current project."
@@ -33,8 +33,8 @@
         (expand-file-name "node_modules/.bin/eslint" root)
       "eslint")))  ;; 默认使用全局 eslint
 #+end_src
-* 基础配置
-** 修改默认值
+* Basic Settings
+** Modify Default Settings
 #+begin_src emacs-lisp
   ;; 光标样式
   (setq-default cursor-type '(bar . 1))
@@ -97,7 +97,7 @@
   ;;   "Moves the point to the newly created window after splitting."
   ;;   (other-window 1))
 #+end_src
-** 性能优化
+** Performance
 #+begin_src emacs-lisp
 (setq
  ;; 缩短更新 screen 的时间
@@ -126,7 +126,7 @@
  ediff-window-setup-function (quote ediff-setup-windows-plain)
  )
 #+end_src
-** 显示启动时间
+** Show Startup Time
 #+begin_src emacs-lisp
 (defun efs/display-startup-time ()
   (message "Emacs loaded in %s with %d garbage collections."
@@ -137,14 +137,14 @@
 
 (add-hook 'emacs-startup-hook #'efs/display-startup-time)
 #+end_src
-** 打开配置文件
+** Open config.org
 #+begin_src emacs-lisp
 (global-set-key (kbd "<f1>")
                 (lambda ()
                   (interactive)
                   (find-file "~/.emacs.d/config.org")))
 #+end_src
-** 重新加载配置
+** Reload init.el
 #+BEGIN_SRC emacs-lisp
   (global-set-key (kbd "<f5>") 'reload-init-file)
 
@@ -153,7 +153,7 @@
     (interactive)
     (load-file "~/.emacs.d/init.el"))
 #+END_SRC
-** 环境变量路径
+** Env path
 #+begin_src emacs-lisp
   ;; 直接将环境变量拷贝到 ~/.path 中
   ;; sh -c 'printf "%s" "$PATH"' > ~/.path
@@ -171,14 +171,14 @@
 	  exec-path-from-shell-arguments '("-l"))
     (exec-path-from-shell-initialize))
 #+end_src
-** 自动更新 buffer
+** Auto revert buffer
 #+begin_src emacs-lisp
 (defun sk/diminish-auto-revert ()
   (interactive)
   (diminish 'auto-revert-mode ""))
 (add-hook 'auto-revert-mode-hook 'sk/diminish-auto-revert)
 #+end_src
-* 工具集
+* Toolkits
 #+BEGIN_SRC emacs-lisp
   (use-package async :commands (async-start))
   (use-package cl-lib)
@@ -398,8 +398,8 @@
     :bind (("C-h C-m" . discover-my-major)
            ("C-h s-m" . discover-my-mode)))
 #+end_src
-** search
-*** engine-mode
+* Search
+** engine-mode
 #+begin_src emacs-lisp
 (use-package engine-mode
   :config
@@ -435,8 +435,13 @@
     :keybinding "y")
   )
 #+end_src
-* 主题配置
-** 字体配置
+** wgrep
+#+begin_src emacs-lisp
+(use-package wgrep)
+(setq wgrep-auto-save-buffer t)
+#+end_src
+* Theme Settings
+** Fonts
 #+begin_src emacs-lisp
   (defvar gcl/default-font-size 150)
   (defvar gcl/default-variable-font-size 150)
@@ -456,7 +461,7 @@
   ;; Set the variable pitch face
   (set-face-attribute 'variable-pitch nil :font "Cantarell" :height gcl/default-variable-font-size :weight 'regular)
 #+end_src
-** doom 主题
+** DOOM Emacs Theme
 #+begin_src emacs-lisp
   (use-package doom-themes
     :config
@@ -475,7 +480,7 @@
     ;; Corrects (and improves) org-mode's native fontification.
     (doom-themes-org-config))
 #+end_src
-** 状态栏
+** Mode line
 #+begin_src emacs-lisp
   (use-package doom-modeline
     :init (progn
@@ -591,7 +596,7 @@
   (use-package org-modern
     :hook (org-mode . org-modern-mode))
 #+end_src
-* 项目管理
+* Project Settings
 ** perspective
 #+begin_src emacs-lisp
   (use-package perspective
@@ -749,7 +754,7 @@
     ;; (setq consult-project-function nil)
     )
 #+end_src
-* 开发配置
+* Development Settings
 #+begin_src emacs-lisp
   ;; 自定义的模式集合
   (defvar my-web-modes
@@ -791,7 +796,8 @@
                  (and eslint-config (concat root "/.eslintrc")))))))
 
 #+end_src
-** 模式设置
+
+** Modes
 #+begin_src emacs-lisp
   (add-to-list 'auto-mode-alist '("\\.[cm]?js\\'" . js2-mode))
 (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))       ;
@@ -826,13 +832,13 @@
   :defer t
   :after yasnippet)
 #+end_src
-** 注释
+** Comment
 #+begin_src emacs-lisp
 (use-package evil-nerd-commenter
   :bind* (("M-;" . evilnc-comment-or-uncomment-lines))
   )
 #+end_src
-** 语言支持
+** Languages
 *** markdown
 #+begin_src emacs-lisp
 (defun dw/setup-markdown-mode ()
@@ -979,14 +985,14 @@
 #+begin_src emacs-lisp
 (use-package lua-mode)
 #+end_src
-** 语法检查
+** Syntax
 *** flycheck
 #+begin_src emacs-lisp
 (use-package flycheck
   :diminish flycheck-mode
   :init (global-flycheck-mode))
 #+end_src
-** 括号高亮
+** Parens
 #+begin_src emacs-lisp
 (use-package highlight-parentheses
   :hook (prog-mode . highlight-parentheses-mode)
@@ -995,20 +1001,20 @@
   (add-hook 'minibuffer-setup-hook #'highlight-parentheses-minibuffer-setup)
   )
 #+end_src
-** 多彩括号
+** Rainbow
 #+begin_src emacs-lisp
 (use-package rainbow-delimiters
   :config
   (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
 #+end_src
-** 颜色高亮
+** Colorful
 #+begin_src emacs-lisp
 (use-package rainbow-mode
   :diminish rainbow-mode
   :defer t
   :hook ((prog-mode org-mode) . rainbow-mode))
 #+end_src
-** 补全
+** Autocompletion
 *** corfu
 #+begin_src emacs-lisp
 (use-package corfu
@@ -1314,14 +1320,14 @@
 (global-set-key (kbd "s-`") 'vterm-toggle)
 (global-set-key (kbd "s-<return>") 'multi-vterm-project)
 #+end_src
-* 键值绑定
+* Global Keybindings
 #+begin_src emacs-lisp
   (define-key org-mode-map (kbd "s-t") 'org-todo)
   (bind-keys*
    ("C-x ="     . indent-region)
    ("s-o" . other-window))
 #+end_src
-* 我的键值表
+* My Keybindings
 ** fn
 | key  | function                   |
 |------+----------------------------|
@@ -1369,7 +1375,7 @@
 | key     | function       |
 |---------+----------------|
 | ~C-S-SPC~ | just one space |
-| ~C-S-g~   | magit         |
+| ~C-S-g~   | magit          |
 
 ** C-c
 | key        | function                    |
@@ -1410,7 +1416,7 @@
 | key   | function        | mode |
 |-------+-----------------+------|
 | ~C-h B~ | embark bindings |      |
-* tangle config
+* Tangle config
 #+BEGIN_SRC emacs-lisp
 
 (defun tangle-if-init ()
