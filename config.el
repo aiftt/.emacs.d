@@ -140,6 +140,19 @@
 (use-package s)
 (use-package hydra)
 
+(use-package which-key
+  :defer t
+  :diminish which-key-mode
+  :init
+  (setq which-key-sort-order 'which-key-key-order-alpha)
+  :bind* (("M-m ?" . which-key-show-top-level))
+  :config
+  (which-key-mode)
+  (setq which-key-show-early-on-C-h t)
+  (setq which-key-idle-delay 0)
+  (setq which-key-idle-secondary-delay 0.05)
+  )
+
 (use-package symbol-overlay
   :defer t
   :config
@@ -332,6 +345,79 @@
                 doom-modeline-minor-modes t)
           (doom-modeline-mode 1)))
 
+(setq org-directory "~/.gclrc/org")
+
+(defun gcl/org-path (path)
+  (expand-file-name path org-directory))
+
+;; Turn on indentation and auto-fill mode for Org files
+(defun dw/org-mode-setup ()
+  ;; (variable-pitch-mode 1)
+  (org-indent-mode 1)
+  (auto-fill-mode 0)
+  (visual-line-mode 1)
+  (setq corfu-auto nil)
+  (setq evil-auto-indent nil))
+
+(defun dw/org-move-done-tasks-to-bottom ()
+  "Sort all tasks in the topmost heading by TODO state."
+  (interactive)
+  (save-excursion
+    (while (org-up-heading-safe))
+    (org-sort-entries nil ?o))
+
+  ;; Reset the view of TODO items
+  (org-overview)
+  (org-show-entry)
+  (org-show-children))
+
+
+(defun dw/org-todo-state-change-hook ()
+  (when (string= org-state "DONE")
+    (dw/org-move-done-tasks-to-bottom)))
+;; (add-hook 'org-after-todo-state-change-hook 'dw/org-todo-state-change-hook)
+
+(use-package org
+  :straight (:type built-in)
+  :hook (org-mode . dw/org-mode-setup)
+  :bind (:map org-mode-map
+              ("M-N" . org-move-subtree-down)
+              ("M-P" . org-move-subtree-up))
+  :config
+  (setq org-ellipsis "..."
+        org-hide-emphasis-markers t
+        org-src-fontify-natively t
+        org-fontify-quote-and-verse-blocks t
+        org-src-tab-acts-natively t
+        org-edit-src-content-indentation 2
+        org-hide-block-startup nil
+        org-src-preserve-indentation nil
+        org-startup-folded 'content
+        org-cycle-separator-lines 2
+        org-capture-bookmark nil
+        )
+
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)))
+  )
+
+(use-package org-faces
+  :straight (:type built-in)
+  :after org
+  :config
+  ;; Increase the size of various headings
+  (set-face-attribute 'org-document-title nil :font gcl/org-heading-font :weight 'medium :height 1.3)
+  (dolist (face '((org-level-1 . 1.2)
+                  (org-level-2 . 1.1)
+                  (org-level-3 . 1.05)
+                  (org-level-4 . 1.0)
+                  (org-level-5 . 1.1)
+                  (org-level-6 . 1.1)
+                  (org-level-7 . 1.1)
+                  (org-level-8 . 1.1)))
+    (set-face-attribute (car face) nil :font gcl/org-heading-font :weight 'medium :height (cdr face))))
+
 (use-package org-tempo
   :straight (:type built-in)
   :after org
@@ -350,6 +436,266 @@
                   ("yaml" . "src yaml")
                   ("json" . "src json")))
     (add-to-list 'org-structure-template-alist item)))
+
+(use-package org-modern
+  :hook (org-mode . org-modern-mode))
+
+(use-package perspective
+  :bind
+  ;; ("C-x C-b" . persp-list-buffers)         ; or use a nicer switcher, see below
+  :custom
+  (persp-mode-prefix-key (kbd "C-c TAB"))  ; pick your own prefix key here
+  :init
+  (persp-mode)
+  :diminish perps-mode
+  :config
+  (setq persp-state-default-file (expand-file-name ".gcl" user-emacs-directory))
+  (setq persp-show-modestring nil)
+  ;; (setq persp-modestring-short t)
+  (add-hook 'kill-emacs-hook #'persp-state-save)
+  (use-package persp-projectile)
+  )
+
+(use-package projectile
+  :diminish projectile-mode
+  :init
+  (projectile-mode +1)
+  :config
+  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+  (autoload 'projectile-project-root "projectile")
+  (setq consult-project-function (lambda (_) (projectile-project-root)))
+  ;; alien, hybrid
+  (setq projectile-indexing-method 'alien projectile-enable-caching t)
+  )
+
+;; Example configuration for Consult
+(use-package consult
+  ;; Replace bindings. Lazily loaded due by `use-package'.
+  :bind (;; C-c bindings in `mode-specific-map'
+         ("C-c M-x" . consult-mode-command)
+         ;; ("C-c h" . consult-history)
+         ;; ("C-c k" . consult-kmacro)
+         ;; ("C-c m" . consult-man)
+         ;; ("C-c i" . consult-info)
+         ("C-c s p" . consult-ripgrep)
+         ([remap Info-search] . consult-info)
+         ([remap isearch-forward] . consult-line)
+         ;; C-x bindings in `ctl-x-map'
+         ;; ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+         ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+         ("C-c b o" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+         ;; ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+         ("C-c b p" . consult-project-buffer)      ;; orig. project-switch-to-buffer
+         ;; Custom M-# bindings for fast register access
+         ("M-#" . consult-register-load)
+         ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+         ("C-M-#" . consult-register)
+         ;; Other custom bindings
+         ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+         ;; M-g bindings in `goto-map'
+         ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+         ("M-g m" . consult-mark)
+         ("M-g k" . consult-global-mark)
+         ("s-1" . consult-imenu)
+         ("M-g I" . consult-imenu-multi)
+         ;; M-s bindings in `search-map'
+         ("s-d" . consult-find)                  ;; Alternative: consult-fd
+         ;; ("M-s c" . consult-locate)
+         ;; ("M-s g" . consult-grep)
+         ;; ("M-s G" . consult-git-grep)
+         ;; ("M-s r" . consult-ripgrep)
+         ;; ("M-s L" . consult-line-multi)
+         ;; ("M-s k" . consult-keep-lines)
+         ;; ("M-s u" . consult-focus-lines)
+         ;; Isearch integration
+         ;; ("M-s e" . consult-isearch-history)
+         :map isearch-mode-map
+         ;; ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
+         ;; ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
+         ;; ("M-s L" . consult-line-multi)            ;; needed by consult-line to detect isearch
+         ;; Minibuffer history
+         :map minibuffer-local-map
+         ;; ("M-s" . consult-history)                 ;; orig. next-matching-history-element
+         ;; ("M-r" . consult-history)
+         )                ;; orig. previous-matching-history-element
+
+  ;; Enable automatic preview at point in the *Completions* buffer. This is
+  ;; relevant when you use the default completion UI.
+  :hook (completion-list-mode . consult-preview-at-point-mode)
+
+  ;; The :init configuration is always executed (Not lazy)
+  :init
+
+  ;; Optionally configure the register formatting. This improves the register
+  ;; preview for `consult-register', `consult-register-load',
+  ;; `consult-register-store' and the Emacs built-ins.
+  (setq register-preview-delay 0.5
+        register-preview-function #'consult-register-format)
+
+  ;; Optionally tweak the register preview window.
+  ;; This adds thin lines, sorting and hides the mode line of the window.
+  (advice-add #'register-preview :override #'consult-register-window)
+
+  ;; Use Consult to select xref locations with preview
+  (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref)
+
+  ;; Configure other variables and modes in the :config section,
+  ;; after lazily loading the package.
+  :config
+
+  ;; Optionally configure preview. The default value
+  ;; is 'any, such that any key triggers the preview.
+  ;; (setq consult-preview-key 'any)
+  ;; (setq consult-preview-key "M-.")
+  ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
+  ;; For some commands and buffer sources it is useful to configure the
+  ;; :preview-key on a per-command basis using the `consult-customize' macro.
+  (consult-customize
+   consult-theme :preview-key '(:debounce 0.2 any)
+   consult-ripgrep consult-git-grep consult-grep
+   consult-bookmark consult-recent-file consult-xref
+   consult--source-bookmark consult--source-file-register
+   consult--source-recent-file consult--source-project-recent-file
+   ;; :preview-key "M-."
+   :preview-key '(:debounce 0.4 any))
+
+  ;; Optionally configure the narrowing key.
+  ;; Both < and C-+ work reasonably well.
+  (setq consult-narrow-key "<") ;; "C-+"
+
+  ;; Optionally make narrowing help available in the minibuffer.
+  ;; You may want to use `embark-prefix-help-command' or which-key instead.
+  ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
+
+  ;; By default `consult-project-function' uses `project-root' from project.el.
+  ;; Optionally configure a different project root function.
+  ;;;; 1. project.el (the default)
+  ;; (setq consult-project-function #'consult--default-project--function)
+  ;;;; 2. vc.el (vc-root-dir)
+  ;; (setq consult-project-function (lambda (_) (vc-root-dir)))
+  ;;;; 3. locate-dominating-file
+  ;; (setq consult-project-function (lambda (_) (locate-dominating-file "." ".git")))
+  ;;;; 4. projectile.el (projectile-project-root)
+  ;; (autoload 'projectile-project-root "projectile")
+  ;; (setq consult-project-function (lambda (_) (projectile-project-root)))
+  ;;;; 5. No project support
+  ;; (setq consult-project-function nil)
+)
+
+(use-package yasnippet
+  :diminish yas-minor-mode
+  :hook ((prog-mode org-mode) . yas-minor-mode)
+  :bind (("C-c y i" . yas-insert-snippet)
+         ("C-c y f" . yas-visit-snippet-file)
+         ("C-c y n" . yas-new-snippet)
+         ;; ("C-c y t" . yas-tryout-snippet)
+         ;; ("C-c y l" . yas-describe-tables)
+         ;; ("C-c y g" . yas-global-mode)
+         ;; ("C-c y m" . yas-minor-mode)
+         ("C-c y r" . yas-reload-all)
+         ("C-c y x" . yas-expand)
+         :map yas-keymap
+         ("C-i" . yas-next-field-or-maybe-expand))
+  :config
+  (yas-reload-all))
+
+(use-package yasnippet-snippets
+  :defer t
+  :after yasnippet)
+
+(use-package evil-nerd-commenter
+  :bind* (("M-;" . evilnc-comment-or-uncomment-lines))
+  )
+
+(use-package yaml-mode
+  :mode "\\.yml\\'"
+  :mode "\\.yaml\\'"
+  :hook ((yaml-mode . yaml-imenu-enable)))
+
+(use-package yaml-imenu
+  :after yaml-mode)
+
+(use-package python-mode)
+
+(use-package go-mode)
+
+(use-package dockerfile-mode)
+
+(use-package php-mode)
+
+(use-package sql-indent)
+(add-hook 'sql-mode-hook 'sqlind-minor-mode)
+
+(use-package pkg-info)
+
+(use-package lua-mode)
+
+(use-package flycheck
+  :diminish flycheck-mode
+  :init (global-flycheck-mode))
+
+(use-package highlight-parentheses
+  :hook (prog-mode . highlight-parentheses-mode)
+  :diminish highlight-parentheses-mode
+  :config
+  (add-hook 'minibuffer-setup-hook #'highlight-parentheses-minibuffer-setup)
+  )
+
+(use-package rainbow-delimiters
+  :config
+  (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
+
+(use-package rainbow-mode
+  :diminish rainbow-mode
+  :defer t
+  :hook ((prog-mode org-mode) . rainbow-mode))
+
+(use-package corfu
+  :custom
+  (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+  (corfu-auto t)                 ;; Enable auto completion
+  ;; (corfu-separator ?\s)          ;; Orderless field separator
+  ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
+  (corfu-quit-no-match 'separator)      ;; Never quit, even if there is no match
+  ;; (corfu-preview-current nil)    ;; Disable current candidate preview
+  ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
+  ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+  ;; (corfu-scroll-margin 5)        ;; Use scroll margin
+  :init
+  (global-corfu-mode))
+
+;; Optionally use the `orderless' completion style.
+(use-package orderless
+  :init
+  ;; Configure a custom style dispatcher (see the Consult wiki)
+  ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
+  ;;       orderless-component-separator #'orderless-escapable-split-on-space)
+  (setq completion-styles '(orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles partial-completion)))))
+
+(use-package vertico
+  :init
+  (vertico-mode)
+
+  ;; Different scroll margin
+  ;; (setq vertico-scroll-margin 0)
+
+  ;; Show more candidates
+  ;; (setq vertico-count 20)
+
+  ;; Grow and shrink the Vertico minibuffer
+  ;; (setq vertico-resize t)
+
+  ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
+  ;; (setq vertico-cycle t)
+  )
+
+(define-key org-mode-map (kbd "s-t") 'org-todo)
+(bind-keys*
+ ("C-x ="     . indent-region)
+ ("s-o" . other-window))
 
 (defun tangle-if-init ()
   "If the current buffer is 'config.org' the code-blocks are
