@@ -2,6 +2,21 @@
 (when (file-exists-p custom-file)
   (load custom-file))
 
+(setq user-mail-address "ftt.loves@gmail.com")
+(setq user-full-name "Lee ZhiCheng")
+
+(defun get-project-root ()
+  "Get the root directory of the current project."
+  (or (locate-dominating-file default-directory "package.json")
+      (locate-dominating-file default-directory ".git")))
+
+(defun get-eslint-executable ()
+  "Get the path to the eslint executable in the current project."
+  (let ((root (get-project-root)))
+    (if root
+        (expand-file-name "node_modules/.bin/eslint" root)
+      "eslint")))  ;; 默认使用全局 eslint
+
 ;; 光标样式
 (setq-default cursor-type '(bar . 1))
 ;; 光标不闪烁
@@ -49,8 +64,6 @@
 (setq sentence-end-double-space nil)
 ;; - 更好的通配符搜索
 (setq search-whitespace-regexp ".*?")
-;; - 历史记录
-(savehist-mode)
 ;; - 窗口管理
 (when (fboundp 'winner-mode)
   (winner-mode 1))
@@ -154,7 +167,6 @@
   )
 
 (use-package symbol-overlay
-  :defer t
   :config
   (symbol-overlay-mode +1)
   (global-set-key (kbd "M-i") #'symbol-overlay-put)
@@ -303,6 +315,64 @@
   (setq auto-save-silent t)
   (setq auto-save-delete-trailing-whitespace t))
 
+(use-package all-the-icons)
+(use-package all-the-icons-completion
+:after (marginalia all-the-icons)
+:functions
+all-the-icons-completion-mode
+:hook
+(marginalia-mode . all-the-icons-completion-marginalia-setup)
+:init
+(all-the-icons-completion-mode))
+
+(use-package all-the-icons-dired
+:diminish)
+
+(use-package all-the-icons-ibuffer
+:after (ibuffer)
+:functions
+all-the-icons-ibuffer-mode
+:config
+(all-the-icons-ibuffer-mode 1))
+
+(use-package discover-my-major
+  :bind (("C-h C-m" . discover-my-major)
+         ("C-h s-m" . discover-my-mode)))
+
+(use-package engine-mode
+  :config
+  (engine-mode t)
+  (engine/set-keymap-prefix (kbd "C-c s"))
+  (defengine baidu "https://www.baidu.com/s?wd=%s"
+	           :keybinding "b")
+  (defengine github
+    "https://github.com/search?ref=simplesearch&q=%s"
+    :keybinding "g")
+  (defengine qwant
+    "https://www.qwant.com/?q=%s"
+    :docstring "什么都能搜到哦~~😍😍"
+    :keybinding "q")
+  (defengine rfcs
+    "http://pretty-rfc.herokuapp.com/search?q=%s"
+    :keybinding "r")
+  (defengine stack-overflow
+    "https://stackoverflow.com/search?q=%s"
+    :keybinding "s")
+  (defengine twitter
+    "https://twitter.com/search?q=%s"
+    :keybinding "t")
+  (defengine wolfram-alpha
+    "http://www.wolframalpha.com/input/?i=%s"
+    :docstring "数学搜索引擎，公式，坐标图等。"
+    :keybinding "w")
+  (defengine google
+    "http://www.google.com/search?ie=utf-8&oe=utf-8&q=%s"
+    :keybinding "/")
+  (defengine youtube
+    "http://www.youtube.com/results?aq=f&oq=&search_query=%s"
+    :keybinding "y")
+  )
+
 (defvar gcl/default-font-size 150)
 (defvar gcl/default-variable-font-size 150)
 
@@ -313,30 +383,30 @@
 (defvar gcl/org-heading-font "Iosevka Aile"
   "The font used for Org Mode headings.")
 
-  (set-face-attribute 'default nil :font "Fira Code Retina" :height gcl/default-font-size)
+(set-face-attribute 'default nil :font "Fira Code Retina" :height gcl/default-font-size)
 
-  ;; Set the fixed pitch face
-  (set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height gcl/default-font-size)
+;; Set the fixed pitch face
+(set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height gcl/default-font-size)
 
-  ;; Set the variable pitch face
-  (set-face-attribute 'variable-pitch nil :font "Cantarell" :height gcl/default-variable-font-size :weight 'regular)
+;; Set the variable pitch face
+(set-face-attribute 'variable-pitch nil :font "Cantarell" :height gcl/default-variable-font-size :weight 'regular)
 
 (use-package doom-themes
-   :config
-   ;; Global settings (defaults)
-   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-         doom-themes-enable-italic t) ; if nil, italics is universally disabled
-   (load-theme 'doom-one t)
+  :config
+  ;; Global settings (defaults)
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+        doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  (load-theme 'doom-one t)
 
-   ;; Enable flashing mode-line on errors
-   (doom-themes-visual-bell-config)
-   ;; Enable custom neotree theme (all-the-icons must be installed!)
-   (doom-themes-neotree-config)
-   ;; or for treemacs users
-   (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
-   (doom-themes-treemacs-config)
-   ;; Corrects (and improves) org-mode's native fontification.
-   (doom-themes-org-config))
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  ;; Enable custom neotree theme (all-the-icons must be installed!)
+  (doom-themes-neotree-config)
+  ;; or for treemacs users
+  (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
+  (doom-themes-treemacs-config)
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
 
 (use-package doom-modeline
   :init (progn
@@ -468,6 +538,11 @@
   (setq projectile-indexing-method 'alien projectile-enable-caching t)
   )
 
+(use-package embark-consult
+  :after (embark consult)
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
+
 ;; Example configuration for Consult
 (use-package consult
   ;; Replace bindings. Lazily loaded due by `use-package'.
@@ -480,11 +555,13 @@
          ("C-c s p" . consult-ripgrep)
          ([remap Info-search] . consult-info)
          ([remap isearch-forward] . consult-line)
+         ([remap bookmark-jump] . consult-bookmark)
+         ([remap switch-to-buffer] . consult-buffer)
          ;; C-x bindings in `ctl-x-map'
          ;; ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
          ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
          ("C-c b o" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
-         ;; ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+         ("C-c b m" . consult-bookmark)            ;; orig. bookmark-jump
          ("C-c b p" . consult-project-buffer)      ;; orig. project-switch-to-buffer
          ;; Custom M-# bindings for fast register access
          ("M-#" . consult-register-load)
@@ -492,6 +569,7 @@
          ("C-M-#" . consult-register)
          ;; Other custom bindings
          ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+         ("C-y" . consult-yank-pop)                ;; orig. yank-pop
          ;; M-g bindings in `goto-map'
          ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
          ("M-g m" . consult-mark)
@@ -570,18 +648,65 @@
 
   ;; By default `consult-project-function' uses `project-root' from project.el.
   ;; Optionally configure a different project root function.
-  ;;;; 1. project.el (the default)
+    ;;;; 1. project.el (the default)
   ;; (setq consult-project-function #'consult--default-project--function)
-  ;;;; 2. vc.el (vc-root-dir)
+    ;;;; 2. vc.el (vc-root-dir)
   ;; (setq consult-project-function (lambda (_) (vc-root-dir)))
-  ;;;; 3. locate-dominating-file
+    ;;;; 3. locate-dominating-file
   ;; (setq consult-project-function (lambda (_) (locate-dominating-file "." ".git")))
-  ;;;; 4. projectile.el (projectile-project-root)
+    ;;;; 4. projectile.el (projectile-project-root)
   ;; (autoload 'projectile-project-root "projectile")
   ;; (setq consult-project-function (lambda (_) (projectile-project-root)))
-  ;;;; 5. No project support
+    ;;;; 5. No project support
   ;; (setq consult-project-function nil)
-)
+  )
+
+;; 自定义的模式集合
+(defvar my-web-modes
+  '(tsx-ts-mode
+    typescript-ts-mode
+    json-ts-mode
+    js-ts-mode
+    prisma-ts-mode
+    typescript-mode
+    go-ts-mode)
+  "List of modes for web development.")
+
+;; 通用的钩子启用函数
+(defun my-enable-hooks (modes hook-fn)
+  "Enable HOOK-FN for MODES."
+  (dolist (mode modes)
+    (add-hook (intern (concat (symbol-name mode) "-hook")) hook-fn)))
+
+;; 自动查找项目中的 ESLint 配置文件
+(defun find-eslint-config ()
+  "Find ESLint configuration file in project root."
+  (let ((root (get-project-root)))
+    (when root
+      (or (and (file-exists-p (expand-file-name ".eslintrc" root))
+               (expand-file-name ".eslintrc" root))
+          (and (file-exists-p (expand-file-name ".eslintrc.js" root))
+               (expand-file-name ".eslintrc.js" root))
+          (and (file-exists-p (expand-file-name ".eslintrc.json" root))
+               (expand-file-name ".eslintrc.json" root))
+          (and (file-exists-p (expand-file-name "package.json" root))
+               (let* ((package-json (expand-file-name "package.json" root))
+                      (eslint-config (and (file-readable-p package-json)
+                                          (with-temp-buffer
+                                            (insert-file-contents package-json)
+                                            (goto-char (point-min))
+                                            (and (search-forward "\"eslintConfig\"" nil t)
+                                                 (search-forward-regexp ": ?{")
+                                                 (json-read-object)))))))
+               (and eslint-config (concat root "/.eslintrc")))))))
+
+(add-to-list 'auto-mode-alist '("\\.[cm]?js\\'" . js2-mode))
+(add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))       ;
+
+(use-package smartparens
+  :hook (prog-mode . smartparens-mode)
+  :config
+  (sp-use-smartparens-bindings))
 
 (use-package yasnippet
   :diminish yas-minor-mode
@@ -607,6 +732,97 @@
 (use-package evil-nerd-commenter
   :bind* (("M-;" . evilnc-comment-or-uncomment-lines))
   )
+
+(defun dw/setup-markdown-mode ()
+  (visual-fill-column-mode 1)
+  (display-line-numbers-mode 0))
+
+(use-package markdown-mode
+  :mode "\\.md\\'"
+  :config
+  (setq markdown-command "marked")
+  (add-hook 'markdown-mode-hook #'dw/setup-markdown-mode)
+  (dolist (face '((markdown-header-face-1 . 1.2)
+                  (markdown-header-face-2 . 1.1)
+                  (markdown-header-face-3 . 1.0)
+                  (markdown-header-face-4 . 1.0)
+                  (markdown-header-face-5 . 1.0)))
+    (set-face-attribute (car face) nil :weight 'normal :height (cdr face))))
+
+(use-package js-doc
+  :config
+  (setq js-doc-mail-address user-mail-address
+	  js-doc-author (format "<%s> <%s>" user-full-name js-doc-mail-address)
+	  ;; js-doc-url user-blog-url
+	  ;; js-doc-license "MIT"
+	  ))
+
+(use-package web-mode
+  ;; :hook (web-mode . lsp-deferred)
+  :config
+  (setq
+   web-mode-markup-indent-offset 2
+   web-mode-css-indent-offset 2
+   web-mode-code-indent-offset 2
+   web-mode-style-padding 0
+   web-mode-script-padding 0
+   web-mode-enable-auto-closing t
+   web-mode-enable-auto-opening t
+   web-mode-enable-auto-pairing nil
+   web-mode-enable-auto-indentation t
+   web-mode-tag-auto-close-style 1
+   web-mode-enable-current-element-highlight t)
+
+  ;; 设置不同类型代码的注释格式
+  (setq web-mode-comment-formats
+	  '(("javascript" . "//")    ; JavaScript 注释
+	    ("jsx" . "//")           ; JSX 注释
+	    ("php" . "//")           ; PHP 注释
+	    ("css" . "/*")           ; CSS 注释
+	    ("java" . "//")          ; Java 注释
+	    ;; 添加更多类型的注释格式
+	    ))
+
+  ;; Let smartparens handle auto closing brackets, e.g. {{ }} or {% %}
+  ;; https://github.com/hlissner/doom-emacs/blob/develop/modules/lang/web/%2Bhtml.el#L56
+  (dolist (alist web-mode-engines-auto-pairs)
+    (setcdr alist
+	      (cl-loop for pair in (cdr alist)
+		       unless (string-match-p "^[a-z-]" (cdr pair))
+		       collect (cons (car pair)
+				     (string-trim-right (cdr pair)
+							"\\(?:>\\|]\\|}\\)+\\'")))))
+  ;; (add-to-list 'lsp-language-id-configuration '(web-mode . "vue"))
+  )
+
+(use-package js2-mode
+  :mode "\\.jsx?\\'"
+  :config
+  ;; Use js2-mode for Node scripts
+  (add-to-list 'magic-mode-alist '("#!/usr/bin/env node" . js2-mode))
+
+  ;; Don't use built-in syntax checking
+  (setq js2-mode-show-strict-warnings nil)
+
+  ;; Set up proper indentation in JavaScript and JSON files
+  (setq-default js-indent-level 2))
+
+(use-package typescript-mode
+  :mode "\\.[cm]?ts\\'"
+  ;; :hook (typescript-mode . lsp-deferred)
+  :config
+  (setq typescript-indent-level 2))
+
+(use-package scss-mode)
+(use-package css-mode)
+
+(use-package emmet-mode
+  :diminish emmet-mode
+  :hook ((sgml-mode html-mode css-mode web-mode typescript-mode js-mode) . emmet-mode)
+  :config
+  (add-hook 'emmet-mode-hook (lambda () (setq emmet-indentation 2))))
+
+(use-package json-mode)
 
 (use-package yaml-mode
   :mode "\\.yml\\'"
@@ -665,6 +881,12 @@
   :init
   (global-corfu-mode))
 
+(use-package kind-icon
+  :after corfu
+  :custom (kind-icon-default-face 'corfu-default)
+  :config
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+
 ;; Optionally use the `orderless' completion style.
 (use-package orderless
   :init
@@ -676,6 +898,7 @@
         completion-category-overrides '((file (styles partial-completion)))))
 
 (use-package vertico
+  :bind (("s-'" . vertico-repeat))
   :init
   (vertico-mode)
 
@@ -691,6 +914,231 @@
   ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
   ;; (setq vertico-cycle t)
   )
+
+(use-package vertico-directory
+  :straight vertico
+  :after vertico
+  ;; More convenient directory navigation commands
+  :bind (:map vertico-map
+              ("RET" . vertico-directory-enter)
+              ("DEL" . vertico-directory-delete-char)
+              ("M-DEL" . vertico-directory-delete-word))
+  ;; Tidy shadowed file names
+  :hook (rfn-eshadow-update-overlay . vertico-directory-tidy))
+
+(use-package savehist
+  :init
+  (savehist-mode))
+
+;; Enable rich annotations using the Marginalia package
+(use-package marginalia
+  ;; Bind `marginalia-cycle' locally in the minibuffer.  To make the binding
+  ;; available in the *Completions* buffer, add it to the
+  ;; `completion-list-mode-map'.
+  :bind (:map minibuffer-local-map
+         ("M-A" . marginalia-cycle))
+
+  ;; The :init section is always executed.
+  :init
+
+  ;; Marginalia must be activated in the :init section of use-package such that
+  ;; the mode gets enabled right away. Note that this forces loading the
+  ;; package.
+  (marginalia-mode))
+
+(use-package embark
+  :ensure t
+
+  :bind
+  (("C-." . embark-act)         ;; pick some comfortable binding
+   ("C-;" . embark-dwim)        ;; good alternative: M-.
+   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+
+  :init
+
+  ;; Optionally replace the key help with a completing-read interface
+  (setq prefix-help-command #'embark-prefix-help-command)
+
+  ;; Show the Embark target at point via Eldoc. You may adjust the
+  ;; Eldoc strategy, if you want to see the documentation from
+  ;; multiple providers. Beware that using this can be a little
+  ;; jarring since the message shown in the minibuffer can be more
+  ;; than one line, causing the modeline to move up and down:
+
+  ;; (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+  ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
+
+  :config
+
+  ;; Hide the mode line of the Embark live/completions buffers
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none)))))
+
+(defun gcl/lsp-mode-setup ()
+  (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+  (lsp-headerline-breadcrumb-mode))
+
+(use-package lsp-mode
+  :commands (lsp lsp-deferred)
+  :hook ((lsp-mode . gcl/lsp-mode-setup)
+         (lsp-mode . lsp-enable-which-key-integration)
+         (lsp-mode . lsp-diagnostics-mode))
+  :diminish lsp-mode
+  :diminish lsp-lens-mode
+  :config
+  (my-enable-hooks my-web-modes 'lsp-deferred)
+  (defvar-local lsp-format-on-save t
+    "Format `lsp-mode'-managed buffer before save.")
+  (defun lsp-format-on-save-not-apheleia ()
+    "Format on save using LSP server, not `apheleia'."
+    (if lsp-format-on-save
+        (progn
+          (add-hook 'before-save-hook #'lsp-format-buffer nil 'local)
+          (setq-local apheleia-mode nil))))
+  (add-hook 'lsp-configure-hook #'lsp-format-on-save-not-apheleia)
+  ;; --no-eslintrc 使用全局配置
+  (setq lsp-eslint-server-command
+      `(, (executable-find "node")
+        , (get-eslint-executable)
+        "--config" ,(or (find-eslint-config) "eslint.config.mjs")
+        "--fix"
+        "--stdin"
+        "--stdin-filename"
+        "--format"
+        "json"))
+  :custom
+  (lsp-prefer-flymake nil) ; 使用 lsp-ui 和 flycheck 而不是 flymake
+  (lsp-keymap-prefix "C-c l")
+  (lsp-completion-provider :none) ;; we use Corfu
+  (lsp-diagnostics-provider :flycheck)
+  (lsp-log-io nil) ; only for debug
+  (lsp-idle-delay 0.5)
+  (lsp-enable-file-watchers nil) ; 只监听当前项目中的文件
+  ;; (lsp-enable-folding nil)
+  )
+
+;; 安装和配置 lsp-eslint
+(use-package lsp-eslint
+  :straight lsp-mode
+  :commands lsp-eslint-enable
+  :config
+  (my-enable-hooks my-web-modes 'lsp-eslint-enable))
+
+(use-package lsp-ui
+  :hook (lsp-mode . lsp-ui-mode)
+  :config
+  (setq lsp-ui-sideline-enable nil
+        lsp-ui-doc-enable nil)
+  :custom
+  (lsp-ui-doc-position 'bottom))
+
+(use-package lsp-tailwindcss
+  :straight (:type git :host github :repo "merrickluo/lsp-tailwindcss")
+  :config
+  (setq lsp-tailwindcss-add-on-mode t))
+(add-hook 'before-save-hook 'lsp-tailwindcss-rustywind-before-save)
+
+;; 其他 buffer 中启用
+(add-to-list 'lsp-language-id-configuration '(".*\\.erb$" . "html"))
+
+(use-package lsp-treemacs
+:commands lsp-treemacs-errors-list)
+
+(use-package magit
+  :bind* (("C-S-g" . magit))
+  :config
+  ;; ;; 提交时候不显示提交细节
+  (setq magit-commit-show-diff nil)
+  ;; ;; 没有焦点时候不刷新状态
+  (setq magit-refresh-status-buffer nil)
+  ;; ;; 当前buffer打开magit
+  (setq magit-display-buffer-function
+        (lambda (buffer)
+          (display-buffer buffer '(display-buffer-same-window))))
+  ;; (setq magit-ellipsis (get-byte 0 "."))
+  ;; ;; 加速diff
+  (setq magit-revision-insert-related-refs nil)
+  (setq magit-diff-refine-hunk t)
+  (setq magit-diff-paint-whitespace nil)
+  (setq magit-ediff-dwim-show-on-hunks t)
+  (setq magit-display-buffer-function
+        (lambda (buffer)
+          (display-buffer buffer '(display-buffer-same-window))))
+  ;; ;; 加速diff
+  (setq magit-revision-insert-related-refs nil)
+  )
+
+(use-package blamer
+  :bind (("C-c g c" . blamer-show-posframe-commit-info))
+  :custom
+  (blamer-idle-time 0.3)
+  (blamer-min-offset 40)
+  (blamer-author-formatter " ✎ %s ")
+  (blamer-datetime-formatter "[%s]")
+  (blamer-commit-formatter " ● %s")
+  :custom-face
+  (blamer-face ((t :foreground "#7a88cf"
+                   ;; :background nil
+                   :height 120
+                   :italic t)))
+  :config
+  ;; (global-blamer-mode 1)
+  )
+
+(use-package git-modes
+  :config
+  (add-to-list 'auto-mode-alist
+               (cons "/.dockerignore\\'" 'gitignore-mode))
+  (add-to-list 'auto-mode-alist
+               (cons "/.gitignore\\'" 'gitignore-mode))
+  (add-to-list 'auto-mode-alist
+               (cons "/.gitconfig\\'" 'gitconfig-mode))
+  )
+
+(use-package smerge-mode
+  :config
+  (defhydra smerge/panel ()
+  "smerge"
+  ("k" (smerge-prev) "prev change" )
+  ("j" (smerge-next) "next change")
+  ("u" (smerge-keep-upper) "keep upper")
+  ("l" (smerge-keep-lower) "keep lower")
+  ("q" nil "quit" :exit t))
+  :bind ("s-," . smerge/panel/body))
+
+(use-package diff-hl
+:hook ((magit-pre-refresh . diff-hl-magit-pre-refresh)
+       (magit-post-refresh . diff-hl-magit-post-refresh))
+  :config
+  (global-diff-hl-mode))
+
+(use-package vterm)
+(use-package multi-vterm)
+(use-package vterm-toggle)
+(with-eval-after-load 'vterm
+  (define-key vterm-mode-map [return] #'vterm-send-return)
+  (define-key vterm-mode-map [(control return)]   #'vterm-toggle-insert-cd)
+  (define-key vterm-mode-map (kbd "s-n")   'vterm-toggle-forward)
+  (define-key vterm-mode-map (kbd "s-p")   'vterm-toggle-backward)
+  (setq vterm-toggle-fullscreen-p nil)
+  (add-to-list 'display-buffer-alist
+		 '((lambda (buffer-or-name _)
+		     (let ((buffer (get-buffer buffer-or-name)))
+		       (with-current-buffer buffer
+			 (or (equal major-mode 'vterm-mode)
+			     (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
+		   (display-buffer-reuse-window display-buffer-at-bottom)
+		   ;;(display-buffer-reuse-window display-buffer-in-direction)
+		   ;;display-buffer-in-direction/direction/dedicated is added in emacs27
+		   ;;(direction . bottom)
+		   ;;(dedicated . t) ;dedicated is supported in emacs27
+		   (reusable-frames . visible)
+		   (window-height . 0.3))))
+
+(global-set-key (kbd "s-`") 'vterm-toggle)
+(global-set-key (kbd "s-<return>") 'multi-vterm-project)
 
 (define-key org-mode-map (kbd "s-t") 'org-todo)
 (bind-keys*

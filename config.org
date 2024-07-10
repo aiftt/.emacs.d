@@ -11,6 +11,28 @@
 (when (file-exists-p custom-file)
   (load custom-file))
 #+end_src
+* 函数变量
+** 个人信息
+#+begin_src emacs-lisp
+  (setq user-mail-address "ftt.loves@gmail.com")
+(setq user-full-name "Lee ZhiCheng")
+#+end_src
+** 获取项目根目录
+#+begin_src emacs-lisp
+(defun get-project-root ()
+  "Get the root directory of the current project."
+  (or (locate-dominating-file default-directory "package.json")
+      (locate-dominating-file default-directory ".git")))
+#+end_src
+** 获取 eslint 可执行文件路径
+#+begin_src emacs-lisp
+(defun get-eslint-executable ()
+  "Get the path to the eslint executable in the current project."
+  (let ((root (get-project-root)))
+    (if root
+        (expand-file-name "node_modules/.bin/eslint" root)
+      "eslint")))  ;; 默认使用全局 eslint
+#+end_src
 * 基础配置
 ** 修改默认值
 #+begin_src emacs-lisp
@@ -61,8 +83,6 @@
   (setq sentence-end-double-space nil)
   ;; - 更好的通配符搜索
   (setq search-whitespace-regexp ".*?")
-  ;; - 历史记录
-  (savehist-mode)
   ;; - 窗口管理
   (when (fboundp 'winner-mode)
     (winner-mode 1))
@@ -184,7 +204,6 @@
 ** 符号高亮
 #+begin_src emacs-lisp
 (use-package symbol-overlay
-  :defer t
   :config
   (symbol-overlay-mode +1)
   (global-set-key (kbd "M-i") #'symbol-overlay-put)
@@ -351,6 +370,71 @@
     (setq auto-save-silent t)
     (setq auto-save-delete-trailing-whitespace t))
 #+end_src
+** all-the-icons
+#+begin_src emacs-lisp
+  (use-package all-the-icons)
+  (use-package all-the-icons-completion
+  :after (marginalia all-the-icons)
+  :functions
+  all-the-icons-completion-mode
+  :hook
+  (marginalia-mode . all-the-icons-completion-marginalia-setup)
+  :init
+  (all-the-icons-completion-mode))
+
+  (use-package all-the-icons-dired
+  :diminish)
+
+  (use-package all-the-icons-ibuffer
+  :after (ibuffer)
+  :functions
+  all-the-icons-ibuffer-mode
+  :config
+  (all-the-icons-ibuffer-mode 1))
+#+end_src
+** dicover mode
+#+begin_src emacs-lisp
+  (use-package discover-my-major
+    :bind (("C-h C-m" . discover-my-major)
+           ("C-h s-m" . discover-my-mode)))
+#+end_src
+** search
+*** engine-mode
+#+begin_src emacs-lisp
+(use-package engine-mode
+  :config
+  (engine-mode t)
+  (engine/set-keymap-prefix (kbd "C-c s"))
+  (defengine baidu "https://www.baidu.com/s?wd=%s"
+	           :keybinding "b")
+  (defengine github
+    "https://github.com/search?ref=simplesearch&q=%s"
+    :keybinding "g")
+  (defengine qwant
+    "https://www.qwant.com/?q=%s"
+    :docstring "什么都能搜到哦~~😍😍"
+    :keybinding "q")
+  (defengine rfcs
+    "http://pretty-rfc.herokuapp.com/search?q=%s"
+    :keybinding "r")
+  (defengine stack-overflow
+    "https://stackoverflow.com/search?q=%s"
+    :keybinding "s")
+  (defengine twitter
+    "https://twitter.com/search?q=%s"
+    :keybinding "t")
+  (defengine wolfram-alpha
+    "http://www.wolframalpha.com/input/?i=%s"
+    :docstring "数学搜索引擎，公式，坐标图等。"
+    :keybinding "w")
+  (defengine google
+    "http://www.google.com/search?ie=utf-8&oe=utf-8&q=%s"
+    :keybinding "/")
+  (defengine youtube
+    "http://www.youtube.com/results?aq=f&oq=&search_query=%s"
+    :keybinding "y")
+  )
+#+end_src
 * 主题配置
 ** 字体配置
 #+begin_src emacs-lisp
@@ -364,17 +448,17 @@
   (defvar gcl/org-heading-font "Iosevka Aile"
     "The font used for Org Mode headings.")
 
-    (set-face-attribute 'default nil :font "Fira Code Retina" :height gcl/default-font-size)
+  (set-face-attribute 'default nil :font "Fira Code Retina" :height gcl/default-font-size)
 
-    ;; Set the fixed pitch face
-    (set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height gcl/default-font-size)
+  ;; Set the fixed pitch face
+  (set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height gcl/default-font-size)
 
-    ;; Set the variable pitch face
-    (set-face-attribute 'variable-pitch nil :font "Cantarell" :height gcl/default-variable-font-size :weight 'regular)
+  ;; Set the variable pitch face
+  (set-face-attribute 'variable-pitch nil :font "Cantarell" :height gcl/default-variable-font-size :weight 'regular)
 #+end_src
 ** doom 主题
 #+begin_src emacs-lisp
- (use-package doom-themes
+  (use-package doom-themes
     :config
     ;; Global settings (defaults)
     (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
@@ -402,82 +486,82 @@
 #+end_src
 * org-mode
 #+begin_src emacs-lisp
-(setq org-directory "~/.gclrc/org")
+  (setq org-directory "~/.gclrc/org")
 
-(defun gcl/org-path (path)
-  (expand-file-name path org-directory))
+  (defun gcl/org-path (path)
+    (expand-file-name path org-directory))
 
-;; Turn on indentation and auto-fill mode for Org files
-(defun dw/org-mode-setup ()
-  ;; (variable-pitch-mode 1)
-  (org-indent-mode 1)
-  (auto-fill-mode 0)
-  (visual-line-mode 1)
-  (setq corfu-auto nil)
-  (setq evil-auto-indent nil))
+  ;; Turn on indentation and auto-fill mode for Org files
+  (defun dw/org-mode-setup ()
+    ;; (variable-pitch-mode 1)
+    (org-indent-mode 1)
+    (auto-fill-mode 0)
+    (visual-line-mode 1)
+    (setq corfu-auto nil)
+    (setq evil-auto-indent nil))
 
-(defun dw/org-move-done-tasks-to-bottom ()
-  "Sort all tasks in the topmost heading by TODO state."
-  (interactive)
-  (save-excursion
-    (while (org-up-heading-safe))
-    (org-sort-entries nil ?o))
+  (defun dw/org-move-done-tasks-to-bottom ()
+    "Sort all tasks in the topmost heading by TODO state."
+    (interactive)
+    (save-excursion
+      (while (org-up-heading-safe))
+      (org-sort-entries nil ?o))
 
-  ;; Reset the view of TODO items
-  (org-overview)
-  (org-show-entry)
-  (org-show-children))
+    ;; Reset the view of TODO items
+    (org-overview)
+    (org-show-entry)
+    (org-show-children))
 
 
-(defun dw/org-todo-state-change-hook ()
-  (when (string= org-state "DONE")
-    (dw/org-move-done-tasks-to-bottom)))
-;; (add-hook 'org-after-todo-state-change-hook 'dw/org-todo-state-change-hook)
+  (defun dw/org-todo-state-change-hook ()
+    (when (string= org-state "DONE")
+      (dw/org-move-done-tasks-to-bottom)))
+  ;; (add-hook 'org-after-todo-state-change-hook 'dw/org-todo-state-change-hook)
 #+end_src
 ** configuration
 #+begin_src emacs-lisp
-(use-package org
-  :straight (:type built-in)
-  :hook (org-mode . dw/org-mode-setup)
-  :bind (:map org-mode-map
-              ("M-N" . org-move-subtree-down)
-              ("M-P" . org-move-subtree-up))
-  :config
-  (setq org-ellipsis "..."
-        org-hide-emphasis-markers t
-        org-src-fontify-natively t
-        org-fontify-quote-and-verse-blocks t
-        org-src-tab-acts-natively t
-        org-edit-src-content-indentation 2
-        org-hide-block-startup nil
-        org-src-preserve-indentation nil
-        org-startup-folded 'content
-        org-cycle-separator-lines 2
-        org-capture-bookmark nil
-        )
+  (use-package org
+    :straight (:type built-in)
+    :hook (org-mode . dw/org-mode-setup)
+    :bind (:map org-mode-map
+                ("M-N" . org-move-subtree-down)
+                ("M-P" . org-move-subtree-up))
+    :config
+    (setq org-ellipsis "..."
+          org-hide-emphasis-markers t
+          org-src-fontify-natively t
+          org-fontify-quote-and-verse-blocks t
+          org-src-tab-acts-natively t
+          org-edit-src-content-indentation 2
+          org-hide-block-startup nil
+          org-src-preserve-indentation nil
+          org-startup-folded 'content
+          org-cycle-separator-lines 2
+          org-capture-bookmark nil
+          )
 
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((emacs-lisp . t)))
-  )
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((emacs-lisp . t)))
+    )
 #+end_src
 ** org-face
 #+begin_src emacs-lisp
-(use-package org-faces
-  :straight (:type built-in)
-  :after org
-  :config
-  ;; Increase the size of various headings
-  (set-face-attribute 'org-document-title nil :font gcl/org-heading-font :weight 'medium :height 1.3)
-  (dolist (face '((org-level-1 . 1.2)
-                  (org-level-2 . 1.1)
-                  (org-level-3 . 1.05)
-                  (org-level-4 . 1.0)
-                  (org-level-5 . 1.1)
-                  (org-level-6 . 1.1)
-                  (org-level-7 . 1.1)
-                  (org-level-8 . 1.1)))
-    (set-face-attribute (car face) nil :font gcl/org-heading-font :weight 'medium :height (cdr face))))
+  (use-package org-faces
+    :straight (:type built-in)
+    :after org
+    :config
+    ;; Increase the size of various headings
+    (set-face-attribute 'org-document-title nil :font gcl/org-heading-font :weight 'medium :height 1.3)
+    (dolist (face '((org-level-1 . 1.2)
+                    (org-level-2 . 1.1)
+                    (org-level-3 . 1.05)
+                    (org-level-4 . 1.0)
+                    (org-level-5 . 1.1)
+                    (org-level-6 . 1.1)
+                    (org-level-7 . 1.1)
+                    (org-level-8 . 1.1)))
+      (set-face-attribute (car face) nil :font gcl/org-heading-font :weight 'medium :height (cdr face))))
 #+end_src
 ** org-tempo
 #+begin_src emacs-lisp
@@ -504,44 +588,49 @@
 #+end_src
 ** org-modern
 #+begin_src emacs-lisp
-(use-package org-modern
-  :hook (org-mode . org-modern-mode))
+  (use-package org-modern
+    :hook (org-mode . org-modern-mode))
 #+end_src
 * 项目管理
 ** perspective
 #+begin_src emacs-lisp
-(use-package perspective
-  :bind
-  ;; ("C-x C-b" . persp-list-buffers)         ; or use a nicer switcher, see below
-  :custom
-  (persp-mode-prefix-key (kbd "C-c TAB"))  ; pick your own prefix key here
-  :init
-  (persp-mode)
-  :diminish perps-mode
-  :config
-  (setq persp-state-default-file (expand-file-name ".gcl" user-emacs-directory))
-  (setq persp-show-modestring nil)
-  ;; (setq persp-modestring-short t)
-  (add-hook 'kill-emacs-hook #'persp-state-save)
-  (use-package persp-projectile)
-  )
+  (use-package perspective
+    :bind
+    ;; ("C-x C-b" . persp-list-buffers)         ; or use a nicer switcher, see below
+    :custom
+    (persp-mode-prefix-key (kbd "C-c TAB"))  ; pick your own prefix key here
+    :init
+    (persp-mode)
+    :diminish perps-mode
+    :config
+    (setq persp-state-default-file (expand-file-name ".gcl" user-emacs-directory))
+    (setq persp-show-modestring nil)
+    ;; (setq persp-modestring-short t)
+    (add-hook 'kill-emacs-hook #'persp-state-save)
+    (use-package persp-projectile)
+    )
 #+end_src
 ** projectile
 #+begin_src emacs-lisp
-(use-package projectile
-  :diminish projectile-mode
-  :init
-  (projectile-mode +1)
-  :config
-  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-  (autoload 'projectile-project-root "projectile")
-  (setq consult-project-function (lambda (_) (projectile-project-root)))
-  ;; alien, hybrid
-  (setq projectile-indexing-method 'alien projectile-enable-caching t)
-  )
+  (use-package projectile
+    :diminish projectile-mode
+    :init
+    (projectile-mode +1)
+    :config
+    (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+    (autoload 'projectile-project-root "projectile")
+    (setq consult-project-function (lambda (_) (projectile-project-root)))
+    ;; alien, hybrid
+    (setq projectile-indexing-method 'alien projectile-enable-caching t)
+    )
 #+end_src
 ** consult
 #+begin_src emacs-lisp
+  (use-package embark-consult
+    :after (embark consult)
+    :hook
+    (embark-collect-mode . consult-preview-at-point-mode))
+
   ;; Example configuration for Consult
   (use-package consult
     ;; Replace bindings. Lazily loaded due by `use-package'.
@@ -554,11 +643,13 @@
            ("C-c s p" . consult-ripgrep)
            ([remap Info-search] . consult-info)
            ([remap isearch-forward] . consult-line)
+           ([remap bookmark-jump] . consult-bookmark)
+           ([remap switch-to-buffer] . consult-buffer)
            ;; C-x bindings in `ctl-x-map'
            ;; ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
            ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
            ("C-c b o" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
-           ;; ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+           ("C-c b m" . consult-bookmark)            ;; orig. bookmark-jump
            ("C-c b p" . consult-project-buffer)      ;; orig. project-switch-to-buffer
            ;; Custom M-# bindings for fast register access
            ("M-#" . consult-register-load)
@@ -566,6 +657,7 @@
            ("C-M-#" . consult-register)
            ;; Other custom bindings
            ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+           ("C-y" . consult-yank-pop)                ;; orig. yank-pop
            ;; M-g bindings in `goto-map'
            ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
            ("M-g m" . consult-mark)
@@ -644,20 +736,73 @@
 
     ;; By default `consult-project-function' uses `project-root' from project.el.
     ;; Optionally configure a different project root function.
-    ;;;; 1. project.el (the default)
+      ;;;; 1. project.el (the default)
     ;; (setq consult-project-function #'consult--default-project--function)
-    ;;;; 2. vc.el (vc-root-dir)
+      ;;;; 2. vc.el (vc-root-dir)
     ;; (setq consult-project-function (lambda (_) (vc-root-dir)))
-    ;;;; 3. locate-dominating-file
+      ;;;; 3. locate-dominating-file
     ;; (setq consult-project-function (lambda (_) (locate-dominating-file "." ".git")))
-    ;;;; 4. projectile.el (projectile-project-root)
+      ;;;; 4. projectile.el (projectile-project-root)
     ;; (autoload 'projectile-project-root "projectile")
     ;; (setq consult-project-function (lambda (_) (projectile-project-root)))
-    ;;;; 5. No project support
+      ;;;; 5. No project support
     ;; (setq consult-project-function nil)
-  )
+    )
 #+end_src
 * 开发配置
+#+begin_src emacs-lisp
+  ;; 自定义的模式集合
+  (defvar my-web-modes
+    '(tsx-ts-mode
+      typescript-ts-mode
+      json-ts-mode
+      js-ts-mode
+      prisma-ts-mode
+      typescript-mode
+      go-ts-mode)
+    "List of modes for web development.")
+
+  ;; 通用的钩子启用函数
+  (defun my-enable-hooks (modes hook-fn)
+    "Enable HOOK-FN for MODES."
+    (dolist (mode modes)
+      (add-hook (intern (concat (symbol-name mode) "-hook")) hook-fn)))
+
+  ;; 自动查找项目中的 ESLint 配置文件
+  (defun find-eslint-config ()
+    "Find ESLint configuration file in project root."
+    (let ((root (get-project-root)))
+      (when root
+        (or (and (file-exists-p (expand-file-name ".eslintrc" root))
+                 (expand-file-name ".eslintrc" root))
+            (and (file-exists-p (expand-file-name ".eslintrc.js" root))
+                 (expand-file-name ".eslintrc.js" root))
+            (and (file-exists-p (expand-file-name ".eslintrc.json" root))
+                 (expand-file-name ".eslintrc.json" root))
+            (and (file-exists-p (expand-file-name "package.json" root))
+                 (let* ((package-json (expand-file-name "package.json" root))
+                        (eslint-config (and (file-readable-p package-json)
+                                            (with-temp-buffer
+                                              (insert-file-contents package-json)
+                                              (goto-char (point-min))
+                                              (and (search-forward "\"eslintConfig\"" nil t)
+                                                   (search-forward-regexp ": ?{")
+                                                   (json-read-object)))))))
+                 (and eslint-config (concat root "/.eslintrc")))))))
+
+#+end_src
+** 模式设置
+#+begin_src emacs-lisp
+  (add-to-list 'auto-mode-alist '("\\.[cm]?js\\'" . js2-mode))
+(add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))       ;
+#+end_src
+** smartparens
+#+begin_src emacs-lisp
+(use-package smartparens
+  :hook (prog-mode . smartparens-mode)
+  :config
+  (sp-use-smartparens-bindings))
+#+end_src
 ** yasnippet
 #+begin_src emacs-lisp
 (use-package yasnippet
@@ -688,6 +833,113 @@
   )
 #+end_src
 ** 语言支持
+*** markdown
+#+begin_src emacs-lisp
+(defun dw/setup-markdown-mode ()
+  (visual-fill-column-mode 1)
+  (display-line-numbers-mode 0))
+
+(use-package markdown-mode
+  :mode "\\.md\\'"
+  :config
+  (setq markdown-command "marked")
+  (add-hook 'markdown-mode-hook #'dw/setup-markdown-mode)
+  (dolist (face '((markdown-header-face-1 . 1.2)
+                  (markdown-header-face-2 . 1.1)
+                  (markdown-header-face-3 . 1.0)
+                  (markdown-header-face-4 . 1.0)
+                  (markdown-header-face-5 . 1.0)))
+    (set-face-attribute (car face) nil :weight 'normal :height (cdr face))))
+#+end_src
+*** js-doc
+#+begin_src emacs-lisp
+(use-package js-doc
+  :config
+  (setq js-doc-mail-address user-mail-address
+	  js-doc-author (format "<%s> <%s>" user-full-name js-doc-mail-address)
+	  ;; js-doc-url user-blog-url
+	  ;; js-doc-license "MIT"
+	  ))
+#+end_src
+*** web-mode
+#+begin_src emacs-lisp
+(use-package web-mode
+  ;; :hook (web-mode . lsp-deferred)
+  :config
+  (setq
+   web-mode-markup-indent-offset 2
+   web-mode-css-indent-offset 2
+   web-mode-code-indent-offset 2
+   web-mode-style-padding 0
+   web-mode-script-padding 0
+   web-mode-enable-auto-closing t
+   web-mode-enable-auto-opening t
+   web-mode-enable-auto-pairing nil
+   web-mode-enable-auto-indentation t
+   web-mode-tag-auto-close-style 1
+   web-mode-enable-current-element-highlight t)
+
+  ;; 设置不同类型代码的注释格式
+  (setq web-mode-comment-formats
+	  '(("javascript" . "//")    ; JavaScript 注释
+	    ("jsx" . "//")           ; JSX 注释
+	    ("php" . "//")           ; PHP 注释
+	    ("css" . "/*")           ; CSS 注释
+	    ("java" . "//")          ; Java 注释
+	    ;; 添加更多类型的注释格式
+	    ))
+
+  ;; Let smartparens handle auto closing brackets, e.g. {{ }} or {% %}
+  ;; https://github.com/hlissner/doom-emacs/blob/develop/modules/lang/web/%2Bhtml.el#L56
+  (dolist (alist web-mode-engines-auto-pairs)
+    (setcdr alist
+	      (cl-loop for pair in (cdr alist)
+		       unless (string-match-p "^[a-z-]" (cdr pair))
+		       collect (cons (car pair)
+				     (string-trim-right (cdr pair)
+							"\\(?:>\\|]\\|}\\)+\\'")))))
+  ;; (add-to-list 'lsp-language-id-configuration '(web-mode . "vue"))
+  )
+#+end_src
+*** javascript
+#+begin_src emacs-lisp
+(use-package js2-mode
+  :mode "\\.jsx?\\'"
+  :config
+  ;; Use js2-mode for Node scripts
+  (add-to-list 'magic-mode-alist '("#!/usr/bin/env node" . js2-mode))
+
+  ;; Don't use built-in syntax checking
+  (setq js2-mode-show-strict-warnings nil)
+
+  ;; Set up proper indentation in JavaScript and JSON files
+  (setq-default js-indent-level 2))
+#+end_src
+*** typescript
+#+begin_src emacs-lisp
+(use-package typescript-mode
+  :mode "\\.[cm]?ts\\'"
+  ;; :hook (typescript-mode . lsp-deferred)
+  :config
+  (setq typescript-indent-level 2))
+#+end_src
+*** css
+#+begin_src emacs-lisp
+  (use-package scss-mode)
+(use-package css-mode)
+#+end_src
+*** emmet
+#+begin_src emacs-lisp
+(use-package emmet-mode
+  :diminish emmet-mode
+  :hook ((sgml-mode html-mode css-mode web-mode typescript-mode js-mode) . emmet-mode)
+  :config
+  (add-hook 'emmet-mode-hook (lambda () (setq emmet-indentation 2))))
+#+end_src
+*** json
+#+begin_src emacs-lisp
+(use-package json-mode)
+#+end_src
 *** yaml
 #+begin_src emacs-lisp
 (use-package yaml-mode
@@ -773,6 +1025,14 @@
   :init
   (global-corfu-mode))
 #+end_src
+*** kind-icon
+#+begin_src emacs-lisp
+(use-package kind-icon
+  :after corfu
+  :custom (kind-icon-default-face 'corfu-default)
+  :config
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+#+end_src
 *** orderless
 #+begin_src emacs-lisp
 ;; Optionally use the `orderless' completion style.
@@ -787,23 +1047,272 @@
 #+end_src
 *** vertico
 #+begin_src emacs-lisp
-(use-package vertico
+  (use-package vertico
+    :bind (("s-'" . vertico-repeat))
+    :init
+    (vertico-mode)
+
+    ;; Different scroll margin
+    ;; (setq vertico-scroll-margin 0)
+
+    ;; Show more candidates
+    ;; (setq vertico-count 20)
+
+    ;; Grow and shrink the Vertico minibuffer
+    ;; (setq vertico-resize t)
+
+    ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
+    ;; (setq vertico-cycle t)
+    )
+
+  (use-package vertico-directory
+    :straight vertico
+    :after vertico
+    ;; More convenient directory navigation commands
+    :bind (:map vertico-map
+                ("RET" . vertico-directory-enter)
+                ("DEL" . vertico-directory-delete-char)
+                ("M-DEL" . vertico-directory-delete-word))
+    ;; Tidy shadowed file names
+    :hook (rfn-eshadow-update-overlay . vertico-directory-tidy))
+#+end_src
+*** savehist
+#+begin_src emacs-lisp
+(use-package savehist
   :init
-  (vertico-mode)
+  (savehist-mode))
+#+end_src
+*** marginalia
+#+begin_src emacs-lisp
+;; Enable rich annotations using the Marginalia package
+(use-package marginalia
+  ;; Bind `marginalia-cycle' locally in the minibuffer.  To make the binding
+  ;; available in the *Completions* buffer, add it to the
+  ;; `completion-list-mode-map'.
+  :bind (:map minibuffer-local-map
+         ("M-A" . marginalia-cycle))
 
-  ;; Different scroll margin
-  ;; (setq vertico-scroll-margin 0)
+  ;; The :init section is always executed.
+  :init
 
-  ;; Show more candidates
-  ;; (setq vertico-count 20)
+  ;; Marginalia must be activated in the :init section of use-package such that
+  ;; the mode gets enabled right away. Note that this forces loading the
+  ;; package.
+  (marginalia-mode))
+#+end_src
+*** embark
+#+begin_src emacs-lisp
 
-  ;; Grow and shrink the Vertico minibuffer
-  ;; (setq vertico-resize t)
+(use-package embark
+  :ensure t
 
-  ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
-  ;; (setq vertico-cycle t)
+  :bind
+  (("C-." . embark-act)         ;; pick some comfortable binding
+   ("C-;" . embark-dwim)        ;; good alternative: M-.
+   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+
+  :init
+
+  ;; Optionally replace the key help with a completing-read interface
+  (setq prefix-help-command #'embark-prefix-help-command)
+
+  ;; Show the Embark target at point via Eldoc. You may adjust the
+  ;; Eldoc strategy, if you want to see the documentation from
+  ;; multiple providers. Beware that using this can be a little
+  ;; jarring since the message shown in the minibuffer can be more
+  ;; than one line, causing the modeline to move up and down:
+
+  ;; (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+  ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
+
+  :config
+
+  ;; Hide the mode line of the Embark live/completions buffers
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none)))))
+
+#+end_src
+** lsp-mode
+#+begin_src emacs-lisp
+  (defun gcl/lsp-mode-setup ()
+    (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+    (lsp-headerline-breadcrumb-mode))
+
+  (use-package lsp-mode
+    :commands (lsp lsp-deferred)
+    :hook ((lsp-mode . gcl/lsp-mode-setup)
+           (lsp-mode . lsp-enable-which-key-integration)
+           (lsp-mode . lsp-diagnostics-mode))
+    :diminish lsp-mode
+    :diminish lsp-lens-mode
+    :config
+    (my-enable-hooks my-web-modes 'lsp-deferred)
+    (defvar-local lsp-format-on-save t
+      "Format `lsp-mode'-managed buffer before save.")
+    (defun lsp-format-on-save-not-apheleia ()
+      "Format on save using LSP server, not `apheleia'."
+      (if lsp-format-on-save
+          (progn
+            (add-hook 'before-save-hook #'lsp-format-buffer nil 'local)
+            (setq-local apheleia-mode nil))))
+    (add-hook 'lsp-configure-hook #'lsp-format-on-save-not-apheleia)
+    ;; --no-eslintrc 使用全局配置
+    (setq lsp-eslint-server-command
+        `(, (executable-find "node")
+          , (get-eslint-executable)
+          "--config" ,(or (find-eslint-config) "eslint.config.mjs")
+          "--fix"
+          "--stdin"
+          "--stdin-filename"
+          "--format"
+          "json"))
+    :custom
+    (lsp-prefer-flymake nil) ; 使用 lsp-ui 和 flycheck 而不是 flymake
+    (lsp-keymap-prefix "C-c l")
+    (lsp-completion-provider :none) ;; we use Corfu
+    (lsp-diagnostics-provider :flycheck)
+    (lsp-log-io nil) ; only for debug
+    (lsp-idle-delay 0.5)
+    (lsp-enable-file-watchers nil) ; 只监听当前项目中的文件
+    ;; (lsp-enable-folding nil)
+    )
+
+  ;; 安装和配置 lsp-eslint
+  (use-package lsp-eslint
+    :straight lsp-mode
+    :commands lsp-eslint-enable
+    :config
+    (my-enable-hooks my-web-modes 'lsp-eslint-enable))
+
+  (use-package lsp-ui
+    :hook (lsp-mode . lsp-ui-mode)
+    :config
+    (setq lsp-ui-sideline-enable nil
+          lsp-ui-doc-enable nil)
+    :custom
+    (lsp-ui-doc-position 'bottom))
+
+  (use-package lsp-tailwindcss
+    :straight (:type git :host github :repo "merrickluo/lsp-tailwindcss")
+    :config
+    (setq lsp-tailwindcss-add-on-mode t))
+  (add-hook 'before-save-hook 'lsp-tailwindcss-rustywind-before-save)
+
+  ;; 其他 buffer 中启用
+  (add-to-list 'lsp-language-id-configuration '(".*\\.erb$" . "html"))
+
+  (use-package lsp-treemacs
+  :commands lsp-treemacs-errors-list)
+#+end_src
+** git
+*** magit
+#+begin_src emacs-lisp
+(use-package magit
+  :bind* (("C-S-g" . magit))
+  :config
+  ;; ;; 提交时候不显示提交细节
+  (setq magit-commit-show-diff nil)
+  ;; ;; 没有焦点时候不刷新状态
+  (setq magit-refresh-status-buffer nil)
+  ;; ;; 当前buffer打开magit
+  (setq magit-display-buffer-function
+        (lambda (buffer)
+          (display-buffer buffer '(display-buffer-same-window))))
+  ;; (setq magit-ellipsis (get-byte 0 "."))
+  ;; ;; 加速diff
+  (setq magit-revision-insert-related-refs nil)
+  (setq magit-diff-refine-hunk t)
+  (setq magit-diff-paint-whitespace nil)
+  (setq magit-ediff-dwim-show-on-hunks t)
+  (setq magit-display-buffer-function
+        (lambda (buffer)
+          (display-buffer buffer '(display-buffer-same-window))))
+  ;; ;; 加速diff
+  (setq magit-revision-insert-related-refs nil)
+  )
+#+end_src
+*** blamer
+#+begin_src emacs-lisp
+  (use-package blamer
+    :bind (("C-c g c" . blamer-show-posframe-commit-info))
+    :custom
+    (blamer-idle-time 0.3)
+    (blamer-min-offset 40)
+    (blamer-author-formatter " ✎ %s ")
+    (blamer-datetime-formatter "[%s]")
+    (blamer-commit-formatter " ● %s")
+    :custom-face
+    (blamer-face ((t :foreground "#7a88cf"
+                     ;; :background nil
+                     :height 120
+                     :italic t)))
+    :config
+    ;; (global-blamer-mode 1)
+    )
+#+end_src
+*** git modes
+#+begin_src emacs-lisp
+(use-package git-modes
+  :config
+  (add-to-list 'auto-mode-alist
+               (cons "/.dockerignore\\'" 'gitignore-mode))
+  (add-to-list 'auto-mode-alist
+               (cons "/.gitignore\\'" 'gitignore-mode))
+  (add-to-list 'auto-mode-alist
+               (cons "/.gitconfig\\'" 'gitconfig-mode))
   )
 
+#+end_src
+*** smerge
+#+begin_src emacs-lisp
+  (use-package smerge-mode
+    :config
+    (defhydra smerge/panel ()
+    "smerge"
+    ("k" (smerge-prev) "prev change" )
+    ("j" (smerge-next) "next change")
+    ("u" (smerge-keep-upper) "keep upper")
+    ("l" (smerge-keep-lower) "keep lower")
+    ("q" nil "quit" :exit t))
+    :bind ("s-," . smerge/panel/body))
+#+end_src
+*** diff
+#+begin_src emacs-lisp
+    (use-package diff-hl
+    :hook ((magit-pre-refresh . diff-hl-magit-pre-refresh)
+           (magit-post-refresh . diff-hl-magit-post-refresh))
+      :config
+      (global-diff-hl-mode))
+#+end_src
+** terminal
+#+begin_src emacs-lisp
+(use-package vterm)
+(use-package multi-vterm)
+(use-package vterm-toggle)
+(with-eval-after-load 'vterm
+  (define-key vterm-mode-map [return] #'vterm-send-return)
+  (define-key vterm-mode-map [(control return)]   #'vterm-toggle-insert-cd)
+  (define-key vterm-mode-map (kbd "s-n")   'vterm-toggle-forward)
+  (define-key vterm-mode-map (kbd "s-p")   'vterm-toggle-backward)
+  (setq vterm-toggle-fullscreen-p nil)
+  (add-to-list 'display-buffer-alist
+		 '((lambda (buffer-or-name _)
+		     (let ((buffer (get-buffer buffer-or-name)))
+		       (with-current-buffer buffer
+			 (or (equal major-mode 'vterm-mode)
+			     (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
+		   (display-buffer-reuse-window display-buffer-at-bottom)
+		   ;;(display-buffer-reuse-window display-buffer-in-direction)
+		   ;;display-buffer-in-direction/direction/dedicated is added in emacs27
+		   ;;(direction . bottom)
+		   ;;(dedicated . t) ;dedicated is supported in emacs27
+		   (reusable-frames . visible)
+		   (window-height . 0.3))))
+
+(global-set-key (kbd "s-`") 'vterm-toggle)
+(global-set-key (kbd "s-<return>") 'multi-vterm-project)
 #+end_src
 * 键值绑定
 #+begin_src emacs-lisp
@@ -823,7 +1332,7 @@
 | ~f8~ | remove all symbol overlays |
 |      |                            |
 ** C/s/M-[key]
-| key        | function              | org-mode     |
+| key        | function              | mode         |
 |------------+-----------------------+--------------|
 | ~s-<return>~ | new line below        |              |
 | ~M-<return>~ | new line above        |              |
@@ -832,6 +1341,9 @@
 | ~C-=~        | expand region         |              |
 | ~C-,~        | iedit                 |              |
 | ~C-'~        | toggle quotes         |              |
+| ~C-.~        | embark-act            |              |
+| ~C-;~        | embark-dwim           |              |
+| ~C-t~        | transpose chars       |              |
 |------------+-----------------------+--------------|
 | ~M-;~        | comment/uncomment     |              |
 | ~M-i~        | imenu                 |              |
@@ -843,6 +1355,9 @@
 |------------+-----------------------+--------------|
 | ~s-1~        | consult imenu         |              |
 | ~s-<>~       | move text up/down     |              |
+| ~s-,~        | smerge                |              |
+| ~s-`~        | toggle vterm          |              |
+| ~s-<return>~ | multi vterm           |              |
 | ~s-d~        | find file/directory   |              |
 | ~s-i~        | string inflection     |              |
 | ~s-I~        | parrot                |              |
@@ -851,39 +1366,50 @@
 |            |                       |              |
 
 ** C-S, Control-Shift
-| key       | function       |
-|-----------+----------------|
+| key     | function       |
+|---------+----------------|
 | ~C-S-SPC~ | just one space |
-|           |                |
+| ~C-S-g~   | magit         |
 
 ** C-c
-| key     | function                    |
-|---------+-----------------------------|
-| ~C-c l~   | org-store-link              |
-| ~C-c a~   | org-agend                   |
-| ~C-c c~   | org-capture                 |
-| ~C-c o~   | open with external app      |
-|---------+-----------------------------|
-| ~C-c TAB~ | perspective                 |
-|         |                             |
-|---------+-----------------------------|
-| ~C-c sp~  | consult ripgrep             |
-|---------+-----------------------------|
-| ~C-c bo~  | open buffer to other window |
-| ~C-c bp~  | open project buffer         |
-|---------+-----------------------------|
-| ~C-c y~   | yasnippets                  |
-| ~C-c yi~  | insert                      |
-| ~C-c yf~  | visit file                  |
-| ~C-c yn~  | new snippet                 |
-| ~C-c yx~  | expand                      |
-
+| key        | function                    |
+|------------+-----------------------------|
+| ~C-c l~      | org-store-link              |
+| ~C-c a~      | org-agend                   |
+| ~C-c c~      | org-capture                 |
+| ~C-c o~      | open with external app      |
+|------------+-----------------------------|
+| ~C-c TAB~    | perspective                 |
+|            |                             |
+|------------+-----------------------------|
+| *C-c s*      |                             |
+| ~C-c sp~     | consult ripgrep             |
+| ~C-c s[...]~ | search engine               |
+|------------+-----------------------------|
+| *C-c g*      | git, ...                    |
+| ~C-c gc~     | show commit info            |
+|------------+-----------------------------|
+| *C-c b*      | buffer, bookmark,...        |
+| ~C-c bo~     | open buffer to other window |
+| ~C-c bp~     | open project buffer         |
+| ~C-c bm~     | bookmark                    |
+|------------+-----------------------------|
+| *C-c y*      | yas, dict, yank...          |
+| ~C-c y~      | yasnippets                  |
+| ~C-c yi~     | insert                      |
+| ~C-c yf~     | visit file                  |
+| ~C-c yn~     | new snippet                 |
+| ~C-c yx~     | expand                      |
 
 ** C-x
 | key   | function      | mode |
 |-------+---------------+------|
 | ~C-x =~ | indeng region |      |
 | ~C-x b~ | switch buffer |      |
+** C-h
+| key   | function        | mode |
+|-------+-----------------+------|
+| ~C-h B~ | embark bindings |      |
 * tangle config
 #+BEGIN_SRC emacs-lisp
 
