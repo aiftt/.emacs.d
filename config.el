@@ -24,11 +24,11 @@
   "Toggle between window layout and one window."
   (interactive)
   (if (equal (length (cl-remove-if #'window-dedicated-p (window-list))) 1)
-       (if toggle-one-window-window-configuration
-           (progn
-             (set-window-configuration toggle-one-window-window-configuration)
-             (setq toggle-one-window-window-configuration nil))
-         (message "No other windows exist."))
+      (if toggle-one-window-window-configuration
+          (progn
+            (set-window-configuration toggle-one-window-window-configuration)
+            (setq toggle-one-window-window-configuration nil))
+        (message "No other windows exist."))
     (setq toggle-one-window-window-configuration (current-window-configuration))
     (delete-other-windows)))
 
@@ -38,21 +38,49 @@
   "Copy the current buffer's file name to the clipboard."
   (interactive)
   (let ((filename (if (equal major-mode 'dired-mode)
-		       default-directory
-		     (buffer-file-name))))
+                      default-directory
+                    (buffer-file-name))))
     (when filename
-       (kill-new filename)
-       (message "Copied buffer file name '%s' to the clipboard." filename))))
+      (kill-new filename)
+      (message "Copied buffer file name '%s' to the clipboard." filename))))
 
 (defun gcl/copy-file-name-only ()
   "Copy the current buffer's file name only to the clipboard."
   (interactive)
   (let ((filename (if (equal major-mode 'dired-mode)
-		       default-directory
-		     (buffer-file-name))))
+                      default-directory
+                    (buffer-file-name))))
     (when filename
-       (kill-new (file-name-nondirectory filename))
-       (message "Copied buffer file name '%s' to the clipboard." (file-name-nondirectory filename)))))
+      (kill-new (file-name-nondirectory filename))
+      (message "Copied buffer file name '%s' to the clipboard." (file-name-nondirectory filename)))))
+
+(global-set-key (kbd "C-c c n") 'gcl/copy-file-name-only)
+(global-set-key (kbd "C-c c p") 'gcl/copy-file-full-name)
+
+(defun switch-to-scratch-buffer ()
+  "Switch to *scratch* buffer."
+  (interactive)
+  (switch-to-buffer "*scratch*"))
+
+(global-set-key (kbd "C-c b s") 'switch-to-scratch-buffer)
+
+(defun gcl/insert-standard-date ()
+  "Inserts standard date time string."
+  (interactive)
+  (insert (format-time-string "%Y-%m-%d %T")))
+
+(defun gcl/insert-changelog-date ()
+  "Insert changelog date, like yyyy/mm/dd."
+  (interactive)
+  (insert (format-time-string "%Y/%m/%d")))
+
+(defun gcl/insert-current-time ()
+  "Insert current time, like hh:mm:ss."
+  (interactive)
+  (insert (format-time-string "%T")))
+
+(global-set-key (kbd "C-c i d") 'gcl/insert-standard-date)
+(global-set-key (kbd "C-c i t") 'gcl/insert-current-time)
 
 (global-unset-key (kbd "s-g"))
 
@@ -171,8 +199,8 @@
 ;; sh -c 'printf "%s" "$PATH"' > ~/.path
 (condition-case err
     (let ((path (with-temp-buffer
-		  (insert-file-contents-literally "~/.path")
-		  (buffer-string))))
+                  (insert-file-contents-literally "~/.path")
+                  (buffer-string))))
       (setenv "PATH" path)
       (setq exec-path (append (parse-colon-path path) (list exec-directory))))
   (error (warn "%s" (error-message-string err))))
@@ -180,7 +208,7 @@
 (use-package exec-path-from-shell
   :config
   (setq exec-path-from-shell-variables '("PATH" "MANPATH" "LSP_USE_PLISTS" "NODE_PATH")
-	exec-path-from-shell-arguments '("-l"))
+        exec-path-from-shell-arguments '("-l"))
   (exec-path-from-shell-initialize))
 
 (defun sk/diminish-auto-revert ()
@@ -199,8 +227,8 @@
   (setq dashboard-items '((recents  . 11)
                           (bookmarks . 5)
                           (registers . 5))
-	dashboard-banner-logo-title "我总在不经意之间觉得自己很傻比🤪🤪🤪!"
-	dashboard-startup-banner 'official)
+        dashboard-banner-logo-title "我总在不经意之间觉得自己很傻比🤪🤪🤪!"
+        dashboard-startup-banner 'official)
   :config
   (dashboard-setup-startup-hook))
 
@@ -368,23 +396,23 @@
 
 (use-package all-the-icons)
 (use-package all-the-icons-completion
-:after (marginalia all-the-icons)
-:functions
-all-the-icons-completion-mode
-:hook
-(marginalia-mode . all-the-icons-completion-marginalia-setup)
-:init
-(all-the-icons-completion-mode))
+  :after (marginalia all-the-icons)
+  :functions
+  all-the-icons-completion-mode
+  :hook
+  (marginalia-mode . all-the-icons-completion-marginalia-setup)
+  :init
+  (all-the-icons-completion-mode))
 
 (use-package all-the-icons-dired
-:diminish)
+  :diminish)
 
 (use-package all-the-icons-ibuffer
-:after (ibuffer)
-:functions
-all-the-icons-ibuffer-mode
-:config
-(all-the-icons-ibuffer-mode 1))
+  :after (ibuffer)
+  :functions
+  all-the-icons-ibuffer-mode
+  :config
+  (all-the-icons-ibuffer-mode 1))
 
 (use-package discover-my-major
   :bind (("C-h C-m" . discover-my-major)
@@ -443,7 +471,7 @@ all-the-icons-ibuffer-mode
   (engine-mode t)
   (engine/set-keymap-prefix (kbd "C-c s"))
   (defengine baidu "https://www.baidu.com/s?wd=%s"
-	           :keybinding "b")
+             :keybinding "b")
   (defengine github
     "https://github.com/search?ref=simplesearch&q=%s"
     :keybinding "g")
@@ -507,7 +535,7 @@ all-the-icons-ibuffer-mode
   (setq mc/insert-numbers-default 1))
 
 (use-package visual-regexp)
-  (use-package visual-regexp-steroids)
+(use-package visual-regexp-steroids)
 (global-set-key (kbd "C-c r") 'vr/replace)
 (global-set-key (kbd "C-c q") 'vr/query-replace)
 (global-set-key (kbd "C-c m") 'vr/mc-mark)
@@ -809,29 +837,29 @@ all-the-icons-ibuffer-mode
   )
 
 (use-package consult-dir
-      :bind (("C-x C-d" . consult-dir)
+  :bind (("C-x C-d" . consult-dir)
          :map minibuffer-local-completion-map
          ("C-x C-d" . consult-dir)
          ("C-x C-j" . consult-dir-jump-file))
-      :config
-;; A function that returns a list of directories
-(defun consult-dir--fasd-dirs ()
-  "Return list of fasd dirs."
-  (split-string (shell-command-to-string "fasd -ld") "\n" t))
+  :config
+  ;; A function that returns a list of directories
+  (defun consult-dir--fasd-dirs ()
+    "Return list of fasd dirs."
+    (split-string (shell-command-to-string "fasd -ld") "\n" t))
 
-;; A consult source that calls this function
-(defvar consult-dir--source-fasd
-  `(:name     "Fasd dirs"
-              :narrow   ?f
-              :category file
-              :face     consult-file
-              :history  file-name-history
-              :enabled  ,(lambda () (executable-find "fasd"))
-              :items    ,#'consult-dir--fasd-dirs)
-  "Fasd directory source for `consult-dir'.")
+  ;; A consult source that calls this function
+  (defvar consult-dir--source-fasd
+    `(:name     "Fasd dirs"
+                :narrow   ?f
+                :category file
+                :face     consult-file
+                :history  file-name-history
+                :enabled  ,(lambda () (executable-find "fasd"))
+                :items    ,#'consult-dir--fasd-dirs)
+    "Fasd directory source for `consult-dir'.")
 
-;; Adding to the list of consult-dir sources
-(add-to-list 'consult-dir-sources 'consult-dir--source-fasd t))
+  ;; Adding to the list of consult-dir sources
+  (add-to-list 'consult-dir-sources 'consult-dir--source-fasd t))
 
 ;; 自定义的模式集合
 (defvar my-web-modes
@@ -856,8 +884,8 @@ all-the-icons-ibuffer-mode
     (add-hook (intern (concat (symbol-name mode) "-hook")) hook-fn)))
 
 (add-to-list 'auto-mode-alist '("\\.[cm]?js\\'" . js2-mode))
-  (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
-  (add-to-list 'auto-mode-alist '("\\.vue\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.vue\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
 
 (use-package smartparens
@@ -914,10 +942,10 @@ all-the-icons-ibuffer-mode
 (use-package js-doc
   :config
   (setq js-doc-mail-address user-mail-address
-	  js-doc-author (format "<%s> <%s>" user-full-name js-doc-mail-address)
-	  ;; js-doc-url user-blog-url
-	  ;; js-doc-license "MIT"
-	  ))
+        js-doc-author (format "<%s> <%s>" user-full-name js-doc-mail-address)
+        ;; js-doc-url user-blog-url
+        ;; js-doc-license "MIT"
+        ))
 
 (use-package web-mode
   :mode ("\\.html?\\'" "\\.vue\\'")
@@ -937,23 +965,23 @@ all-the-icons-ibuffer-mode
 
   ;; 设置不同类型代码的注释格式
   (setq web-mode-comment-formats
-          '(("javascript" . "//")    ; JavaScript 注释
-            ("jsx" . "//")           ; JSX 注释
-            ("php" . "//")           ; PHP 注释
-            ("css" . "/*")           ; CSS 注释
-            ("java" . "//")          ; Java 注释
-            ;; 添加更多类型的注释格式
-            ))
+        '(("javascript" . "//")    ; JavaScript 注释
+          ("jsx" . "//")           ; JSX 注释
+          ("php" . "//")           ; PHP 注释
+          ("css" . "/*")           ; CSS 注释
+          ("java" . "//")          ; Java 注释
+          ;; 添加更多类型的注释格式
+          ))
 
   ;; Let smartparens handle auto closing brackets, e.g. {{ }} or {% %}
   ;; https://github.com/hlissner/doom-emacs/blob/develop/modules/lang/web/%2Bhtml.el#L56
   (dolist (alist web-mode-engines-auto-pairs)
     (setcdr alist
-              (cl-loop for pair in (cdr alist)
-                       unless (string-match-p "^[a-z-]" (cdr pair))
-                       collect (cons (car pair)
-                                     (string-trim-right (cdr pair)
-                                                        "\\(?:>\\|]\\|}\\)+\\'")))))
+            (cl-loop for pair in (cdr alist)
+                     unless (string-match-p "^[a-z-]" (cdr pair))
+                     collect (cons (car pair)
+                                   (string-trim-right (cdr pair)
+                                                      "\\(?:>\\|]\\|}\\)+\\'")))))
   ;; (add-to-list 'lsp-language-id-configuration '(web-mode . "vue"))
   )
 
@@ -1112,7 +1140,7 @@ all-the-icons-ibuffer-mode
   ;; available in the *Completions* buffer, add it to the
   ;; `completion-list-mode-map'.
   :bind (:map minibuffer-local-map
-         ("M-A" . marginalia-cycle))
+              ("M-A" . marginalia-cycle))
 
   ;; The :init section is always executed.
   :init
@@ -1155,22 +1183,46 @@ all-the-icons-ibuffer-mode
 (use-package lsp-bridge
   :straight '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
                          :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
-                         :build (:not compile))
-  :init
-  (global-lsp-bridge-mode)
-  :diminish lsp-bridge-mode
+                         :build (:not compile)
+                         )
+  :bind (
+         ;; ("C-c l d" . lsp-bridge-popup-documentation)
+         ("C-c l r" . lsp-bridge-restart-process)
+         ("C-c l R" . lsp-bridge-rename)
+         ("C-c l j" . lsp-bridge-peek-jump)
+         ("C-c l b" . lsp-bridge-peek-jump-back)
+         ("C-c e l" . lsp-bridge-diagnostic-list)
+         ("C-c e n" . lsp-bridge-diagnostic-jump-next)
+         ("C-c e p" . lsp-bridge-diagnostic-jump-prev)
+         ("C-7" . lsp-bridge-find-def)
+         ("C-8" . lsp-bridge-find-def-return)
+         ("C-S-7" . lsp-bridge-workspace-list-symbol-at-point)
+         ("C-S-8" . lsp-bridge-workspace-list-symbols)
+         ("C-9" . lsp-bridge-find-references)
+         )
   :config
-  (require 'lsp-bridge-jdtls)
   (setq lsp-bridge-python-command "/usr/bin/python3")
-  ;; 打开日志，开发者才需要
-  (setq lsp-bridge-enable-log t)
-  (setq lsp-bridge-enable-debug nil)
-  (setq acm-backend-lsp-candidate-min-length 2)
-  (setq acm-backend-elisp-candidate-min-length 2)
-  (setq acm-backend-yas-candidate-min-length 1)
-  (setq acm-backend-codeium-candidate-min-length 2)
+  (require 'lsp-bridge)
+  (require 'lsp-bridge-jdtls)
+
+  (setq lsp-bridge-enable-completion-in-minibuffer t)
+  (setq lsp-bridge-signature-show-function 'lsp-bridge-signature-show-with-frame)
+  (setq lsp-bridge-enable-with-tramp t)
+  (setq lsp-bridge-enable-org-babel t)
+  (setq acm-enable-capf t)
+  (setq acm-enable-quick-access t)
+  (setq acm-backend-yas-match-by-trigger-keyword t)
+  (setq acm-enable-tabnine nil)
+  (setq acm-enable-codeium nil)
+
+  (global-lsp-bridge-mode)
+
   (add-to-list 'lsp-bridge-multi-lang-server-extension-list '(("html") . "html_tailwindcss"))
+
+  (add-to-list 'lsp-bridge-multi-lang-server-extension-list '(("vue") . "html_tailwindcss"))
   (add-to-list 'lsp-bridge-multi-lang-server-extension-list '(("css") . "css_tailwindcss"))
+
+  (setq lsp-bridge-csharp-lsp-server "csharp-ls")
   (defun my/bridge-server-setup ()
     (with-current-buffer (current-buffer)
       (when (bound-and-true-p acm-backend-lsp-server-names)
@@ -1187,6 +1239,9 @@ all-the-icons-ibuffer-mode
             (lambda ()
               (run-with-timer 3 nil #'my/bridge-server-setup)))
   )
+
+;; 打开日志，开发者才需要
+;; (setq lsp-bridge-enable-log t)
 
 (use-package magit
   :bind* (("C-S-g" . magit))
@@ -1285,7 +1340,13 @@ all-the-icons-ibuffer-mode
 (define-key org-mode-map (kbd "s-t") 'org-todo)
 (bind-keys*
  ("C-x ="     . indent-region)
- ("M-o" . other-window))
+ ("M-o" . other-window)
+ ("s-b" . switch-to-buffer)
+ ("s-J" . scroll-up-command)
+ ("s-K" . scroll-down-command)
+ ("s-n" . next-buffer)
+ ("s-p" . previous-buffer)
+ )
 
 (defun tangle-if-init ()
   "If the current buffer is 'config.org' the code-blocks are
