@@ -107,6 +107,56 @@
   (global-set-key (kbd "C-c i d") 'gcl/insert-standard-date)
   (global-set-key (kbd "C-c i t") 'gcl/insert-current-time)
 #+end_src
+** open current directory
+#+begin_src emacs-lisp
+  (defun gcl/consult-file-externally (file)
+    "Open the FILE externally using the system's default program."
+    (interactive "fFile to open externally: ")
+    (cond
+     ((eq system-type 'darwin) ; macOS
+      (start-process "external-program" nil "open" file))
+     ((eq system-type 'gnu/linux) ; Linux
+      (start-process "external-program" nil "xdg-open" file))
+     ((eq system-type 'windows-nt) ; Windows
+      (start-process "external-program" nil "start" "" file))
+     (t ; Other platforms
+      (message "Opening files externally is not supported on this platform."))))
+
+
+  (defun gcl/open-current-directory ()
+    (interactive)
+    (gcl/consult-file-externally default-directory))
+
+    (global-set-key (kbd "C-c b f") 'gcl/open-current-directory)
+#+end_src
+** split window and select
+#+begin_src emacs-lisp
+(eval-when-compile
+  (require 'cl))
+(defun gcl/preserve-selected-window (f)
+  "Runs the given function and then restores focus to the original window. Useful when you want to invoke
+   a function (like showing documentation) but desire to keep your current window focused."
+  ;; Note that we must preserve the selected window of every frame, because the function being executed may
+  ;; change the focused frame, even if the current frame is in focus.
+  (lexical-let* ((original-frame (selected-frame))
+                 (frames->windows (gcl/get-frame->selected-window))
+                 (result (funcall f)))
+    (-each frames->windows (lambda (x)
+                             (select-frame (first x) t)
+                             (select-window (second x) t)))
+    (select-frame-set-input-focus original-frame t)
+    result))
+
+
+(defun split-window--select-window (orig-func &rest args)
+  "Switch to the other window after a `split-window'"
+  (let ((cur-window (selected-window))
+        (new-window (apply orig-func args)))
+    (when (equal (window-buffer cur-window) (window-buffer new-window))
+      (select-window new-window))
+    new-window))
+(advice-add 'split-window :around #'split-window--select-window)
+#+end_src
 * Unbindings
 #+begin_src emacs-lisp
   (global-unset-key (kbd "s-g"))
@@ -171,11 +221,27 @@
   ;; - 不生成备份文件
   (setq make-backup-files nil)
 
-  ;; 自动保存
+  ;; 启用自动保存已访问的文件 ss
   ;; (auto-save-visited-mode 1)
-  ;; (setq auto-save-visited-interval 3) ; 设置保存延迟为 5 秒钟
+  ;; 设置自动保存的间隔时间
+  ;; (setq auto-save-visited-interval 1)  ; 每秒钟保存一次当前文件的备份
+  ;; (setq auto-save-interval 1)          ; 每秒钟保存一次所有文件的备份
+  (setq save-silently t)  ; 自动保存文件，避免提示确认
   ;; 分割窗口的时候自动切换到该窗口
   ;; (add-hook 'window-setup-hook 'select-window)
+
+
+  ;; 有些功能需要用到，比如：折叠等等
+  (add-hook 'prog-mode-hook #'hs-minor-mode)
+
+  ;; (defun my-split-window-and-switch ()
+  ;;   "Split the window and switch to the newly created window."
+  ;;   (interactive)
+  ;;   (let ((current-window (selected-window)))
+  ;;     (call-interactively #'split-window)
+  ;;     (select-window (next-window current-window))))
+
+  ;; (advice-add 'split-window :after #'my-split-window-and-switch)
 #+end_src
 ** Performance
 #+begin_src emacs-lisp
@@ -253,6 +319,11 @@
 #+end_src
 ** Auto revert buffer
 #+begin_src emacs-lisp
+  (use-package autorevert
+  :init
+  (global-auto-revert-mode)
+  (setq auto-revert-verbose nil))
+
   (defun sk/diminish-auto-revert ()
     (interactive)
     (diminish 'auto-revert-mode ""))
@@ -293,9 +364,10 @@
     (setq which-key-idle-secondary-delay 0.05)
     )
 #+end_src
-** 符号高亮
+** symbol highlight
 #+begin_src emacs-lisp
   (use-package symbol-overlay
+    :diminish symbol-overlay-mode
     :config
     (symbol-overlay-mode +1)
     (global-set-key (kbd "M-i") #'symbol-overlay-put)
@@ -438,7 +510,8 @@
 #+begin_src emacs-lisp
   (use-package diminish
     :demand t
-    :diminish (visual-line-mode . "ω")
+    :diminish org-indent-mode
+    :diminish visual-line-mode
     :diminish hs-minor-mode
     :diminish abbrev-mode
     :diminish auto-fill-function
@@ -448,12 +521,12 @@
     :diminish persp-mode
     )
 #+end_src
-** 重启Emacs
+** restart emacs
 #+begin_src emacs-lisp
   (use-package restart-emacs
     :bind* (("<f2>" . restart-emacs)))
 #+end_src
-** 自动保存
+** autosave
 #+begin_src emacs-lisp
   (use-package auto-save
     :straight (auto-save :type git :host github :repo "manateelazycat/auto-save")
@@ -525,11 +598,13 @@
   (use-package smart-hungry-delete
     :bind (([remap backward-delete-char-untabify] . smart-hungry-delete-backward-char)
            ([remap delete-backward-char] . smart-hungry-delete-backward-char)
+           ([remap org-delete-backward-char] . smart-hungry-delete-backward-char)
            ([remap delete-char] . smart-hungry-delete-forward-char))
     :init (smart-hungry-delete-add-default-hooks))
-  (global-set-key (kbd "<backspace>") 'smart-hungry-delete-backward-char)
-  (global-set-key (kbd "<delete>") 'smart-hungry-delete-backward-char)
-  (global-set-key (kbd "C-d") 'smart-hungry-delete-forward-char)
+
+  ;; (global-set-key (kbd "<backspace>") 'smart-hungry-delete-backward-char)
+  ;; (global-set-key (kbd "<delete>") 'smart-hungry-delete-backward-char)
+  ;; (global-set-key (kbd "C-d") 'smart-hungry-delete-forward-char)
 #+end_src
 ** window operation
 *** windmove
@@ -693,7 +768,8 @@
     :init (progn
             (setq doom-modeline-env-version nil
                   doom-modeline-icon nil
-                  doom-modeline-minor-modes t)
+                  doom-modeline-minor-modes t
+                  doom-modeline-buffer-encoding nil)
             (doom-modeline-mode 1)))
 #+end_src
 * org-mode
@@ -806,21 +882,22 @@
 * Project Settings
 ** perspective
 #+begin_src emacs-lisp
-  (use-package perspective
-    :bind
-    ;; ("C-x C-b" . persp-list-buffers)         ; or use a nicer switcher, see below
-    :custom
-    (persp-mode-prefix-key (kbd "C-c TAB"))  ; pick your own prefix key here
-    :init
-    (persp-mode)
-    :diminish perps-mode
-    :config
-    (setq persp-state-default-file (expand-file-name ".gcl" user-emacs-directory))
-    (setq persp-show-modestring nil)
-    ;; (setq persp-modestring-short t)
-    (add-hook 'kill-emacs-hook #'persp-state-save)
-    (use-package persp-projectile)
-    )
+    (use-package perspective
+      :bind
+      (("<f10>" . persp-switch)
+       ("C-<tab>" . persp-switch))
+      :custom
+      (persp-mode-prefix-key (kbd "C-c TAB"))  ; pick your own prefix key here
+      :init
+      (persp-mode)
+      :diminish perps-mode
+      :config
+      (setq persp-state-default-file (expand-file-name ".gcl" user-emacs-directory))
+      (setq persp-show-modestring nil)
+      ;; (setq persp-modestring-short t)
+      (add-hook 'kill-emacs-hook #'persp-state-save)
+      (use-package persp-projectile)
+      )
 #+end_src
 ** projectile
 #+begin_src emacs-lisp
@@ -828,6 +905,7 @@
     :diminish projectile-mode
     :init
     (projectile-mode +1)
+    :bind (("<f9>" . projectile-persp-switch-project))
     :config
     (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
     (autoload 'projectile-project-root "projectile")
@@ -1012,15 +1090,14 @@
 ** Modes
 #+begin_src emacs-lisp
   (add-to-list 'auto-mode-alist '("\\.[cm]?js\\'" . js2-mode))
-  (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
   (add-to-list 'auto-mode-alist '("\\.vue\\'" . web-mode))
   (add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
 #+end_src
 ** smartparens
-(a () () + b / (c - d) + e * (f + i))
 #+begin_src emacs-lisp
   (use-package smartparens
     :hook (prog-mode . smartparens-mode)
+    :diminish smartparens-mode
     :bind
     ("s-(" . sp-backward-sexp)
     ("s-)" . sp-forward-sexp)
@@ -1143,9 +1220,8 @@
 #+end_src
 *** typescript
 #+begin_src emacs-lisp
-  (use-package typescript-mode
-    :mode "\\.[cm]?ts\\'"
-    ;; :hook (typescript-mode . lsp-deferred)
+  (use-package typescript-ts-mode
+    :mode "\\.[cm]?tsx?\\'"
     :config
     (setq typescript-indent-level 2))
 #+end_src
@@ -1218,28 +1294,16 @@
 #+begin_src emacs-lisp
   (use-package apheleia
     :defer t
-    :init
-    (apheleia-global-mode +1)
-    :config
-    ;;    (add-to-list 'apheleia-formatters '(prettier-svelte . ("prettier" "--stdin-filepath" filepath "--parser=svelte")))
-    ;; (setf  (alist-get 'svelte-mode apheleia-mode-alist) '(prettier-svelte))
-    ;; (setf  (alist-get 'typescript-mode apheleia-mode-alist) '(prettier))
-    ;; (setf  (alist-get 'html-mode apheleia-mode-alist) '(prettier))
-    ;; (setf  (alist-get 'js-mode apheleia-mode-alist) '(prettier))
-    ;; (setf  (alist-get 'web-mode apheleia-mode-alist) '(prettier))
-    ;; (setf  (alist-get 'markdown-mode apheleia-mode-alist) '(prettier))
-
-    (setf (alist-get 'prettier apheleia-formatters)     '("prettier"))
-
-    (push '(prettier . ("prettier"
-                        file
-                        ))
-          apheleia-formatters)
-
-    (setf (alist-get 'web-mode apheleia-mode-alist)
-          '(prettier))
+    :diminish apheleia-mode
+    ;; :hook
+    ;; (prog-mode-hook . apheleia-mode)
+    ;; :config
+    ;; (dolist (formatter '((eslint . (npx "eslint_d" "--fix-to-stdout" "--stdin" "--stdin-filename" file))
+    ;;                      (nix . ("nix" "fmt" "--" "-"))
+    ;;                      (rufo . ("rufo" "--simple-exit"))))
+    ;;   (cl-pushnew formatter apheleia-formatters :test #'equal))
     )
-#+end_src
+    #+end_src
 ** Parens
 #+begin_src emacs-lisp
   (use-package highlight-parentheses
@@ -1469,6 +1533,7 @@
 ** lsp-bridge
 #+begin_src emacs-lisp
   (use-package lsp-bridge
+    :diminish (lsp-bridge-mode . "℗ ")
     :straight '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
                            :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
                            :build (:not compile)
@@ -1531,6 +1596,94 @@
   ;; 打开日志，开发者才需要
   ;; (setq lsp-bridge-enable-log t)
 
+#+end_src
+** eslint
+*** sync function
+#+begin_src emacs-lisp
+(defun my-eslint-fix-file ()
+  "Run `npx eslint --fix --cache` on the current file."
+  (when (and (buffer-file-name)
+             (string-match-p "\\.\\(js\\|jsx\\|ts\\|tsx\\|vue\\|html\\)\\'" (buffer-file-name)))
+    (let* ((eslint-command (concat "npx eslint --fix --cache " (shell-quote-argument (buffer-file-name))))
+           (output-buffer (generate-new-buffer "*eslint-output*")))
+      (message "Running eslint --fix...")
+      (if (= 0 (call-process-shell-command eslint-command nil output-buffer))
+          (progn
+            (message "eslint --fix completed successfully.")
+            (kill-buffer output-buffer))
+        (progn
+          (message "eslint --fix failed. Check *eslint-output* for details.")
+          (pop-to-buffer output-buffer))))))
+#+end_src
+*** async function
+#+begin_src emacs-lisp :tangle no
+  (defun my-eslint-fix-file ()
+     "Run `npx eslint --fix --cache` on the current file if it's not modified after save."
+     (when (and (buffer-file-name)
+                (string-match-p "\\.\\(js\\|jsx\\|ts\\|tsx\\|vue\\|html\\)\\'" (buffer-file-name)))
+       (let* ((file-modified-time (nth 5 (file-attributes (buffer-file-name))))
+              (current-modified-time (float-time))
+              (eslint-command (concat "npx eslint --fix --cache " (shell-quote-argument (buffer-file-name))))
+              (process-name "eslint-fix-process"))
+         (message "Running eslint --fix...")
+         (if (or (> current-modified-time (+ (float-time file-modified-time) 2))
+                 (not (buffer-modified-p)))
+             (progn
+               (start-process process-name nil "sh" "-c" eslint-command)
+               (message "eslint --fix started"))
+           (message "File modified; eslint --fix skipped")))))
+#+end_src
+
+*** eslint hook
+#+begin_src emacs-lisp
+
+
+      (defun my-add-eslint-fix-hook ()
+        "Add the `my-eslint-fix-file` function to the `after-save-hook`."
+        (add-hook 'after-save-hook 'my-eslint-fix-file nil 'local))
+
+      ;; 针对前端相关的 major modes 启用 eslint fix 钩子
+      (dolist (hook '(js-mode-hook
+                      js2-mode-hook
+                      typescript-mode-hook
+                      typescript-ts-mode-hook
+                      tsx-ts-mode-hook
+                      web-mode-hook
+                      vue-mode-hook))
+        (add-hook hook 'my-add-eslint-fix-hook))
+#+end_src
+有点卡编辑。
+
+#+begin_src emacs-lisp :tangle no
+
+  (defun my-save-hook-function ()
+    (let ((project-root (projectile-project-root))
+          (current-file (buffer-file-name)))
+      (unless (file-exists-p (concat project-root "node_modules/.bin/eslint"))
+        (message "ESLint not found. Skipping command.")
+        (return))
+      (ignore-errors
+        (shell-command
+         (concat project-root "node_modules/.bin/eslint --fix --cache " current-file)
+         ))))
+
+  ;; (defun my-auto-revert-buffer-if-changed-on-disk ()
+  ;;   "Automatically revert buffer if the file has changed on disk."
+  ;;   (let ((revert-without-query '(".*")))
+  ;;     (revert-buffer :ignore-auto :noconfirm)))
+
+  ;; (defun my-check-and-auto-revert-buffer ()
+  ;;   "Check if the buffer is out of date and revert it automatically."
+  ;;   (when (and (buffer-file-name)
+  ;;              (file-exists-p (buffer-file-name))
+  ;;              (not (verify-visited-file-modtime (current-buffer))))
+  ;;     (my-auto-revert-buffer-if-changed-on-disk)))
+
+  ;; ;; Add to hooks to check for changes and auto revert
+  ;; (add-hook 'focus-in-hook 'my-check-and-auto-revert-buffer)
+  ;; (add-hook 'find-file-hook 'my-check-and-auto-revert-buffer)
+  ;; (add-hook 'after-save-hook 'my-check-and-auto-revert-buffer)
+  (add-hook 'after-save-hook 'my-save-hook-function)
 #+end_src
 ** git
 *** magit
@@ -1657,14 +1810,16 @@
 
 * My Keybindings
 ** fn
-| key  | function                   |
-|------+----------------------------|
-| ~f1~ | open config.org            |
-| ~f2~ | restart emacs              |
-| ~f5~ | reload init config         |
-| ~f7~ | symbol overlay mode        |
-| ~f8~ | remove all symbol overlays |
-|      |                            |
+| key | function                   |
+|-----+----------------------------|
+| ~f1~  | open config.org            |
+| ~f2~  | restart emacs              |
+| ~f5~  | reload init config         |
+| ~f7~  | symbol overlay mode        |
+| ~f8~  | remove all symbol overlays |
+| ~f9~  | switch project             |
+| ~f10~ | switch workspaces          |
+|     |                            |
 ** C/s/M-[key]
 | key           | function                              | mode         |
 |---------------+---------------------------------------+--------------|
@@ -1676,7 +1831,7 @@
 | *C-<num>*       |                                       |              |
 | ~C-7/8~         | lsp-bridge find definitions           |              |
 | ~C-S-7/8~       | lsp-bridge find symbol at point/input |              |
-| ~C-9~           | lsp-bridge find references       |              |
+| ~C-9~           | lsp-bridge find references            |              |
 |---------------+---------------------------------------+--------------|
 | MC            | multiple cursors                      |              |
 | ~C-<>~          | mark prev/next                        |              |
@@ -1687,6 +1842,7 @@
 | ~C-;~           | toggle mark                           |              |
 |---------------+---------------------------------------+--------------|
 | ~C-=~           | expand region                         |              |
+| ~C-<tab>~       | switch workspace                      |              |
 | ~C-()~          | parent down/up                        |              |
 | ~C-,~           | iedit                                 |              |
 | ~C-'~           | toggle quotes                         |              |
@@ -1785,6 +1941,7 @@
 | ~C-c bp~     | open project buffer         |
 | ~C-c bm~     | bookmark                    |
 | ~C-c bs~     | switch scratch buffer       |
+| ~C-c bf~     | open current directory     |
 |------------+-----------------------------|
 | *C-c y*      | yas, dict, yank...          |
 | ~C-c y~      | yasnippets                  |

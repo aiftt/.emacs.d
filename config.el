@@ -82,6 +82,52 @@
 (global-set-key (kbd "C-c i d") 'gcl/insert-standard-date)
 (global-set-key (kbd "C-c i t") 'gcl/insert-current-time)
 
+(defun gcl/consult-file-externally (file)
+  "Open the FILE externally using the system's default program."
+  (interactive "fFile to open externally: ")
+  (cond
+   ((eq system-type 'darwin) ; macOS
+    (start-process "external-program" nil "open" file))
+   ((eq system-type 'gnu/linux) ; Linux
+    (start-process "external-program" nil "xdg-open" file))
+   ((eq system-type 'windows-nt) ; Windows
+    (start-process "external-program" nil "start" "" file))
+   (t ; Other platforms
+    (message "Opening files externally is not supported on this platform."))))
+
+
+(defun gcl/open-current-directory ()
+  (interactive)
+  (gcl/consult-file-externally default-directory))
+
+  (global-set-key (kbd "C-c b f") 'gcl/open-current-directory)
+
+(eval-when-compile
+  (require 'cl))
+(defun gcl/preserve-selected-window (f)
+  "Runs the given function and then restores focus to the original window. Useful when you want to invoke
+   a function (like showing documentation) but desire to keep your current window focused."
+  ;; Note that we must preserve the selected window of every frame, because the function being executed may
+  ;; change the focused frame, even if the current frame is in focus.
+  (lexical-let* ((original-frame (selected-frame))
+                 (frames->windows (gcl/get-frame->selected-window))
+                 (result (funcall f)))
+    (-each frames->windows (lambda (x)
+                             (select-frame (first x) t)
+                             (select-window (second x) t)))
+    (select-frame-set-input-focus original-frame t)
+    result))
+
+
+(defun split-window--select-window (orig-func &rest args)
+  "Switch to the other window after a `split-window'"
+  (let ((cur-window (selected-window))
+        (new-window (apply orig-func args)))
+    (when (equal (window-buffer cur-window) (window-buffer new-window))
+      (select-window new-window))
+    new-window))
+(advice-add 'split-window :around #'split-window--select-window)
+
 (global-unset-key (kbd "s-g"))
 
 ;; 光标样式
@@ -141,11 +187,27 @@
 ;; - 不生成备份文件
 (setq make-backup-files nil)
 
-;; 自动保存
+;; 启用自动保存已访问的文件 ss
 ;; (auto-save-visited-mode 1)
-;; (setq auto-save-visited-interval 3) ; 设置保存延迟为 5 秒钟
+;; 设置自动保存的间隔时间
+;; (setq auto-save-visited-interval 1)  ; 每秒钟保存一次当前文件的备份
+;; (setq auto-save-interval 1)          ; 每秒钟保存一次所有文件的备份
+(setq save-silently t)  ; 自动保存文件，避免提示确认
 ;; 分割窗口的时候自动切换到该窗口
 ;; (add-hook 'window-setup-hook 'select-window)
+
+
+;; 有些功能需要用到，比如：折叠等等
+(add-hook 'prog-mode-hook #'hs-minor-mode)
+
+;; (defun my-split-window-and-switch ()
+;;   "Split the window and switch to the newly created window."
+;;   (interactive)
+;;   (let ((current-window (selected-window)))
+;;     (call-interactively #'split-window)
+;;     (select-window (next-window current-window))))
+
+;; (advice-add 'split-window :after #'my-split-window-and-switch)
 
 (setq
  ;; 缩短更新 screen 的时间
@@ -211,6 +273,11 @@
         exec-path-from-shell-arguments '("-l"))
   (exec-path-from-shell-initialize))
 
+(use-package autorevert
+:init
+(global-auto-revert-mode)
+(setq auto-revert-verbose nil))
+
 (defun sk/diminish-auto-revert ()
   (interactive)
   (diminish 'auto-revert-mode ""))
@@ -246,6 +313,7 @@
   )
 
 (use-package symbol-overlay
+  :diminish symbol-overlay-mode
   :config
   (symbol-overlay-mode +1)
   (global-set-key (kbd "M-i") #'symbol-overlay-put)
@@ -374,7 +442,8 @@
 
 (use-package diminish
   :demand t
-  :diminish (visual-line-mode . "ω")
+  :diminish org-indent-mode
+  :diminish visual-line-mode
   :diminish hs-minor-mode
   :diminish abbrev-mode
   :diminish auto-fill-function
@@ -443,11 +512,13 @@
 (use-package smart-hungry-delete
   :bind (([remap backward-delete-char-untabify] . smart-hungry-delete-backward-char)
          ([remap delete-backward-char] . smart-hungry-delete-backward-char)
+         ([remap org-delete-backward-char] . smart-hungry-delete-backward-char)
          ([remap delete-char] . smart-hungry-delete-forward-char))
   :init (smart-hungry-delete-add-default-hooks))
-(global-set-key (kbd "<backspace>") 'smart-hungry-delete-backward-char)
-(global-set-key (kbd "<delete>") 'smart-hungry-delete-backward-char)
-(global-set-key (kbd "C-d") 'smart-hungry-delete-forward-char)
+
+;; (global-set-key (kbd "<backspace>") 'smart-hungry-delete-backward-char)
+;; (global-set-key (kbd "<delete>") 'smart-hungry-delete-backward-char)
+;; (global-set-key (kbd "C-d") 'smart-hungry-delete-forward-char)
 
 (use-package windmove
   :bind
@@ -590,7 +661,8 @@
   :init (progn
           (setq doom-modeline-env-version nil
                 doom-modeline-icon nil
-                doom-modeline-minor-modes t)
+                doom-modeline-minor-modes t
+                doom-modeline-buffer-encoding nil)
           (doom-modeline-mode 1)))
 
 (setq org-directory "~/.gclrc/org")
@@ -690,7 +762,8 @@
 
 (use-package perspective
   :bind
-  ;; ("C-x C-b" . persp-list-buffers)         ; or use a nicer switcher, see below
+  (("<f10>" . persp-switch)
+   ("C-<tab>" . persp-switch))
   :custom
   (persp-mode-prefix-key (kbd "C-c TAB"))  ; pick your own prefix key here
   :init
@@ -708,6 +781,7 @@
   :diminish projectile-mode
   :init
   (projectile-mode +1)
+  :bind (("<f9>" . projectile-persp-switch-project))
   :config
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
   (autoload 'projectile-project-root "projectile")
@@ -884,12 +958,12 @@
     (add-hook (intern (concat (symbol-name mode) "-hook")) hook-fn)))
 
 (add-to-list 'auto-mode-alist '("\\.[cm]?js\\'" . js2-mode))
-(add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.vue\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
 
 (use-package smartparens
   :hook (prog-mode . smartparens-mode)
+  :diminish smartparens-mode
   :bind
   ("s-(" . sp-backward-sexp)
   ("s-)" . sp-forward-sexp)
@@ -997,9 +1071,8 @@
   ;; Set up proper indentation in JavaScript and JSON files
   (setq-default js-indent-level 2))
 
-(use-package typescript-mode
-  :mode "\\.[cm]?ts\\'"
-  ;; :hook (typescript-mode . lsp-deferred)
+(use-package typescript-ts-mode
+  :mode "\\.[cm]?tsx?\\'"
   :config
   (setq typescript-indent-level 2))
 
@@ -1045,26 +1118,14 @@
 
 (use-package apheleia
   :defer t
-  :init
-  (apheleia-global-mode +1)
-  :config
-  ;;    (add-to-list 'apheleia-formatters '(prettier-svelte . ("prettier" "--stdin-filepath" filepath "--parser=svelte")))
-  ;; (setf  (alist-get 'svelte-mode apheleia-mode-alist) '(prettier-svelte))
-  ;; (setf  (alist-get 'typescript-mode apheleia-mode-alist) '(prettier))
-  ;; (setf  (alist-get 'html-mode apheleia-mode-alist) '(prettier))
-  ;; (setf  (alist-get 'js-mode apheleia-mode-alist) '(prettier))
-  ;; (setf  (alist-get 'web-mode apheleia-mode-alist) '(prettier))
-  ;; (setf  (alist-get 'markdown-mode apheleia-mode-alist) '(prettier))
-
-  (setf (alist-get 'prettier apheleia-formatters)     '("prettier"))
-
-  (push '(prettier . ("prettier"
-                      file
-                      ))
-        apheleia-formatters)
-
-  (setf (alist-get 'web-mode apheleia-mode-alist)
-        '(prettier))
+  :diminish apheleia-mode
+  ;; :hook
+  ;; (prog-mode-hook . apheleia-mode)
+  ;; :config
+  ;; (dolist (formatter '((eslint . (npx "eslint_d" "--fix-to-stdout" "--stdin" "--stdin-filename" file))
+  ;;                      (nix . ("nix" "fmt" "--" "-"))
+  ;;                      (rufo . ("rufo" "--simple-exit"))))
+  ;;   (cl-pushnew formatter apheleia-formatters :test #'equal))
   )
 
 (use-package highlight-parentheses
@@ -1181,6 +1242,7 @@
                  (window-parameters (mode-line-format . none)))))
 
 (use-package lsp-bridge
+  :diminish (lsp-bridge-mode . "℗ ")
   :straight '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
                          :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
                          :build (:not compile)
@@ -1242,6 +1304,35 @@
 
 ;; 打开日志，开发者才需要
 ;; (setq lsp-bridge-enable-log t)
+
+(defun my-eslint-fix-file ()
+  "Run `npx eslint --fix --cache` on the current file."
+  (when (and (buffer-file-name)
+             (string-match-p "\\.\\(js\\|jsx\\|ts\\|tsx\\|vue\\|html\\)\\'" (buffer-file-name)))
+    (let* ((eslint-command (concat "npx eslint --fix --cache " (shell-quote-argument (buffer-file-name))))
+           (output-buffer (generate-new-buffer "*eslint-output*")))
+      (message "Running eslint --fix...")
+      (if (= 0 (call-process-shell-command eslint-command nil output-buffer))
+          (progn
+            (message "eslint --fix completed successfully.")
+            (kill-buffer output-buffer))
+        (progn
+          (message "eslint --fix failed. Check *eslint-output* for details.")
+          (pop-to-buffer output-buffer))))))
+
+(defun my-add-eslint-fix-hook ()
+  "Add the `my-eslint-fix-file` function to the `after-save-hook`."
+  (add-hook 'after-save-hook 'my-eslint-fix-file nil 'local))
+
+;; 针对前端相关的 major modes 启用 eslint fix 钩子
+(dolist (hook '(js-mode-hook
+                js2-mode-hook
+                typescript-mode-hook
+                typescript-ts-mode-hook
+                tsx-ts-mode-hook
+                web-mode-hook
+                vue-mode-hook))
+  (add-hook hook 'my-add-eslint-fix-hook))
 
 (use-package magit
   :bind* (("C-S-g" . magit))
