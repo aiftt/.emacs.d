@@ -910,6 +910,13 @@
   (global-set-key (kbd "<C-S-left>")   'buf-move-left)
   (global-set-key (kbd "<C-S-right>")  'buf-move-right)
 #+end_src
+** goto last change
+#+begin_src emacs-lisp
+  (use-package goto-chg
+    :bind (("M--" . goto-last-change)
+           ("M-=" . goto-last-change-reverse)
+           ))
+#+end_src
 * Search
 ** engine-mode
 
@@ -2105,6 +2112,7 @@
 | ~M-,~       | hs toggle                        |      |
 | ~M-;~       | comment/uncomment                |      |
 | ~M-`~       | org fold all                     |      |
+| ~M--/=~     | last change                      |      |
 | ~M-i~       | imenu                            |      |
 | ~M-o~       | other window                     |      |
 | ~M-i~       | symbol highlight                 |      |

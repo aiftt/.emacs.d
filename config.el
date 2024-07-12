@@ -699,6 +699,11 @@
 (global-set-key (kbd "<C-S-left>")   'buf-move-left)
 (global-set-key (kbd "<C-S-right>")  'buf-move-right)
 
+(use-package goto-chg
+  :bind (("M--" . goto-last-change)
+         ("M-=" . goto-last-change-reverse)
+         ))
+
 (use-package engine-mode
   :config
   (engine-mode t)
