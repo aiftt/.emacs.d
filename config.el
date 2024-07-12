@@ -745,6 +745,7 @@
               ("M-P" . org-move-subtree-up))
   :config
   (setq org-ellipsis "..."
+        org-imenu-depth 4 ; 可搜索的标题层级
         org-hide-emphasis-markers t
         org-src-fontify-natively t
         org-fontify-quote-and-verse-blocks t
@@ -760,6 +761,11 @@
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t)))
+
+  ;; 重新生成 org-imenu 索引
+  (add-hook 'org-mode-hook
+            (lambda ()
+              (setq imenu-create-index-function 'org-imenu-get-tree)))
   )
 
 (use-package org-faces
