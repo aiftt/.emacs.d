@@ -286,6 +286,110 @@
   (diminish 'auto-revert-mode ""))
 (add-hook 'auto-revert-mode-hook 'sk/diminish-auto-revert)
 
+;; TODO
+
+(setq org-directory "~/.gclrc/org")
+
+(defun gcl/org-path (path)
+  (expand-file-name path org-directory))
+
+;; Turn on indentation and auto-fill mode for Org files
+(defun dw/org-mode-setup ()
+  ;; (variable-pitch-mode 1)
+  (org-indent-mode 1)
+  (auto-fill-mode 0)
+  (visual-line-mode 1)
+  (setq corfu-auto nil)
+  (setq evil-auto-indent nil))
+
+(defun dw/org-move-done-tasks-to-bottom ()
+  "Sort all tasks in the topmost heading by TODO state."
+  (interactive)
+  (save-excursion
+    (while (org-up-heading-safe))
+    (org-sort-entries nil ?o))
+
+  ;; Reset the view of TODO items
+  (org-overview)
+  (org-show-entry)
+  (org-show-children))
+
+
+(defun dw/org-todo-state-change-hook ()
+  (when (string= org-state "DONE")
+    (dw/org-move-done-tasks-to-bottom)))
+;; (add-hook 'org-after-todo-state-change-hook 'dw/org-todo-state-change-hook)
+
+(use-package org
+  :straight (:type built-in)
+  :hook (org-mode . dw/org-mode-setup)
+  :bind (:map org-mode-map
+              ("M-N" . org-move-subtree-down)
+              ("M-P" . org-move-subtree-up)
+              ("M-`" . org-overview))
+  :config
+  (setq org-ellipsis "..."
+        org-imenu-depth 4 ; 可搜索的标题层级
+        org-hide-emphasis-markers t
+        org-src-fontify-natively t
+        org-fontify-quote-and-verse-blocks t
+        org-src-tab-acts-natively t
+        org-edit-src-content-indentation 2
+        org-hide-block-startup nil
+        org-src-preserve-indentation nil
+        org-startup-folded 'content
+        org-cycle-separator-lines 2
+        org-capture-bookmark nil
+        )
+
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)))
+
+  ;; 重新生成 org-imenu 索引
+  (add-hook 'org-mode-hook
+            (lambda ()
+              (setq imenu-create-index-function 'org-imenu-get-tree)))
+  )
+
+(use-package org-faces
+  :straight (:type built-in)
+  :after org
+  :config
+  ;; Increase the size of various headings
+  (set-face-attribute 'org-document-title nil :font gcl/org-heading-font :weight 'medium :height 1.3)
+  (dolist (face '((org-level-1 . 1.2)
+                  (org-level-2 . 1.1)
+                  (org-level-3 . 1.05)
+                  (org-level-4 . 1.0)
+                  (org-level-5 . 1.1)
+                  (org-level-6 . 1.1)
+                  (org-level-7 . 1.1)
+                  (org-level-8 . 1.1)))
+    (set-face-attribute (car face) nil :font gcl/org-heading-font :weight 'medium :height (cdr face))))
+
+(use-package org-tempo
+  :straight (:type built-in)
+  :after org
+  :config
+  (dolist (item '(("sh" . "src sh")
+                  ("el" . "src emacs-lisp")
+                  ("li" . "src lisp")
+                  ("sc" . "src scheme")
+                  ("ts" . "src typescript")
+                  ("py" . "src python")
+                  ("html" . "src html")
+                  ("vue" . "src vue")
+                  ("go" . "src go")
+                  ("einit" . "src emacs-lisp :tangle ~/.config/emacs/init.el :mkdirp yes")
+                  ("emodule" . "src emacs-lisp :tangle ~/.config/emacs/modules/dw-MODULE.el :mkdirp yes")
+                  ("yaml" . "src yaml")
+                  ("json" . "src json")))
+    (add-to-list 'org-structure-template-alist item)))
+
+(use-package org-modern
+  :hook (org-mode . org-modern-mode))
+
 (use-package async :commands (async-start))
 (use-package cl-lib)
 (use-package dash)
@@ -707,107 +811,6 @@
                 doom-modeline-buffer-file-name-style 'file-name
                 doom-modeline-buffer-encoding nil)
           (doom-modeline-mode 1)))
-
-(setq org-directory "~/.gclrc/org")
-
-(defun gcl/org-path (path)
-  (expand-file-name path org-directory))
-
-;; Turn on indentation and auto-fill mode for Org files
-(defun dw/org-mode-setup ()
-  ;; (variable-pitch-mode 1)
-  (org-indent-mode 1)
-  (auto-fill-mode 0)
-  (visual-line-mode 1)
-  (setq corfu-auto nil)
-  (setq evil-auto-indent nil))
-
-(defun dw/org-move-done-tasks-to-bottom ()
-  "Sort all tasks in the topmost heading by TODO state."
-  (interactive)
-  (save-excursion
-    (while (org-up-heading-safe))
-    (org-sort-entries nil ?o))
-
-  ;; Reset the view of TODO items
-  (org-overview)
-  (org-show-entry)
-  (org-show-children))
-
-
-(defun dw/org-todo-state-change-hook ()
-  (when (string= org-state "DONE")
-    (dw/org-move-done-tasks-to-bottom)))
-;; (add-hook 'org-after-todo-state-change-hook 'dw/org-todo-state-change-hook)
-
-(use-package org
-  :straight (:type built-in)
-  :hook (org-mode . dw/org-mode-setup)
-  :bind (:map org-mode-map
-              ("M-N" . org-move-subtree-down)
-              ("M-P" . org-move-subtree-up))
-  :config
-  (setq org-ellipsis "..."
-        org-imenu-depth 4 ; 可搜索的标题层级
-        org-hide-emphasis-markers t
-        org-src-fontify-natively t
-        org-fontify-quote-and-verse-blocks t
-        org-src-tab-acts-natively t
-        org-edit-src-content-indentation 2
-        org-hide-block-startup nil
-        org-src-preserve-indentation nil
-        org-startup-folded 'content
-        org-cycle-separator-lines 2
-        org-capture-bookmark nil
-        )
-
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((emacs-lisp . t)))
-
-  ;; 重新生成 org-imenu 索引
-  (add-hook 'org-mode-hook
-            (lambda ()
-              (setq imenu-create-index-function 'org-imenu-get-tree)))
-  )
-
-(use-package org-faces
-  :straight (:type built-in)
-  :after org
-  :config
-  ;; Increase the size of various headings
-  (set-face-attribute 'org-document-title nil :font gcl/org-heading-font :weight 'medium :height 1.3)
-  (dolist (face '((org-level-1 . 1.2)
-                  (org-level-2 . 1.1)
-                  (org-level-3 . 1.05)
-                  (org-level-4 . 1.0)
-                  (org-level-5 . 1.1)
-                  (org-level-6 . 1.1)
-                  (org-level-7 . 1.1)
-                  (org-level-8 . 1.1)))
-    (set-face-attribute (car face) nil :font gcl/org-heading-font :weight 'medium :height (cdr face))))
-
-(use-package org-tempo
-  :straight (:type built-in)
-  :after org
-  :config
-  (dolist (item '(("sh" . "src sh")
-                  ("el" . "src emacs-lisp")
-                  ("li" . "src lisp")
-                  ("sc" . "src scheme")
-                  ("ts" . "src typescript")
-                  ("py" . "src python")
-                  ("html" . "src html")
-                  ("vue" . "src vue")
-                  ("go" . "src go")
-                  ("einit" . "src emacs-lisp :tangle ~/.config/emacs/init.el :mkdirp yes")
-                  ("emodule" . "src emacs-lisp :tangle ~/.config/emacs/modules/dw-MODULE.el :mkdirp yes")
-                  ("yaml" . "src yaml")
-                  ("json" . "src json")))
-    (add-to-list 'org-structure-template-alist item)))
-
-(use-package org-modern
-  :hook (org-mode . org-modern-mode))
 
 (use-package perspective
   :bind
@@ -1491,8 +1494,14 @@
 
 (define-key org-mode-map (kbd "s-t") 'org-todo)
 (bind-keys*
+ ("C-`" . execute-extended-command)
  ("C-x ="     . indent-region)
  ("M-o" . other-window)
+ ;; ("M-9" . hs-hide-block)
+ ;; ("M-0" . hs-show-block)
+ ("M-9" . hs-hide-all)
+ ("M-0" . hs-show-all)
+ ("M-," . hs-toggle-hiding)
  ("s-b" . switch-to-buffer)
  ("s-J" . scroll-up-command)
  ("s-K" . scroll-down-command)
@@ -1500,6 +1509,12 @@
  ("s-p" . previous-buffer)
  ("s-f" . find-file)
  )
+
+(which-key-add-key-based-replacements
+    "M-s" "search")
+
+(which-key-add-key-based-replacements
+   "s-g" "goto")
 
 (which-key-add-key-based-replacements
   "C-c TAB" "persp")
