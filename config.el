@@ -537,6 +537,45 @@
   ("s-=" . split-window-vertically)
   )
 
+(use-package crux)
+(global-set-key [remap move-beginning-of-line] #'crux-move-beginning-of-line)
+(global-set-key [remap org-beginning-of-line] #'crux-move-beginning-of-line)
+(global-set-key [remap org-table-copy-down] #'crux-smart-open-line)
+(global-set-key (kbd "C-c o") #'crux-open-with)
+(global-set-key [(shift return)] #'crux-smart-open-line)
+(global-set-key (kbd "s-r") #'crux-recentf-find-file)
+(global-set-key (kbd "C-<backspace>") #'crux-kill-line-backwards)
+(global-set-key (kbd "C-k") #'crux-smart-kill-line)
+(global-set-key (kbd "C-c u") #'crux-view-url)
+(global-set-key (kbd "C-x C-w") #'crux-transpose-windows)
+(global-set-key (kbd "C-c D") #'crux-delete-file-and-buffer)
+(global-set-key (kbd "C-c R") #'crux-rename-file-and-buffer)
+(global-set-key (kbd "C-c b K") #'crux-kill-other-buffers)
+
+(use-package youdao-dictionary
+  :bind (("C-c y ." . youdao-dictionary-search-at-point+)
+         ("C-c y ," . youdao-dictionary-search-from-input)
+         ("C-c yv" . youdao-dictionary-play-voice-at-point))
+  :config
+  ;; Enable Cache
+  (setq url-automatic-caching t))
+
+(use-package fanyi
+  :bind (("C-c y y" . fanyi-dwim2)
+         ("C-c y h" . fanyi-from-history))
+  :config
+  ;; 不自动跳转到翻译窗口
+  ;; (setq fanyi-auto-select nil)
+  :custom
+  (fanyi-providers '(;; 海词
+                     fanyi-haici-provider
+                     ;; 有道同义词词典
+                     fanyi-youdao-thesaurus-provider
+                     ;; Etymonline
+                     fanyi-etymon-provider
+                     ;; Longman
+                     fanyi-longman-provider)))
+
 (use-package engine-mode
   :config
   (engine-mode t)
@@ -662,6 +701,7 @@
           (setq doom-modeline-env-version nil
                 doom-modeline-icon nil
                 doom-modeline-minor-modes t
+                doom-modeline-buffer-file-name-style 'file-name
                 doom-modeline-buffer-encoding nil)
           (doom-modeline-mode 1)))
 
@@ -997,21 +1037,27 @@
   :bind* (("M-;" . evilnc-comment-or-uncomment-lines))
   )
 
-(defun dw/setup-markdown-mode ()
-  (visual-fill-column-mode 1)
-  (display-line-numbers-mode 0))
+(use-package nginx-mode
+  :mode
+  "/nginx/.+\\.conf\\'"
+  "nginx\\.conf\\'")
 
 (use-package markdown-mode
-  :mode "\\.md\\'"
-  :config
-  (setq markdown-command "marked")
-  (add-hook 'markdown-mode-hook #'dw/setup-markdown-mode)
-  (dolist (face '((markdown-header-face-1 . 1.2)
-                  (markdown-header-face-2 . 1.1)
-                  (markdown-header-face-3 . 1.0)
-                  (markdown-header-face-4 . 1.0)
-                  (markdown-header-face-5 . 1.0)))
-    (set-face-attribute (car face) nil :weight 'normal :height (cdr face))))
+  :mode
+  "\\.markdown\\'"
+  "\\.md\\'"
+  :hook
+  (markdown-mode-hook . markdown-display-inline-images)
+  :init
+  (setq markdown-enable-wiki-links t)
+  (setq markdown-fontify-code-blocks-natively t)
+  (setq markdown-header-scaling t)
+  (setq markdown-hide-markup t)
+  (setq markdown-italic-underscore t)
+  (setq markdown-blockquote-display-char '("┃" ">"))
+  (setq markdown-list-item-bullets '("⏺" "▪"))
+  (setq markdown-make-gfm-checkboxes-buttons t)
+  (setq markdown-max-image-size '(1024 . 1024)))
 
 (use-package js-doc
   :config
@@ -1402,6 +1448,11 @@
   :config
   (global-diff-hl-mode))
 
+(use-package consult-git-log-grep
+:bind (("C-c g l" . consult-git-log-grep))
+  :custom
+  (consult-git-log-grep-open-function #'magit-show-commit))
+
 (use-package vterm)
 (use-package multi-vterm)
 (use-package vterm-toggle)
@@ -1437,7 +1488,35 @@
  ("s-K" . scroll-down-command)
  ("s-n" . next-buffer)
  ("s-p" . previous-buffer)
+ ("s-f" . find-file)
  )
+
+(which-key-add-key-based-replacements
+  "C-c TAB" "persp")
+
+(which-key-add-key-based-replacements
+  "C-c c" "copy")
+
+(which-key-add-key-based-replacements
+  "C-c e" "errors")
+
+(which-key-add-key-based-replacements
+  "C-c i" "insert")
+
+(which-key-add-key-based-replacements
+    "C-c l" "lsp")
+
+(which-key-add-key-based-replacements
+    "C-c s" "search")
+
+(which-key-add-key-based-replacements
+    "C-c s" "search")
+
+(which-key-add-key-based-replacements
+    "C-c b" "buffer")
+
+(which-key-add-key-based-replacements
+    "C-c y" "yas&dict")
 
 (defun tangle-if-init ()
   "If the current buffer is 'config.org' the code-blocks are

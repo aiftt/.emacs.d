@@ -1,4 +1,5 @@
 * early-init.el
+
 #+begin_src emacs-lisp :tangle "./early-init.el"
   (setq package-enable-at-startup nil)
   (setenv "LSP_USE_PLISTS" "true")
@@ -6,6 +7,7 @@
   ;;; early-init.el ends here
 #+end_src
 * custom.el
+
 #+begin_src emacs-lisp
   (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
   (when (file-exists-p custom-file)
@@ -13,11 +15,13 @@
 #+end_src
 * Definitions
 ** personal
+
 #+begin_src emacs-lisp
   (setq user-mail-address "ftt.loves@gmail.com")
   (setq user-full-name "Lee ZhiCheng")
 #+end_src
 ** get project root
+
 #+begin_src emacs-lisp
   (defun get-project-root ()
     "Get the root directory of the current project."
@@ -25,6 +29,7 @@
         (locate-dominating-file default-directory ".git")))
 #+end_src
 ** get eslint executable
+
 #+begin_src emacs-lisp
   (defun get-eslint-executable ()
     "Get the path to the eslint executable in the current project."
@@ -34,6 +39,7 @@
         "eslint")))  ;; 默认使用全局 eslint
 #+end_src
 ** toggle one window
+
 #+begin_src emacs-lisp
   (defvar toggle-one-window-window-configuration nil
     "The window configuration use for `toggle-one-window'.")
@@ -53,6 +59,7 @@
   (global-set-key (kbd "s-o") 'toggle-one-window)
 #+end_src
 ** copy filename or path
+
 #+begin_src emacs-lisp
 
   (defun gcl/copy-file-full-name ()
@@ -79,6 +86,7 @@
   (global-set-key (kbd "C-c c p") 'gcl/copy-file-full-name)
 #+end_src
 ** switch to scratch buffer
+
 #+begin_src emacs-lisp
   (defun switch-to-scratch-buffer ()
     "Switch to *scratch* buffer."
@@ -88,6 +96,7 @@
   (global-set-key (kbd "C-c b s") 'switch-to-scratch-buffer)
 #+end_src
 ** insert time or date
+
 #+begin_src emacs-lisp
   (defun gcl/insert-standard-date ()
     "Inserts standard date time string."
@@ -108,6 +117,7 @@
   (global-set-key (kbd "C-c i t") 'gcl/insert-current-time)
 #+end_src
 ** open current directory
+
 #+begin_src emacs-lisp
   (defun gcl/consult-file-externally (file)
     "Open the FILE externally using the system's default program."
@@ -130,6 +140,7 @@
     (global-set-key (kbd "C-c b f") 'gcl/open-current-directory)
 #+end_src
 ** split window and select
+
 #+begin_src emacs-lisp
 (eval-when-compile
   (require 'cl))
@@ -158,11 +169,13 @@
 (advice-add 'split-window :around #'split-window--select-window)
 #+end_src
 * Unbindings
+
 #+begin_src emacs-lisp
   (global-unset-key (kbd "s-g"))
 #+end_src
 * Basic Settings
 ** Modify Default Settings
+
 #+begin_src emacs-lisp
   ;; 光标样式
   (setq-default cursor-type '(bar . 1))
@@ -244,6 +257,7 @@
   ;; (advice-add 'split-window :after #'my-split-window-and-switch)
 #+end_src
 ** Performance
+
 #+begin_src emacs-lisp
   (setq
    ;; 缩短更新 screen 的时间
@@ -273,6 +287,7 @@
    )
 #+end_src
 ** Show Startup Time
+
 #+begin_src emacs-lisp
   (defun efs/display-startup-time ()
     (message "Emacs loaded in %s with %d garbage collections."
@@ -284,6 +299,7 @@
   (add-hook 'emacs-startup-hook #'efs/display-startup-time)
 #+end_src
 ** Open config.org
+
 #+begin_src emacs-lisp
   (global-set-key (kbd "<f1>")
                   (lambda ()
@@ -291,6 +307,7 @@
                     (find-file "~/.emacs.d/config.org")))
 #+end_src
 ** Reload init.el
+
 #+BEGIN_SRC emacs-lisp
   (global-set-key (kbd "<f5>") 'reload-init-file)
 
@@ -300,6 +317,7 @@
     (load-file "~/.emacs.d/init.el"))
 #+END_SRC
 ** Env path
+
 #+begin_src emacs-lisp
   ;; 直接将环境变量拷贝到 ~/.path 中
   ;; sh -c 'printf "%s" "$PATH"' > ~/.path
@@ -318,6 +336,7 @@
     (exec-path-from-shell-initialize))
 #+end_src
 ** Auto revert buffer
+
 #+begin_src emacs-lisp
   (use-package autorevert
   :init
@@ -330,6 +349,7 @@
   (add-hook 'auto-revert-mode-hook 'sk/diminish-auto-revert)
 #+end_src
 * Toolkits
+
 #+BEGIN_SRC emacs-lisp
   (use-package async :commands (async-start))
   (use-package cl-lib)
@@ -338,6 +358,7 @@
   (use-package hydra)
 #+END_SRC
 ** dashboard
+
 #+begin_src emacs-lisp
   (use-package dashboard
     :init
@@ -350,6 +371,7 @@
     (dashboard-setup-startup-hook))
 #+end_src
 ** which-key
+
 #+begin_src emacs-lisp
   (use-package which-key
     :defer t
@@ -365,6 +387,7 @@
     )
 #+end_src
 ** symbol highlight
+
 #+begin_src emacs-lisp
   (use-package symbol-overlay
     :diminish symbol-overlay-mode
@@ -378,6 +401,7 @@
     )
 #+end_src
 ** toggle quotes
+
 #+begin_src emacs-lisp
   (use-package toggle-quotes-plus
     :straight (toggle-quotes-plus :type git :host github :repo "jcs-elpa/toggle-quotes-plus")
@@ -388,6 +412,7 @@
                                      "`")))
 #+end_src
 ** parrot
+
 #+begin_src emacs-lisp
   (use-package parrot
     :config
@@ -456,6 +481,7 @@
   (global-set-key (kbd "s-I") 'parrot-rotate-next-word-at-point)
 #+end_src
 ** string inflection
+
 #+begin_src emacs-lisp
   (use-package string-inflection)
   (global-set-key (kbd "s-i") 'my-string-inflection-cycle-auto)
@@ -481,12 +507,14 @@
       (string-inflection-ruby-style-cycle))))
 #+end_src
 ** move text
+
 #+begin_src emacs-lisp
   (use-package move-text)
   (global-set-key (kbd "s-<") 'move-text-up)
   (global-set-key (kbd "s->") 'move-text-down)
 #+end_src
 ** iedit
+
 #+begin_src emacs-lisp
   (use-package maple-iedit
     :straight (:type git :host github :repo "honmaple/emacs-maple-iedit")
@@ -502,11 +530,13 @@
     :bind* (("C-," . maple/iedit/body)))
 #+end_src
 ** expand region
+
 #+begin_src emacs-lisp
   (use-package expand-region)
   (global-set-key (kbd "C-=") 'er/expand-region)
 #+end_src
 ** diminish
+
 #+begin_src emacs-lisp
   (use-package diminish
     :demand t
@@ -522,11 +552,13 @@
     )
 #+end_src
 ** restart emacs
+
 #+begin_src emacs-lisp
   (use-package restart-emacs
     :bind* (("<f2>" . restart-emacs)))
 #+end_src
 ** autosave
+
 #+begin_src emacs-lisp
   (use-package auto-save
     :straight (auto-save :type git :host github :repo "manateelazycat/auto-save")
@@ -536,6 +568,7 @@
     (setq auto-save-delete-trailing-whitespace t))
 #+end_src
 ** all-the-icons
+
 #+begin_src emacs-lisp
   (use-package all-the-icons)
   (use-package all-the-icons-completion
@@ -558,16 +591,19 @@
     (all-the-icons-ibuffer-mode 1))
 #+end_src
 ** dicover mode
+
 #+begin_src emacs-lisp
   (use-package discover-my-major
     :bind (("C-h C-m" . discover-my-major)
            ("C-h s-m" . discover-my-mode)))
 #+end_src
 ** visual fill
+
 #+begin_src emacs-lisp
   (use-package visual-fill-column)
 #+end_src
 ** avy
+
 #+begin_src emacs-lisp
   (use-package avy
     :bind
@@ -579,6 +615,7 @@
     )
 #+end_src
 ** undo
+
 #+begin_src emacs-lisp
   (use-package undo-fu
     :config
@@ -587,6 +624,7 @@
     (global-set-key (kbd "C-z") 'undo-fu-only-redo))
 #+end_src
 ** duplicate
+
 #+begin_src emacs-lisp
   (use-package duplicate-thing
     :straight (duplicate-thing :type git :host github :repo "artemkovalyov/duplicate-thing")
@@ -594,6 +632,7 @@
     ("C-S-l" . duplicate-thing))
 #+end_src
 ** hungry-delete
+
 #+begin_src emacs-lisp
   (use-package smart-hungry-delete
     :bind (([remap backward-delete-char-untabify] . smart-hungry-delete-backward-char)
@@ -608,6 +647,7 @@
 #+end_src
 ** window operation
 *** windmove
+
 #+begin_src emacs-lisp
   (use-package windmove
     :bind
@@ -626,8 +666,105 @@
     ("s-=" . split-window-vertically)
     )
 #+end_src
+** crux
+
+#+begin_src emacs-lisp
+  (use-package crux)
+  (global-set-key [remap move-beginning-of-line] #'crux-move-beginning-of-line)
+  (global-set-key [remap org-beginning-of-line] #'crux-move-beginning-of-line)
+  (global-set-key [remap org-table-copy-down] #'crux-smart-open-line)
+  (global-set-key (kbd "C-c o") #'crux-open-with)
+  (global-set-key [(shift return)] #'crux-smart-open-line)
+  (global-set-key (kbd "s-r") #'crux-recentf-find-file)
+  (global-set-key (kbd "C-<backspace>") #'crux-kill-line-backwards)
+  (global-set-key (kbd "C-k") #'crux-smart-kill-line)
+  (global-set-key (kbd "C-c u") #'crux-view-url)
+  (global-set-key (kbd "C-x C-w") #'crux-transpose-windows)
+  (global-set-key (kbd "C-c D") #'crux-delete-file-and-buffer)
+  (global-set-key (kbd "C-c R") #'crux-rename-file-and-buffer)
+  (global-set-key (kbd "C-c b K") #'crux-kill-other-buffers)
+
+
+#+end_src
+** dictionary
+*** youdao
+
+~$ brew install mplayer mpg123~
+
+#+begin_src emacs-lisp
+      (use-package youdao-dictionary
+        :bind (("C-c y ." . youdao-dictionary-search-at-point+)
+               ("C-c y ," . youdao-dictionary-search-from-input)
+               ("C-c yv" . youdao-dictionary-play-voice-at-point))
+        :config
+        ;; Enable Cache
+        (setq url-automatic-caching t))
+#+end_src
+*** fanyi
+
+更详细的翻译。
+
+#+begin_src emacs-lisp
+  (use-package fanyi
+    :bind (("C-c y y" . fanyi-dwim2)
+           ("C-c y h" . fanyi-from-history))
+    :config
+    ;; 不自动跳转到翻译窗口
+    ;; (setq fanyi-auto-select nil)
+    :custom
+    (fanyi-providers '(;; 海词
+                       fanyi-haici-provider
+                       ;; 有道同义词词典
+                       fanyi-youdao-thesaurus-provider
+                       ;; Etymonline
+                       fanyi-etymon-provider
+                       ;; Longman
+                       fanyi-longman-provider)))
+#+end_src
+*** sdcv
+
+没什么用，还需要下载翻译字典。
+
+~$ brew install stardict sdcv~
+
+#+begin_src emacs-lisp :tangle no
+    (use-package sdcv
+      :straight (:type git :host github :repo "manateelazycat/sdcv")
+      :bind (("C-c y d" . sdcv-search-pointer+)
+             ("C-c y y" . sdcv-search-input+))
+      :config
+      (setq sdcv-say-word-p t)               ;say word after translation
+      (setq sdcv-dictionary-data-dir "~/.sdcv-dist") ;setup directory of stardict dictionary
+      (setq sdcv-dictionary-simple-list    ;setup dictionary list for simple search
+          '("懒虫简明英汉词典"
+            "懒虫简明汉英词典"
+            "KDic11万英汉词典"))
+
+    (setq sdcv-dictionary-complete-list     ;setup dictionary list for complete search
+          '(
+            "懒虫简明英汉词典"
+            "英汉汉英专业词典"
+            "XDICT英汉辞典"
+            "stardict1.3英汉辞典"
+            "WordNet"
+            "XDICT汉英辞典"
+            "Jargon"
+            "懒虫简明汉英词典"
+            "FOLDOC"
+            "新世纪英汉科技大词典"
+            "KDic11万英汉词典"
+            "朗道汉英字典5.0"
+            "CDICT5英汉辞典"
+            "新世纪汉英科技大词典"
+            "牛津英汉双解美化版"
+            "21世纪双语科技词典"
+            "quick_eng-zh_CN"
+            ))
+      )
+#+end_src
 * Search
 ** engine-mode
+
 #+begin_src emacs-lisp
   (use-package engine-mode
     :config
@@ -664,11 +801,13 @@
     )
 #+end_src
 ** wgrep
+
 #+begin_src emacs-lisp
   (use-package wgrep)
   (setq wgrep-auto-save-buffer t)
 #+end_src
 ** multiple-cursors
+
 #+begin_src emacs-lisp
   (defun mc/my-quit ()
     "Quit from mark mode."
@@ -702,6 +841,7 @@
     (setq mc/insert-numbers-default 1))
 #+end_src
 ** visual regexp
+
 #+begin_src emacs-lisp
   (use-package visual-regexp)
   (use-package visual-regexp-steroids)
@@ -710,6 +850,7 @@
   (global-set-key (kbd "C-c m") 'vr/mc-mark)
 #+end_src
 ** Color rg
+
 #+begin_src emacs-lisp
   (use-package color-rg
     :straight (:type git :host github :repo "manateelazycat/color-rg")
@@ -724,6 +865,7 @@
 #+end_src
 * Theme Settings
 ** Fonts
+
 #+begin_src emacs-lisp
   (defvar gcl/default-font-size 150)
   (defvar gcl/default-variable-font-size 150)
@@ -744,6 +886,7 @@
   (set-face-attribute 'variable-pitch nil :font "Cantarell" :height gcl/default-variable-font-size :weight 'regular)
 #+end_src
 ** DOOM Emacs Theme
+
 #+begin_src emacs-lisp
   (use-package doom-themes
     :config
@@ -763,16 +906,19 @@
     (doom-themes-org-config))
 #+end_src
 ** Mode line
+
 #+begin_src emacs-lisp
   (use-package doom-modeline
     :init (progn
             (setq doom-modeline-env-version nil
                   doom-modeline-icon nil
                   doom-modeline-minor-modes t
+                  doom-modeline-buffer-file-name-style 'file-name
                   doom-modeline-buffer-encoding nil)
             (doom-modeline-mode 1)))
 #+end_src
 * org-mode
+
 #+begin_src emacs-lisp
   (setq org-directory "~/.gclrc/org")
 
@@ -807,6 +953,7 @@
   ;; (add-hook 'org-after-todo-state-change-hook 'dw/org-todo-state-change-hook)
 #+end_src
 ** configuration
+
 #+begin_src emacs-lisp
   (use-package org
     :straight (:type built-in)
@@ -834,6 +981,7 @@
     )
 #+end_src
 ** org-face
+
 #+begin_src emacs-lisp
   (use-package org-faces
     :straight (:type built-in)
@@ -852,6 +1000,7 @@
       (set-face-attribute (car face) nil :font gcl/org-heading-font :weight 'medium :height (cdr face))))
 #+end_src
 ** org-tempo
+
 #+begin_src emacs-lisp
   (use-package org-tempo
     :straight (:type built-in)
@@ -875,12 +1024,14 @@
 
 #+end_src
 ** org-modern
+
 #+begin_src emacs-lisp
   (use-package org-modern
     :hook (org-mode . org-modern-mode))
 #+end_src
 * Project Settings
 ** perspective
+
 #+begin_src emacs-lisp
     (use-package perspective
       :bind
@@ -900,6 +1051,7 @@
       )
 #+end_src
 ** projectile
+
 #+begin_src emacs-lisp
   (use-package projectile
     :diminish projectile-mode
@@ -915,6 +1067,7 @@
     )
 #+end_src
 ** consult
+
 #+begin_src emacs-lisp
   (use-package embark-consult
     :after (embark consult)
@@ -1037,6 +1190,7 @@
     )
 #+end_src
 *** consult-dir
+
 #+begin_src emacs-lisp
   (use-package consult-dir
     :bind (("C-x C-d" . consult-dir)
@@ -1064,6 +1218,7 @@
     (add-to-list 'consult-dir-sources 'consult-dir--source-fasd t))
 #+end_src
 * Development Settings
+
 #+begin_src emacs-lisp
   ;; 自定义的模式集合
   (defvar my-web-modes
@@ -1088,12 +1243,14 @@
       (add-hook (intern (concat (symbol-name mode) "-hook")) hook-fn)))
 #+end_src
 ** Modes
+
 #+begin_src emacs-lisp
   (add-to-list 'auto-mode-alist '("\\.[cm]?js\\'" . js2-mode))
   (add-to-list 'auto-mode-alist '("\\.vue\\'" . web-mode))
   (add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
 #+end_src
 ** smartparens
+
 #+begin_src emacs-lisp
   (use-package smartparens
     :hook (prog-mode . smartparens-mode)
@@ -1107,6 +1264,7 @@
     (sp-use-smartparens-bindings))
 #+end_src
 ** yasnippet
+
 #+begin_src emacs-lisp
   (use-package yasnippet
     :diminish yas-minor-mode
@@ -1130,31 +1288,43 @@
     :after yasnippet)
 #+end_src
 ** Comment
+
 #+begin_src emacs-lisp
   (use-package evil-nerd-commenter
     :bind* (("M-;" . evilnc-comment-or-uncomment-lines))
     )
 #+end_src
 ** Languages
-*** markdown
-#+begin_src emacs-lisp
-  (defun dw/setup-markdown-mode ()
-    (visual-fill-column-mode 1)
-    (display-line-numbers-mode 0))
+*** nginx
 
-  (use-package markdown-mode
-    :mode "\\.md\\'"
-    :config
-    (setq markdown-command "marked")
-    (add-hook 'markdown-mode-hook #'dw/setup-markdown-mode)
-    (dolist (face '((markdown-header-face-1 . 1.2)
-                    (markdown-header-face-2 . 1.1)
-                    (markdown-header-face-3 . 1.0)
-                    (markdown-header-face-4 . 1.0)
-                    (markdown-header-face-5 . 1.0)))
-      (set-face-attribute (car face) nil :weight 'normal :height (cdr face))))
+#+begin_src emacs-lisp
+(use-package nginx-mode
+  :mode
+  "/nginx/.+\\.conf\\'"
+  "nginx\\.conf\\'")
+#+end_src
+*** markdown
+
+#+begin_src emacs-lisp
+    (use-package markdown-mode
+      :mode
+      "\\.markdown\\'"
+      "\\.md\\'"
+      :hook
+      (markdown-mode-hook . markdown-display-inline-images)
+      :init
+      (setq markdown-enable-wiki-links t)
+      (setq markdown-fontify-code-blocks-natively t)
+      (setq markdown-header-scaling t)
+      (setq markdown-hide-markup t)
+      (setq markdown-italic-underscore t)
+      (setq markdown-blockquote-display-char '("┃" ">"))
+      (setq markdown-list-item-bullets '("⏺" "▪"))
+      (setq markdown-make-gfm-checkboxes-buttons t)
+      (setq markdown-max-image-size '(1024 . 1024)))
 #+end_src
 *** js-doc
+
 #+begin_src emacs-lisp
   (use-package js-doc
     :config
@@ -1165,6 +1335,7 @@
           ))
 #+end_src
 *** web-mode
+
 #+begin_src emacs-lisp
   (use-package web-mode
     :mode ("\\.html?\\'" "\\.vue\\'")
@@ -1205,6 +1376,7 @@
     )
 #+end_src
 *** javascript
+
 #+begin_src emacs-lisp
   (use-package js2-mode
     :mode "\\.jsx?\\'"
@@ -1218,7 +1390,9 @@
     ;; Set up proper indentation in JavaScript and JSON files
     (setq-default js-indent-level 2))
 #+end_src
+
 *** typescript
+
 #+begin_src emacs-lisp
   (use-package typescript-ts-mode
     :mode "\\.[cm]?tsx?\\'"
@@ -1226,11 +1400,13 @@
     (setq typescript-indent-level 2))
 #+end_src
 *** css
+
 #+begin_src emacs-lisp
   (use-package scss-mode)
   (use-package css-mode)
 #+end_src
 *** emmet
+
 #+begin_src emacs-lisp
   (use-package emmet-mode
     :diminish emmet-mode
@@ -1239,12 +1415,14 @@
     (add-hook 'emmet-mode-hook (lambda () (setq emmet-indentation 2))))
 #+end_src
 *** json
+
 #+begin_src emacs-lisp
   (use-package json-mode
     :defer t
     :mode ("\\.json$" . json-mode))
 #+end_src
 *** yaml
+
 #+begin_src emacs-lisp
   (use-package yaml-mode
     :mode "\\.yml\\'"
@@ -1255,42 +1433,51 @@
     :after yaml-mode)
 #+end_src
 *** python
+
 #+begin_src emacs-lisp
   (use-package python-mode)
 #+end_src
 *** golang
+
 #+begin_src emacs-lisp
   (use-package go-mode)
 #+end_src
 *** dockfile
+
 #+begin_src emacs-lisp
   (use-package dockerfile-mode)
 #+end_src
 *** php
+
 #+begin_src emacs-lisp
   (use-package php-mode)
 #+end_src
 *** sql
+
 #+begin_src emacs-lisp
   (use-package sql-indent)
   (add-hook 'sql-mode-hook 'sqlind-minor-mode)
 #+end_src
 *** pkg-info
+
 #+begin_src emacs-lisp
   (use-package pkg-info)
 #+end_src
 *** lua
+
 #+begin_src emacs-lisp
   (use-package lua-mode)
 #+end_src
 ** Syntax
 *** flycheck
+
 #+begin_src emacs-lisp
   (use-package flycheck
     :diminish flycheck-mode
     :init (global-flycheck-mode))
 #+end_src
 *** format
+
 #+begin_src emacs-lisp
   (use-package apheleia
     :defer t
@@ -1305,6 +1492,7 @@
     )
     #+end_src
 ** Parens
+
 #+begin_src emacs-lisp
   (use-package highlight-parentheses
     :hook (prog-mode . highlight-parentheses-mode)
@@ -1314,12 +1502,14 @@
     )
 #+end_src
 ** Rainbow
+
 #+begin_src emacs-lisp
   (use-package rainbow-delimiters
     :config
     (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
 #+end_src
 ** Colorful
+
 #+begin_src emacs-lisp
   (use-package rainbow-mode
     :diminish rainbow-mode
@@ -1328,6 +1518,7 @@
 #+end_src
 ** Autocompletion
 *** corfu
+
 #+begin_src emacs-lisp :tangle no
   (use-package corfu
     :custom
@@ -1344,6 +1535,7 @@
     (global-corfu-mode))
 #+end_src
 *** kind-icon
+
 #+begin_src emacs-lisp
   (use-package kind-icon
     :after corfu
@@ -1352,6 +1544,7 @@
     (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
 #+end_src
 *** orderless
+
 #+begin_src emacs-lisp
   ;; Optionally use the `orderless' completion style.
   (use-package orderless
@@ -1364,6 +1557,7 @@
           completion-category-overrides '((file (styles partial-completion)))))
 #+end_src
 *** vertico
+
 #+begin_src emacs-lisp
   (use-package vertico
     :bind (("s-'" . vertico-repeat))
@@ -1397,12 +1591,14 @@
     :hook (rfn-eshadow-update-overlay . vertico-directory-tidy))
 #+end_src
 *** savehist
+
 #+begin_src emacs-lisp
   (use-package savehist
     :init
     (savehist-mode))
 #+end_src
 *** marginalia
+
 #+begin_src emacs-lisp
   ;; Enable rich annotations using the Marginalia package
   (use-package marginalia
@@ -1421,6 +1617,7 @@
     (marginalia-mode))
 #+end_src
 *** embark
+
 #+begin_src emacs-lisp
 
   (use-package embark
@@ -1455,6 +1652,7 @@
 
 #+end_src
 ** lsp-mode
+
 #+begin_src emacs-lisp :tangle no
   (defun gcl/lsp-mode-setup ()
     (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
@@ -1531,6 +1729,7 @@
     :commands lsp-treemacs-errors-list)
 #+end_src
 ** lsp-bridge
+
 #+begin_src emacs-lisp
   (use-package lsp-bridge
     :diminish (lsp-bridge-mode . "℗ ")
@@ -1599,6 +1798,7 @@
 #+end_src
 ** eslint
 *** sync function
+
 #+begin_src emacs-lisp
 (defun my-eslint-fix-file ()
   "Run `npx eslint --fix --cache` on the current file."
@@ -1616,6 +1816,7 @@
           (pop-to-buffer output-buffer))))))
 #+end_src
 *** async function
+
 #+begin_src emacs-lisp :tangle no
   (defun my-eslint-fix-file ()
      "Run `npx eslint --fix --cache` on the current file if it's not modified after save."
@@ -1635,6 +1836,7 @@
 #+end_src
 
 *** eslint hook
+
 #+begin_src emacs-lisp
 
 
@@ -1687,6 +1889,7 @@
 #+end_src
 ** git
 *** magit
+
 #+begin_src emacs-lisp
 (use-package magit
   :bind* (("C-S-g" . magit))
@@ -1713,6 +1916,7 @@
   )
 #+end_src
 *** blamer
+
 #+begin_src emacs-lisp
   (use-package blamer
     :bind (("C-c g c" . blamer-show-posframe-commit-info))
@@ -1732,6 +1936,7 @@
     )
 #+end_src
 *** git modes
+
 #+begin_src emacs-lisp
 (use-package git-modes
   :config
@@ -1745,6 +1950,7 @@
 
 #+end_src
 *** smerge
+
 #+begin_src emacs-lisp
   (use-package smerge-mode
     :config
@@ -1758,6 +1964,7 @@
     :bind ("s-," . smerge/panel/body))
 #+end_src
 *** diff
+
 #+begin_src emacs-lisp
     (use-package diff-hl
     :hook ((magit-pre-refresh . diff-hl-magit-pre-refresh)
@@ -1765,7 +1972,16 @@
       :config
       (global-diff-hl-mode))
 #+end_src
+*** show log
+
+#+begin_src emacs-lisp
+  (use-package consult-git-log-grep
+  :bind (("C-c g l" . consult-git-log-grep))
+    :custom
+    (consult-git-log-grep-open-function #'magit-show-commit))
+#+end_src
 ** terminal
+
 #+begin_src emacs-lisp
 (use-package vterm)
 (use-package multi-vterm)
@@ -1805,10 +2021,94 @@
    ("s-K" . scroll-down-command)
    ("s-n" . next-buffer)
    ("s-p" . previous-buffer)
+   ("s-f" . find-file)
    )
 #+end_src
 
 * My Keybindings
+** C/s/M-[key]
+*** C, Control
+
+|---------------+---------------------------------------+-----------|
+| key           | function                              | mode      |
+|---------------+---------------------------------------+-----------|
+| ~C-%, C-5~      | bounce between parens                 |           |
+|---------------+---------------------------------------+-----------|
+| *C-<num>*       |                                       |           |
+| ~C-7/8~         | lsp-bridge find definitions           |           |
+| ~C-S-7/8~       | lsp-bridge find symbol at point/input |           |
+| ~C-9~           | lsp-bridge find references            |           |
+|---------------+---------------------------------------+-----------|
+| MC            | multiple cursors                      |           |
+| ~C-<>~          | mark prev/next                        |           |
+| ~C-M-<>~        | skip prev/next                        |           |
+| ~C-S-\~         | mc/align                              | mc/keymap |
+| ~C-c C-<~       | mark all                              |           |
+| ~C-S-<mouse-1>~ | add cursor                            |           |
+| ~C-;~           | toggle mark                           |           |
+|---------------+---------------------------------------+-----------|
+| ~C-=~           | expand region                         |           |
+| ~C-<tab>~       | switch workspace                      |           |
+| ~C-<backspace>~ | kill line backwards                   |           |
+| ~C-()~          | parent down/up                        |           |
+| ~C-,~           | iedit                                 |           |
+| ~C-'~           | toggle quotes                         |           |
+| ~C-.~           | embark-act                            |           |
+| ~C-t~           | transpose chars                       |           |
+| ~C-k~           | kill line                             |           |
+| ~C-z~           | undo(~s-z~ redo)                        |           |
+| ~C-S-l~         | duplicate-thing                       |           |
+|---------------+---------------------------------------+-----------|
+*** M, Option/Meta
+
+|-----------+----------------------------------+---|
+| ~M-;~       | comment/uncomment                |   |
+| ~M-i~       | imenu                            |   |
+| ~M-o~       | other window                     |   |
+| ~M-i~       | symbol highlight                 |   |
+| ~M-n~       | symbol next                      |   |
+| ~M-p~       | symbol prev                      |   |
+| ~M-N/P~     | org subtree down/up              |   |
+|-----------+----------------------------------+---|
+| *M-s*       | search, color-rg                 |   |
+| ~M-s i/s~   | search input/symbol in directory |   |
+| ~M-s M-i/s~ | search input symbol in project   |   |
+| ~M-s f/F~   | search input/symbol in file      |   |
+| ~M-s e/M-e~ | search symbol/project with type  |   |
+|-----------+----------------------------------+---|
+
+*** s-<key>,  Command/Super
+|------------+--------------------------------------+--------------|
+| ~s-1~        | consult imenu                        |              |
+| ~s-<>~       | move text up/down                    |              |
+| ~s-()~       | parent back/forward                  |              |
+| ~s-,~        | smerge                               |              |
+| ~s-`~        | toggle vterm                         |              |
+| ~s--=~       | split window horizontally/vertically |              |
+| ~s-0~        | delete window                        |              |
+| ~s-<return>~ | multi vterm                          |              |
+| ~s-h/l/j/k~  | move window left/right/up/down       |              |
+| ~s-J/K~      | scroll up/down                       |              |
+| ~s-n/p~      | next/previous buffer                 |              |
+| ~s-f~        | find file                            |              |
+| ~s-r~        | recentf find file                    |              |
+| ~s-b~        | switch to buffer                     |              |
+| ~s-w~        | delete other windows                 |              |
+| ~s-q~        | delete window                        |              |
+| ~s-d~        | find file/directory                  |              |
+| ~s-i~        | string inflection                    |              |
+| ~s-I~        | parrot                               |              |
+| ~s-o~        | toggle one window                    |              |
+| ~s-t~        | org-todo                             | org-mode-map |
+| ~s-z~        | redo(undo: ~C-z~)                      |              |
+|------------+--------------------------------------+--------------|
+| *s-g*        | goto                                 |              |
+| ~s-g w~      | goto word                            |              |
+| ~s-g l~      | goto line                            |              |
+| ~s-g c~      | goto char                            |              |
+| ~s-g x~      | copy line                            |              |
+| ~s-g m~      | move line                            |              |
+
 ** fn
 | key | function                   |
 |-----+----------------------------|
@@ -1820,79 +2120,6 @@
 | ~f9~  | switch project             |
 | ~f10~ | switch workspaces          |
 |     |                            |
-** C/s/M-[key]
-| key           | function                              | mode         |
-|---------------+---------------------------------------+--------------|
-| ~s-<return>~    | new line below                        |              |
-| ~M-<return>~    | new line above                        |              |
-|---------------+---------------------------------------+--------------|
-| ~C-%, C-5~      | bounce between parens                 |              |
-|---------------+---------------------------------------+--------------|
-| *C-<num>*       |                                       |              |
-| ~C-7/8~         | lsp-bridge find definitions           |              |
-| ~C-S-7/8~       | lsp-bridge find symbol at point/input |              |
-| ~C-9~           | lsp-bridge find references            |              |
-|---------------+---------------------------------------+--------------|
-| MC            | multiple cursors                      |              |
-| ~C-<>~          | mark prev/next                        |              |
-| ~C-M-<>~        | skip prev/next                        |              |
-| ~C-S-\~         | mc/align                              | mc/keymap    |
-| ~C-c C-<~       | mark all                              |              |
-| ~C-S-<mouse-1>~ | add cursor                            |              |
-| ~C-;~           | toggle mark                           |              |
-|---------------+---------------------------------------+--------------|
-| ~C-=~           | expand region                         |              |
-| ~C-<tab>~       | switch workspace                      |              |
-| ~C-()~          | parent down/up                        |              |
-| ~C-,~           | iedit                                 |              |
-| ~C-'~           | toggle quotes                         |              |
-| ~C-.~           | embark-act                            |              |
-| ~C-t~           | transpose chars                       |              |
-| ~C-z~           | undo(~s-z~ redo)                        |              |
-| ~C-S-l~         | duplicate-thing                       |              |
-|---------------+---------------------------------------+--------------|
-| ~M-;~           | comment/uncomment                     |              |
-| ~M-i~           | imenu                                 |              |
-| ~M-o~           | other window                          |              |
-| ~M-i~           | symbol highlight                      |              |
-| ~M-n~           | symbol next                           |              |
-| ~M-p~           | symbol prev                           |              |
-| ~M-N/P~         | org subtree down/up                   |              |
-|---------------+---------------------------------------+--------------|
-| *M-s*           | search, color-rg                      |              |
-| ~M-s i/s~       | search input/symbol in directory      |              |
-| ~M-s M-i/s~     | search input symbol in project        |              |
-| ~M-s f/F~       | search input/symbol in file           |              |
-| ~M-s e/M-e~     | search symbol/project with type       |              |
-|---------------+---------------------------------------+--------------|
-| ~s-1~           | consult imenu                         |              |
-| ~s-<>~          | move text up/down                     |              |
-| ~s-()~          | parent back/forward                   |              |
-| ~s-,~           | smerge                                |              |
-| ~s-`~           | toggle vterm                          |              |
-| ~s--=~          | split window horizontally/vertically  |              |
-| ~s-0~           | delete window                         |              |
-| ~s-<return>~    | multi vterm                           |              |
-| ~s-h/l/j/k~     | move window left/right/up/down        |              |
-| ~s-J/K~         | scroll up/down                        |              |
-| ~s-n/p~         | next/previous buffer                  |              |
-| ~s-b~           | switch to buffer                      |              |
-| ~s-w~           | delete other windows                  |              |
-| ~s-q~           | delete window                         |              |
-| ~s-d~           | find file/directory                   |              |
-| ~s-i~           | string inflection                     |              |
-| ~s-I~           | parrot                                |              |
-| ~s-o~           | toggle one window                     |              |
-| ~s-t~           | org-todo                              | org-mode-map |
-| ~s-z~           | redo(undo: ~C-z~)                       |              |
-|---------------+---------------------------------------+--------------|
-| *s-g*           | goto                                  |              |
-| ~s-g w~         | goto word                             |              |
-| ~s-g l~         | goto line                             |              |
-| ~s-g c~         | goto char                             |              |
-| ~s-g x~         | copy line                             |              |
-| ~s-g m~         | move line                             |              |
-
 ** C-S, Control-Shift
 | key     | function       |
 |---------+----------------|
@@ -1900,66 +2127,168 @@
 | ~C-S-g~   | magit          |
 
 ** C-c
-| key        | function                    |
-|------------+-----------------------------|
-| ~C-c a~      | org-agend                   |
-| ~C-c c~      | org-capture                 |
-| ~C-c o~      | open with external app      |
-| ~C-c r~      | search and replace          |
-| ~C-c q~      | query and replace           |
-| ~C-c m~      | vr/mark                     |
-|------------+-----------------------------|
-| ~C-c TAB~    | perspective                 |
-|            |                             |
-|------------+-----------------------------|
-| *C-c c*      | copy                        |
-|            |                             |
-| ~C-c cn~     | copy filename               |
-| ~C-c cp~     | copy file path              |
-|------------+-----------------------------|
-| *C-c e*      | errors                      |
-| ~C-c en~     | next error                  |
-| ~C-c ep~     | prev error                  |
-| ~C-c el~     | error list                  |
-|------------+-----------------------------|
-| *C-c i*      | insert                      |
-| ~C-c id~     | insert date                 |
-| ~C-c it~     | insert time                 |
-|------------+-----------------------------|
-| *C-c l*      | lsp                         |
-|            |                             |
-|------------+-----------------------------|
-| *C-c s*      |                             |
-| ~C-c sp~     | consult ripgrep             |
-| ~C-c s[...]~ | search engine               |
-|------------+-----------------------------|
-| *C-c g*      | git, ...                    |
-| ~C-c gc~     | show commit info            |
-|------------+-----------------------------|
-| *C-c b*      | buffer, bookmark,...        |
-| ~C-c bo~     | open buffer to other window |
-| ~C-c bp~     | open project buffer         |
-| ~C-c bm~     | bookmark                    |
-| ~C-c bs~     | switch scratch buffer       |
-| ~C-c bf~     | open current directory     |
-|------------+-----------------------------|
-| *C-c y*      | yas, dict, yank...          |
-| ~C-c y~      | yasnippets                  |
-| ~C-c yi~     | insert                      |
-| ~C-c yf~     | visit file                  |
-| ~C-c yn~     | new snippet                 |
-| ~C-c yx~     | expand                      |
+|-------+------------------------|
+| key   | function               |
+|-------+------------------------|
+| ~C-c D~ | delete file and buffer |
+| ~C-c R~ | rename file and buffer |
+| ~C-c a~ | org-agend              |
+| ~C-c c~ | org-capture            |
+| ~C-c o~ | open with external app |
+| ~C-c r~ | search and replace     |
+| ~C-c q~ | query and replace      |
+| ~C-c m~ | vr/mark                |
+| ~C-c o~ | open with              |
+| ~C-c u~ | view url               |
+|       |                        |
+|-------+------------------------|
+https://www.baidu.com
+*** C-c TAB
+
+#+begin_src emacs-lisp
+  (which-key-add-key-based-replacements
+    "C-c TAB" "persp")
+#+end_src
+|---------+-------------|
+| ~C-c TAB~ | perspective |
+|         |             |
+|---------+-------------|
+
+*** C-c c
+#+begin_src emacs-lisp
+  (which-key-add-key-based-replacements
+    "C-c c" "copy")
+#+end_src
+
+|--------+----------------|
+| *C-c c*  | copy           |
+|        |                |
+| ~C-c cn~ | copy filename  |
+| ~C-c cp~ | copy file path |
+|--------+----------------|
+
+*** C-c e
+#+begin_src emacs-lisp
+  (which-key-add-key-based-replacements
+    "C-c e" "errors")
+#+end_src
+|--------+------------|
+| *C-c e*  | errors     |
+| ~C-c en~ | next error |
+| ~C-c ep~ | prev error |
+| ~C-c el~ | error list |
+|--------+------------|
+
+*** C-c i
+
+#+begin_src emacs-lisp
+  (which-key-add-key-based-replacements
+    "C-c i" "insert")
+#+end_src
+|--------+-------------|
+| *C-c i*  | insert      |
+| ~C-c id~ | insert date |
+| ~C-c it~ | insert time |
+|--------+-------------|
+
+*** C-c l, lsp
+
+#+begin_src emacs-lisp
+(which-key-add-key-based-replacements
+    "C-c l" "lsp")
+#+end_src
+|-------+-----|
+| *C-c l* | lsp |
+|       |     |
+|-------+-----|
+
+*** C-c s, search
+#+begin_src emacs-lisp
+(which-key-add-key-based-replacements
+    "C-c s" "search")
+#+end_src
+|------------+-----------------|
+| *C-c s*      |                 |
+| ~C-c sp~     | consult ripgrep |
+| ~C-c s[...]~ | search engine   |
+|------------+-----------------|
+
+*** C-c g
+
+git, goto...
+
+#+begin_src emacs-lisp
+(which-key-add-key-based-replacements
+    "C-c s" "search")
+#+end_src
+|--------+------------------|
+| *C-c g*  | git, ...         |
+| ~C-c gc~ | show commit info |
+| ~C-c gl~ | show git log     |
+|--------+------------------|
+
+*** C-c b
+
+buffer, file, directory, bookmark...
+
+#+begin_src emacs-lisp
+(which-key-add-key-based-replacements
+    "C-c b" "buffer")
+#+end_src
+|--------+-----------------------------|
+| *C-c b*  | buffer, bookmark,...        |
+| ~C-c bo~ | open buffer to other window |
+| ~C-c bp~ | open project buffer         |
+| ~C-c bm~ | bookmark                    |
+| ~C-c bs~ | switch scratch buffer       |
+| ~C-c bf~ | open current directory      |
+| ~C-c bK~ | kill other buffers          |
+|        |                             |
+|--------+-----------------------------|
+
+*** C-c y
+
+dictionary, yank, yasnippets...
+
+#+begin_src emacs-lisp
+(which-key-add-key-based-replacements
+    "C-c y" "yas&dict")
+#+end_src
+
+|------------+------------------------|
+| *C-c y*      | yas, dict, yank...     |
+| ~C-c yi~     | input                  |
+| ~C-c yf~     | visit file             |
+| ~C-c yn~     | new snippet            |
+| ~C-c yx~     | expand                 |
+|------------+------------------------|
+| dictionary |                        |
+| ~C-c yd~     | translate point        |
+| ~C-c yy~     | translate input        |
+| ~C-c yh~     | translate from history |
+| ~C-c y,~     | youdao translate point |
+| ~C-c y.~     | youdao translate input |
+|            |                        |
+|------------+------------------------|
 
 ** C-x
-| key   | function      | mode |
-|-------+---------------+------|
-| ~C-x =~ | indeng region |      |
-| ~C-x b~ | switch buffer |      |
+
+|---------+------------------+------|
+| key     | function         | mode |
+|---------+------------------+------|
+| ~C-x =~   | indeng region    |      |
+| ~C-x b~   | switch buffer    |      |
+| ~C-x C-w~ | transpose window |      |
+|---------+------------------+------|
 ** C-h
+
+|-------+-----------------+------|
 | key   | function        | mode |
 |-------+-----------------+------|
 | ~C-h B~ | embark bindings |      |
+|-------+-----------------+------|
 * Tangle config
+
 #+BEGIN_SRC emacs-lisp
 
 (defun tangle-if-init ()
