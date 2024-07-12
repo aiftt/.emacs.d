@@ -2134,11 +2134,13 @@ expand with RegExp，这个貌似速度更快一点。
 | ~M-;~       | comment/uncomment                |      |
 | ~M-`~       | org fold all                     |      |
 | ~M--/=~     | last change                      |      |
-| ~M-i~       | imenu                            |      |
 | ~M-o~       | other window                     |      |
 | ~M-i~       | symbol highlight                 |      |
 | ~M-n~       | symbol next                      |      |
 | ~M-p~       | symbol prev                      |      |
+| ~M-c~       | capitalize word                  |      |
+| ~M-u~       | upcase word                      |      |
+| ~M-l~       | downcase word                    |      |
 | ~M-N/P~     | org subtree down/up              |      |
 |-----------+----------------------------------+------|
 | *M-s*       | search, color-rg                 |      |
