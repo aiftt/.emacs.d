@@ -135,6 +135,9 @@
 ;; 光标不闪烁
 (blink-cursor-mode -1)
 
+;; 关闭 Edebug 日志输出
+(setq edebug-trace nil)
+
 ;; 去掉工具栏等
 (when window-system
   (tool-bar-mode 0)
@@ -544,7 +547,7 @@
 (global-set-key (kbd "C-c o") #'crux-open-with)
 (global-set-key [(shift return)] #'crux-smart-open-line)
 (global-set-key (kbd "s-r") #'crux-recentf-find-file)
-(global-set-key (kbd "C-<backspace>") #'crux-kill-line-backwards)
+(global-set-key (kbd "C-s-<backspace>") #'crux-kill-line-backwards)
 (global-set-key (kbd "C-k") #'crux-smart-kill-line)
 (global-set-key (kbd "C-c u") #'crux-view-url)
 (global-set-key (kbd "C-x C-w") #'crux-transpose-windows)
@@ -1368,9 +1371,10 @@
           (progn
             (message "eslint --fix completed successfully.")
             (kill-buffer output-buffer))
-        (progn
-          (message "eslint --fix failed. Check *eslint-output* for details.")
-          (pop-to-buffer output-buffer))))))
+        ;; (progn
+          ;; (message "eslint --fix failed. Check *eslint-output* for details.")
+          ;; (pop-to-buffer output-buffer))
+        ))))
 
 (defun my-add-eslint-fix-hook ()
   "Add the `my-eslint-fix-file` function to the `after-save-hook`."
