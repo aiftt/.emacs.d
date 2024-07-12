@@ -168,6 +168,18 @@
     new-window))
 (advice-add 'split-window :around #'split-window--select-window)
 #+end_src
+** font
+#+begin_src emacs-lisp
+  (defvar gcl/default-font-size 150)
+  (defvar gcl/default-variable-font-size 150)
+
+  ;; Make frame transparency overridable
+  (defvar gcl/frame-transparency '(90 . 90))
+
+  (defvar gcl/variable-pitch-size 120)
+  (defvar gcl/org-heading-font "Iosevka Aile"
+    "The font used for Org Mode headings.")
+#+end_src
 * Unbindings
 
 #+begin_src emacs-lisp
@@ -890,6 +902,14 @@
             ))
       )
 #+end_src
+** buffer move
+#+begin_src emacs-lisp
+  (use-package buffer-move)
+  (global-set-key (kbd "<C-S-up>")     'buf-move-up)
+  (global-set-key (kbd "<C-S-down>")   'buf-move-down)
+  (global-set-key (kbd "<C-S-left>")   'buf-move-left)
+  (global-set-key (kbd "<C-S-right>")  'buf-move-right)
+#+end_src
 * Search
 ** engine-mode
 
@@ -995,15 +1015,7 @@
 ** Fonts
 
 #+begin_src emacs-lisp
-  (defvar gcl/default-font-size 150)
-  (defvar gcl/default-variable-font-size 150)
 
-  ;; Make frame transparency overridable
-  (defvar gcl/frame-transparency '(90 . 90))
-
-  (defvar gcl/variable-pitch-size 120)
-  (defvar gcl/org-heading-font "Iosevka Aile"
-    "The font used for Org Mode headings.")
 
   (set-face-attribute 'default nil :font "Fira Code Retina" :height gcl/default-font-size)
 

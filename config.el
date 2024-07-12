@@ -128,6 +128,16 @@
     new-window))
 (advice-add 'split-window :around #'split-window--select-window)
 
+(defvar gcl/default-font-size 150)
+(defvar gcl/default-variable-font-size 150)
+
+;; Make frame transparency overridable
+(defvar gcl/frame-transparency '(90 . 90))
+
+(defvar gcl/variable-pitch-size 120)
+(defvar gcl/org-heading-font "Iosevka Aile"
+  "The font used for Org Mode headings.")
+
 (global-unset-key (kbd "s-g"))
 
 ;; 光标样式
@@ -683,6 +693,12 @@
                      ;; Longman
                      fanyi-longman-provider)))
 
+(use-package buffer-move)
+(global-set-key (kbd "<C-S-up>")     'buf-move-up)
+(global-set-key (kbd "<C-S-down>")   'buf-move-down)
+(global-set-key (kbd "<C-S-left>")   'buf-move-left)
+(global-set-key (kbd "<C-S-right>")  'buf-move-right)
+
 (use-package engine-mode
   :config
   (engine-mode t)
@@ -767,16 +783,6 @@
          ("M-s F" . color-rg-search-symbol-in-current-file)
          ("M-s e" . color-rg-search-symbol-with-type)
          ("M-s M-e" . color-rg-search-project-with-type)))
-
-(defvar gcl/default-font-size 150)
-(defvar gcl/default-variable-font-size 150)
-
-;; Make frame transparency overridable
-(defvar gcl/frame-transparency '(90 . 90))
-
-(defvar gcl/variable-pitch-size 120)
-(defvar gcl/org-heading-font "Iosevka Aile"
-  "The font used for Org Mode headings.")
 
 (set-face-attribute 'default nil :font "Fira Code Retina" :height gcl/default-font-size)
 
