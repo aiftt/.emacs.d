@@ -554,8 +554,8 @@
     ("p" maple-iedit-match-previous "prev"))
   :bind* (("C-," . maple/iedit/body)))
 
-(use-package expand-region)
-(global-set-key (kbd "C-=") 'er/expand-region)
+(use-package expreg
+  :bind (("C-=" . expreg-expand)))
 
 (use-package diminish
   :demand t
@@ -703,6 +703,16 @@
   :bind (("M--" . goto-last-change)
          ("M-=" . goto-last-change-reverse)
          ))
+
+(use-package embrace
+  :bind
+  (("C-q" . embrace-commander))
+  :config
+  (add-hook 'org-mode-hook 'embrace-org-mode-hook)
+    ;; 在 `prog-mode` 和 `text-mode` 中启用 `embrace`
+  (add-hook 'prog-mode-hook 'embrace-enable)
+  (add-hook 'text-mode-hook 'embrace-enable)
+  )
 
 (use-package engine-mode
   :config
@@ -1282,9 +1292,9 @@
 
 (use-package embark
   :ensure t
-
   :bind
-  (("C-." . embark-act)         ;; pick some comfortable binding
+  (
+   ("C-." . embark-act)         ;; pick some comfortable binding
    ;; ("C-;" . embark-dwim)        ;; good alternative: M-.
    ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
 

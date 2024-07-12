@@ -4,7 +4,8 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(safe-local-variable-values
-   '((eval when
+   '((lsp-enabled-clients vue-semantic-server tailwindcss)
+     (eval when
 	   (fboundp #'tangle-if-init)
 	   (add-hook 'after-save-hook #'tangle-if-init)))))
 (custom-set-faces

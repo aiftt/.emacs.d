@@ -671,9 +671,16 @@
 #+end_src
 ** expand region
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package expand-region)
   (global-set-key (kbd "C-=") 'er/expand-region)
+#+end_src
+
+expand with RegExp，这个貌似速度更快一点。
+
+#+begin_src emacs-lisp
+  (use-package expreg
+    :bind (("C-=" . expreg-expand)))
 #+end_src
 ** diminish
 
@@ -916,6 +923,18 @@
     :bind (("M--" . goto-last-change)
            ("M-=" . goto-last-change-reverse)
            ))
+#+end_src
+** embrace(surround)
+#+begin_src emacs-lisp
+  (use-package embrace
+    :bind
+    (("C-q" . embrace-commander))
+    :config
+    (add-hook 'org-mode-hook 'embrace-org-mode-hook)
+      ;; 在 `prog-mode` 和 `text-mode` 中启用 `embrace`
+    (add-hook 'prog-mode-hook 'embrace-enable)
+    (add-hook 'text-mode-hook 'embrace-enable)
+    )
 #+end_src
 * Search
 ** engine-mode
@@ -1658,9 +1677,9 @@
 
   (use-package embark
     :ensure t
-
     :bind
-    (("C-." . embark-act)         ;; pick some comfortable binding
+    (
+     ("C-." . embark-act)         ;; pick some comfortable binding
      ;; ("C-;" . embark-dwim)        ;; good alternative: M-.
      ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
 
@@ -2097,7 +2116,9 @@
 | ~C-`~             | alias M-x                             |           |
 | ~C-,~             | iedit                                 |           |
 | ~C-'~             | toggle quotes                         |           |
-| ~C-.~             | embark-act                            |           |
+| ~C-.~             | embark act                            |           |
+|-----------------+---------------------------------------+-----------|
+| ~C-q~             | embrace surround                      |           |
 | ~C-t~             | transpose chars                       |           |
 | ~C-k~             | kill line                             |           |
 | ~C-z~             | undo(~s-z~ redo)                        |           |
@@ -2139,6 +2160,7 @@
 | ~s-<>~       | move text up/down                    |              |
 | ~s-()~       | parent back/forward                  |              |
 | ~s-,~        | smerge                               |              |
+| ~s-.~        | embrace surround                    |              |
 | ~s-`~        | toggle vterm                         |              |
 | ~s--=~       | split window horizontally/vertically |              |
 | ~s-0~        | delete window                        |              |
