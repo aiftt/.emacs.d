@@ -376,7 +376,7 @@
   ;; TODO
 #+end_src
 ** org-mode
-
+  
 #+begin_src emacs-lisp
   (setq org-directory "~/.gclrc/org")
 
@@ -2159,6 +2159,11 @@ expand with RegExp，这个貌似速度更快一点。
   ;; ;; 加速diff
   (setq magit-revision-insert-related-refs nil)
   )
+#+end_src
+*** forge
+#+begin_src emacs-lisp
+(use-package forge
+  :after magit)
 #+end_src
 *** blamer
 

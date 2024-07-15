@@ -1599,6 +1599,9 @@
   (setq magit-revision-insert-related-refs nil)
   )
 
+(use-package forge
+  :after magit)
+
 (use-package blamer
   :bind (("C-c g c" . blamer-show-posframe-commit-info))
   :custom

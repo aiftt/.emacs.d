@@ -47,3 +47,4 @@ tramp
 config.elc
 .lsp-session
 _config.org
+forge-database.sqlite
