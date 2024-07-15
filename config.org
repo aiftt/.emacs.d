@@ -180,6 +180,12 @@
   (defvar gcl/org-heading-font "Iosevka Aile"
     "The font used for Org Mode headings.")
 #+end_src
+** random 4bit number
+#+begin_src emacs-lisp
+(defun generate-random-4-digit-number ()
+  "Generate a random 4-digit number as a string."
+  (number-to-string (+ 1000 (random 9000))))
+#+end_src
 * Unbindings
 
 #+begin_src emacs-lisp
@@ -403,41 +409,72 @@
     (when (string= org-state "DONE")
       (dw/org-move-done-tasks-to-bottom)))
   ;; (add-hook 'org-after-todo-state-change-hook 'dw/org-todo-state-change-hook)
+
+  (defun my-org-mode-hook ()
+  "Custom configurations for `org-mode`."
+  (setq org-adapt-indentation t)         ; Automatically adapt indentation
+  (setq org-indent-indentation-per-level 2) ; Set indentation level to 2 spaces
+  (org-indent-mode t))                   ; Enable org-indent-mode for better visibility
+
+(add-hook 'org-mode-hook 'my-org-mode-hook)
 #+end_src
+*** verb                                                               :verb:
+# 注释只能放在 url 和 请求头之前，https://github.com/federicotdn/verb
+
+template https://reqres.in/api
+Accept: application/json
+
+#+begin_src emacs-lisp
+(use-package verb)
+#+end_src
+
+**** create user
+# 上级已经定义了请求的 host 地址，因此这里没必要重复，只需要使用路由发起请求就行。
+
+post /users
+Content-Type: application/json; charset=utf-8
+
+{
+    "name": "Jane Smith",
+    "city": "Berlin"
+}
 *** configuration
 
 #+begin_src emacs-lisp
-    (use-package org
-      :straight (:type built-in)
-      :hook (org-mode . dw/org-mode-setup)
-      :bind (:map org-mode-map
-                  ("M-N" . org-move-subtree-down)
-                  ("M-P" . org-move-subtree-up)
-                  ("M-`" . org-overview))
-      :config
-      (setq org-ellipsis "..."
-            org-imenu-depth 4 ; 可搜索的标题层级
-            org-hide-emphasis-markers t
-            org-src-fontify-natively t
-            org-fontify-quote-and-verse-blocks t
-            org-src-tab-acts-natively t
-            org-edit-src-content-indentation 2
-            org-hide-block-startup nil
-            org-src-preserve-indentation nil
-            org-startup-folded 'content
-            org-cycle-separator-lines 2
-            org-capture-bookmark nil
-            )
+  (use-package org
+    :straight (:type built-in)
+    :hook (org-mode . dw/org-mode-setup)
+    :bind (:map org-mode-map
+                ("M-N" . org-move-subtree-down)
+                ("M-P" . org-move-subtree-up)
+                ("M-`" . org-overview))
+    :config
+    (define-key org-mode-map (kbd "C-c C-r") verb-command-map)
+    (setq org-ellipsis "..."
+          org-imenu-depth 4 ; 可搜索的标题层级
+          org-hide-emphasis-markers t
+          org-src-fontify-natively t
+          org-fontify-quote-and-verse-blocks t
+          org-src-tab-acts-natively t
+          org-edit-src-content-indentation 2
+          org-hide-block-startup nil
+          org-src-preserve-indentation nil
+          org-startup-folded 'content
+          org-cycle-separator-lines 2
+          org-capture-bookmark nil
+          org-confirm-babel-evaluate nil
+          )
 
-      (org-babel-do-load-languages
-       'org-babel-load-languages
-       '((emacs-lisp . t)))
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((emacs-lisp . t)
+       (verb . t)))
 
-      ;; 重新生成 org-imenu 索引
-      (add-hook 'org-mode-hook
-                (lambda ()
-                  (setq imenu-create-index-function 'org-imenu-get-tree)))
-      )
+    ;; 重新生成 org-imenu 索引
+    (add-hook 'org-mode-hook
+              (lambda ()
+                (setq imenu-create-index-function 'org-imenu-get-tree)))
+    )
 #+end_src
 *** org-face
 
@@ -474,6 +511,9 @@
                     ("html" . "src html")
                     ("vue" . "src vue")
                     ("go" . "src go")
+                    ("vb" . "src verb")
+                    ("vbs" . "src verb :wrap src ob-verb-response")
+                    ("vbo" . "src verb :wrap src ob-verb-response :op send get-body")
                     ("einit" . "src emacs-lisp :tangle ~/.config/emacs/init.el :mkdirp yes")
                     ("emodule" . "src emacs-lisp :tangle ~/.config/emacs/modules/dw-MODULE.el :mkdirp yes")
                     ("yaml" . "src yaml")
@@ -487,6 +527,39 @@
 #+begin_src emacs-lisp
   (use-package org-modern
     :hook (org-mode . org-modern-mode))
+#+end_src
+*** org-roam
+#+begin_src emacs-lisp
+    (use-package org-roam
+      :custom
+      (org-roam-directory (file-truename "~/.gclrc/org/v2/"))
+      :bind (("C-c n l" . org-roam-buffer-toggle)
+             ("C-c n f" . org-roam-node-find)
+             ("C-c n g" . org-roam-graph)
+             ("C-c n i" . org-roam-node-insert)
+             ("C-c n c" . org-roam-capture)
+             ("C-c n v" . org-roam-node-visit)
+             ;; Dailies
+             ("C-c n j" . org-roam-dailies-capture-today))
+      :config
+      ;; If you're using a vertical completion framework, you might want a more informative completion interface
+      (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
+      (org-roam-db-autosync-mode)
+      ;; If using org-roam-protocol
+      (require 'org-roam-protocol))
+
+    (use-package org-roam-ui
+      :diminish org-roam-ui-mode
+      :after org-roam
+  ;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+  ;;         a hookable mode anymore, you're advised to pick something yourself
+  ;;         if you don't care about startup time, use
+  ;;  :hook (after-init . org-roam-ui-mode)
+      :config
+      (setq org-roam-ui-sync-theme t
+            org-roam-ui-follow t
+            org-roam-ui-update-on-save t
+            org-roam-ui-open-on-start nil))
 #+end_src
 * Toolkits
 
@@ -2480,6 +2553,18 @@ dictionary, yank, yasnippets...
 |            |                        |
 |------------+------------------------|
 
+*** C-c n
+|--------+----------------------------|
+| key    | function                   |
+|--------+----------------------------|
+| ~C-c nl~ | roam buffer toggle         |
+| ~C-c nf~ | roam find noe              |
+| ~C-c ng~ | roam graph                 |
+| ~C-c ni~ | roam insert node           |
+| ~C-c nc~ | roam capture               |
+| ~C-c nj~ | roam dailies capture today |
+|        |                            |
+|--------+----------------------------|
 ** C-x
 
 |---------+------------------+------|

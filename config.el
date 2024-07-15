@@ -138,6 +138,10 @@
 (defvar gcl/org-heading-font "Iosevka Aile"
   "The font used for Org Mode headings.")
 
+(defun generate-random-4-digit-number ()
+  "Generate a random 4-digit number as a string."
+  (number-to-string (+ 1000 (random 9000))))
+
 (global-unset-key (kbd "s-g"))
 
 ;; 光标样式
@@ -300,35 +304,45 @@
 
 (setq org-directory "~/.gclrc/org")
 
-(defun gcl/org-path (path)
-  (expand-file-name path org-directory))
+  (defun gcl/org-path (path)
+    (expand-file-name path org-directory))
 
-;; Turn on indentation and auto-fill mode for Org files
-(defun dw/org-mode-setup ()
-  ;; (variable-pitch-mode 1)
-  (org-indent-mode 1)
-  (auto-fill-mode 0)
-  (visual-line-mode 1)
-  (setq corfu-auto nil)
-  (setq evil-auto-indent nil))
+  ;; Turn on indentation and auto-fill mode for Org files
+  (defun dw/org-mode-setup ()
+    ;; (variable-pitch-mode 1)
+    (org-indent-mode 1)
+    (auto-fill-mode 0)
+    (visual-line-mode 1)
+    (setq corfu-auto nil)
+    (setq evil-auto-indent nil))
 
-(defun dw/org-move-done-tasks-to-bottom ()
-  "Sort all tasks in the topmost heading by TODO state."
-  (interactive)
-  (save-excursion
-    (while (org-up-heading-safe))
-    (org-sort-entries nil ?o))
+  (defun dw/org-move-done-tasks-to-bottom ()
+    "Sort all tasks in the topmost heading by TODO state."
+    (interactive)
+    (save-excursion
+      (while (org-up-heading-safe))
+      (org-sort-entries nil ?o))
 
-  ;; Reset the view of TODO items
-  (org-overview)
-  (org-show-entry)
-  (org-show-children))
+    ;; Reset the view of TODO items
+    (org-overview)
+    (org-show-entry)
+    (org-show-children))
 
 
-(defun dw/org-todo-state-change-hook ()
-  (when (string= org-state "DONE")
-    (dw/org-move-done-tasks-to-bottom)))
-;; (add-hook 'org-after-todo-state-change-hook 'dw/org-todo-state-change-hook)
+  (defun dw/org-todo-state-change-hook ()
+    (when (string= org-state "DONE")
+      (dw/org-move-done-tasks-to-bottom)))
+  ;; (add-hook 'org-after-todo-state-change-hook 'dw/org-todo-state-change-hook)
+
+  (defun my-org-mode-hook ()
+  "Custom configurations for `org-mode`."
+  (setq org-adapt-indentation t)         ; Automatically adapt indentation
+  (setq org-indent-indentation-per-level 2) ; Set indentation level to 2 spaces
+  (org-indent-mode t))                   ; Enable org-indent-mode for better visibility
+
+(add-hook 'org-mode-hook 'my-org-mode-hook)
+
+(use-package verb)
 
 (use-package org
   :straight (:type built-in)
@@ -338,6 +352,7 @@
               ("M-P" . org-move-subtree-up)
               ("M-`" . org-overview))
   :config
+  (define-key org-mode-map (kbd "C-c C-r") verb-command-map)
   (setq org-ellipsis "..."
         org-imenu-depth 4 ; 可搜索的标题层级
         org-hide-emphasis-markers t
@@ -350,11 +365,13 @@
         org-startup-folded 'content
         org-cycle-separator-lines 2
         org-capture-bookmark nil
+        org-confirm-babel-evaluate nil
         )
 
   (org-babel-do-load-languages
    'org-babel-load-languages
-   '((emacs-lisp . t)))
+   '((emacs-lisp . t)
+     (verb . t)))
 
   ;; 重新生成 org-imenu 索引
   (add-hook 'org-mode-hook
@@ -391,6 +408,9 @@
                   ("html" . "src html")
                   ("vue" . "src vue")
                   ("go" . "src go")
+                  ("vb" . "src verb")
+                  ("vbs" . "src verb :wrap src ob-verb-response")
+                  ("vbo" . "src verb :wrap src ob-verb-response :op send get-body")
                   ("einit" . "src emacs-lisp :tangle ~/.config/emacs/init.el :mkdirp yes")
                   ("emodule" . "src emacs-lisp :tangle ~/.config/emacs/modules/dw-MODULE.el :mkdirp yes")
                   ("yaml" . "src yaml")
@@ -399,6 +419,37 @@
 
 (use-package org-modern
   :hook (org-mode . org-modern-mode))
+
+(use-package org-roam
+    :custom
+    (org-roam-directory (file-truename "~/.gclrc/org/v2/"))
+    :bind (("C-c n l" . org-roam-buffer-toggle)
+           ("C-c n f" . org-roam-node-find)
+           ("C-c n g" . org-roam-graph)
+           ("C-c n i" . org-roam-node-insert)
+           ("C-c n c" . org-roam-capture)
+           ("C-c n v" . org-roam-node-visit)
+           ;; Dailies
+           ("C-c n j" . org-roam-dailies-capture-today))
+    :config
+    ;; If you're using a vertical completion framework, you might want a more informative completion interface
+    (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
+    (org-roam-db-autosync-mode)
+    ;; If using org-roam-protocol
+    (require 'org-roam-protocol))
+
+  (use-package org-roam-ui
+    :diminish org-roam-ui-mode
+    :after org-roam
+;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+;;         a hookable mode anymore, you're advised to pick something yourself
+;;         if you don't care about startup time, use
+;;  :hook (after-init . org-roam-ui-mode)
+    :config
+    (setq org-roam-ui-sync-theme t
+          org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+          org-roam-ui-open-on-start nil))
 
 (use-package async :commands (async-start))
 (use-package cl-lib)
