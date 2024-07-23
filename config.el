@@ -371,7 +371,8 @@
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t)
-     (verb . t)))
+     (verb . t)
+     ))
 
   ;; 重新生成 org-imenu 索引
   (add-hook 'org-mode-hook
@@ -403,7 +404,7 @@
                   ("el" . "src emacs-lisp")
                   ("li" . "src lisp")
                   ("sc" . "src scheme")
-                  ("ts" . "src typescript")
+                  ("ts" . "src typescript-ts")
                   ("py" . "src python")
                   ("html" . "src html")
                   ("vue" . "src vue")
@@ -419,6 +420,11 @@
 
 (use-package org-modern
   :hook (org-mode . org-modern-mode))
+(use-package org-modern-indent
+:straight (org-modern-indent :type git :host github :repo "jdtsmith/org-modern-indent")
+:config ; add late to hook
+(add-hook 'org-mode-hook #'org-modern-indent-mode 90))
+(add-hook 'org-mode-hook 'org-indent-mode)
 
 (use-package org-roam
     :custom
@@ -450,6 +456,9 @@
           org-roam-ui-follow t
           org-roam-ui-update-on-save t
           org-roam-ui-open-on-start nil))
+
+(use-package org-mac-link
+  :bind (("C-c g u" . org-mac-link-get-link)))
 
 (use-package async :commands (async-start))
 (use-package cl-lib)
@@ -490,6 +499,11 @@
   (global-set-key (kbd "<f7>") #'symbol-overlay-mode)
   (global-set-key (kbd "<f8>") #'symbol-overlay-remove-all)
   )
+
+(use-package highlight-thing
+  :diminish highlight-thing-mode
+  :init
+   (global-highlight-thing-mode))
 
 (use-package toggle-quotes-plus
   :straight (toggle-quotes-plus :type git :host github :repo "jcs-elpa/toggle-quotes-plus")
@@ -1316,8 +1330,15 @@
   :config
   (setq typescript-indent-level 2))
 
-(use-package scss-mode)
-(use-package css-mode)
+;; (use-package ob-typescript
+;;   :straight (:type git :host github :repo "lurdan/ob-typescript"))
+
+(use-package scss-mode
+  :config
+  (setq css-indent-offset 2))
+(use-package css-mode
+  :config
+  (setq css-indent-offset 2))
 
 (use-package emmet-mode
   :diminish emmet-mode
@@ -1326,8 +1347,16 @@
   (add-hook 'emmet-mode-hook (lambda () (setq emmet-indentation 2))))
 
 (use-package json-mode
-  :defer t
-  :mode ("\\.json$" . json-mode))
+:defer t
+:config
+;; Set the indentation level for JSON files
+(setq json-reformat:indent-width 2) ;; Or any number you prefer
+(setq js-indent-level 2) ;; For js-mode or derived modes like json-mode
+;; Optionally, you can set other configurations
+(add-hook 'json-mode-hook
+          (lambda ()
+            (make-local-variable 'js-indent-level)
+            (setq js-indent-level 2))))
 
 (use-package yaml-mode
   :mode "\\.yml\\'"
@@ -1545,35 +1574,33 @@
 ;; 打开日志，开发者才需要
 ;; (setq lsp-bridge-enable-log t)
 
-(defun my-eslint-fix-file ()
-  "Run `npx eslint --fix --cache` on the current file."
-  (when (and (buffer-file-name)
-             (string-match-p "\\.\\(js\\|jsx\\|ts\\|tsx\\|vue\\|html\\)\\'" (buffer-file-name)))
-    (let* ((eslint-command (concat "npx eslint --fix --cache " (shell-quote-argument (buffer-file-name))))
-           (output-buffer (generate-new-buffer "*eslint-output*")))
-      (message "Running eslint --fix...")
-      (if (= 0 (call-process-shell-command eslint-command nil output-buffer))
-          (progn
-            (message "eslint --fix completed successfully.")
-            (kill-buffer output-buffer))
-        ;; (progn
-          ;; (message "eslint --fix failed. Check *eslint-output* for details.")
-          ;; (pop-to-buffer output-buffer))
-        ))))
+(defun eslint-fix-file ()
+  (interactive)
+  (message "eslint --fixing the file" (buffer-file-name))
+  (shell-command (concat "npx eslint --fix " (buffer-file-name))))
 
-(defun my-add-eslint-fix-hook ()
-  "Add the `my-eslint-fix-file` function to the `after-save-hook`."
-  (add-hook 'after-save-hook 'my-eslint-fix-file nil 'local))
+(defun eslint-fix-file-and-revert ()
+  (interactive)
+  (eslint-fix-file)
+  (revert-buffer t t))
 
-;; 针对前端相关的 major modes 启用 eslint fix 钩子
-(dolist (hook '(js-mode-hook
-                js2-mode-hook
-                typescript-mode-hook
-                typescript-ts-mode-hook
-                tsx-ts-mode-hook
-                web-mode-hook
-                vue-mode-hook))
-  (add-hook hook 'my-add-eslint-fix-hook))
+(global-set-key (kbd "C-S-f") 'eslint-fix-file-and-revert)
+
+;; (add-hook 'web-mode-hook
+;;           (lambda ()
+;;             (add-hook 'after-save-hook #'eslint-fix-file-and-revert)))
+
+;; (add-hook 'typescript-ts-mode-hook
+;;           (lambda ()
+;;             (add-hook 'after-save-hook #'eslint-fix-file-and-revert)))
+
+;; (add-hook 'js2-mode-hook
+;;           (lambda ()
+;;             (add-hook 'after-save-hook #'eslint-fix-file-and-revert)))
+
+;; (add-hook 'typescript-tsx-mode-hook
+;;           (lambda ()
+;;             (add-hook 'after-save-hook #'eslint-fix-file-and-revert)))
 
 (use-package magit
   :bind* (("C-S-g" . magit))
@@ -1720,7 +1747,7 @@
     "C-c s" "search")
 
 (which-key-add-key-based-replacements
-    "C-c s" "search")
+    "C-c g" "git&get")
 
 (which-key-add-key-based-replacements
     "C-c b" "buffer")

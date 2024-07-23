@@ -376,7 +376,7 @@
   ;; TODO
 #+end_src
 ** org-mode
-  
+
 #+begin_src emacs-lisp
   (setq org-directory "~/.gclrc/org")
 
@@ -441,40 +441,41 @@ Content-Type: application/json; charset=utf-8
 *** configuration
 
 #+begin_src emacs-lisp
-  (use-package org
-    :straight (:type built-in)
-    :hook (org-mode . dw/org-mode-setup)
-    :bind (:map org-mode-map
-                ("M-N" . org-move-subtree-down)
-                ("M-P" . org-move-subtree-up)
-                ("M-`" . org-overview))
-    :config
-    (define-key org-mode-map (kbd "C-c C-r") verb-command-map)
-    (setq org-ellipsis "..."
-          org-imenu-depth 4 ; 可搜索的标题层级
-          org-hide-emphasis-markers t
-          org-src-fontify-natively t
-          org-fontify-quote-and-verse-blocks t
-          org-src-tab-acts-natively t
-          org-edit-src-content-indentation 2
-          org-hide-block-startup nil
-          org-src-preserve-indentation nil
-          org-startup-folded 'content
-          org-cycle-separator-lines 2
-          org-capture-bookmark nil
-          org-confirm-babel-evaluate nil
-          )
+      (use-package org
+        :straight (:type built-in)
+        :hook (org-mode . dw/org-mode-setup)
+        :bind (:map org-mode-map
+                    ("M-N" . org-move-subtree-down)
+                    ("M-P" . org-move-subtree-up)
+                    ("M-`" . org-overview))
+        :config
+        (define-key org-mode-map (kbd "C-c C-r") verb-command-map)
+        (setq org-ellipsis "..."
+              org-imenu-depth 4 ; 可搜索的标题层级
+              org-hide-emphasis-markers t
+              org-src-fontify-natively t
+              org-fontify-quote-and-verse-blocks t
+              org-src-tab-acts-natively t
+              org-edit-src-content-indentation 2
+              org-hide-block-startup nil
+              org-src-preserve-indentation nil
+              org-startup-folded 'content
+              org-cycle-separator-lines 2
+              org-capture-bookmark nil
+              org-confirm-babel-evaluate nil
+              )
 
-    (org-babel-do-load-languages
-     'org-babel-load-languages
-     '((emacs-lisp . t)
-       (verb . t)))
+        (org-babel-do-load-languages
+         'org-babel-load-languages
+         '((emacs-lisp . t)
+           (verb . t)
+           ))
 
-    ;; 重新生成 org-imenu 索引
-    (add-hook 'org-mode-hook
-              (lambda ()
-                (setq imenu-create-index-function 'org-imenu-get-tree)))
-    )
+        ;; 重新生成 org-imenu 索引
+        (add-hook 'org-mode-hook
+                  (lambda ()
+                    (setq imenu-create-index-function 'org-imenu-get-tree)))
+        )
 #+end_src
 *** org-face
 
@@ -506,7 +507,7 @@ Content-Type: application/json; charset=utf-8
                     ("el" . "src emacs-lisp")
                     ("li" . "src lisp")
                     ("sc" . "src scheme")
-                    ("ts" . "src typescript")
+                    ("ts" . "src typescript-ts")
                     ("py" . "src python")
                     ("html" . "src html")
                     ("vue" . "src vue")
@@ -527,6 +528,11 @@ Content-Type: application/json; charset=utf-8
 #+begin_src emacs-lisp
   (use-package org-modern
     :hook (org-mode . org-modern-mode))
+  (use-package org-modern-indent
+  :straight (org-modern-indent :type git :host github :repo "jdtsmith/org-modern-indent")
+  :config ; add late to hook
+  (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
+  (add-hook 'org-mode-hook 'org-indent-mode)
 #+end_src
 *** org-roam
 #+begin_src emacs-lisp
@@ -560,6 +566,11 @@ Content-Type: application/json; charset=utf-8
             org-roam-ui-follow t
             org-roam-ui-update-on-save t
             org-roam-ui-open-on-start nil))
+#+end_src
+*** org-mac-link
+#+begin_src emacs-lisp
+   (use-package org-mac-link
+     :bind (("C-c g u" . org-mac-link-get-link)))
 #+end_src
 * Toolkits
 
@@ -612,6 +623,13 @@ Content-Type: application/json; charset=utf-8
     (global-set-key (kbd "<f7>") #'symbol-overlay-mode)
     (global-set-key (kbd "<f8>") #'symbol-overlay-remove-all)
     )
+#+end_src
+** highlight everything
+#+begin_src emacs-lisp
+  (use-package highlight-thing
+    :diminish highlight-thing-mode
+    :init
+     (global-highlight-thing-mode))
 #+end_src
 ** toggle quotes
 
@@ -1638,16 +1656,23 @@ expand with RegExp，这个貌似速度更快一点。
 *** typescript
 
 #+begin_src emacs-lisp
-  (use-package typescript-ts-mode
-    :mode "\\.[cm]?tsx?\\'"
-    :config
-    (setq typescript-indent-level 2))
+    (use-package typescript-ts-mode
+      :mode "\\.[cm]?tsx?\\'"
+      :config
+      (setq typescript-indent-level 2))
+
+    ;; (use-package ob-typescript
+    ;;   :straight (:type git :host github :repo "lurdan/ob-typescript"))
 #+end_src
 *** css
 
 #+begin_src emacs-lisp
-  (use-package scss-mode)
-  (use-package css-mode)
+  (use-package scss-mode
+    :config
+    (setq css-indent-offset 2))
+  (use-package css-mode
+    :config
+    (setq css-indent-offset 2))
 #+end_src
 *** emmet
 
@@ -1661,9 +1686,18 @@ expand with RegExp，这个貌似速度更快一点。
 *** json
 
 #+begin_src emacs-lisp
+
   (use-package json-mode
-    :defer t
-    :mode ("\\.json$" . json-mode))
+  :defer t
+  :config
+  ;; Set the indentation level for JSON files
+  (setq json-reformat:indent-width 2) ;; Or any number you prefer
+  (setq js-indent-level 2) ;; For js-mode or derived modes like json-mode
+  ;; Optionally, you can set other configurations
+  (add-hook 'json-mode-hook
+            (lambda ()
+              (make-local-variable 'js-indent-level)
+              (setq js-indent-level 2))))
 #+end_src
 *** yaml
 
@@ -2041,96 +2075,50 @@ expand with RegExp，这个貌似速度更快一点。
 
 #+end_src
 ** eslint
-*** sync function
-
-#+begin_src emacs-lisp
-  (defun my-eslint-fix-file ()
-    "Run `npx eslint --fix --cache` on the current file."
-    (when (and (buffer-file-name)
-               (string-match-p "\\.\\(js\\|jsx\\|ts\\|tsx\\|vue\\|html\\)\\'" (buffer-file-name)))
-      (let* ((eslint-command (concat "npx eslint --fix --cache " (shell-quote-argument (buffer-file-name))))
-             (output-buffer (generate-new-buffer "*eslint-output*")))
-        (message "Running eslint --fix...")
-        (if (= 0 (call-process-shell-command eslint-command nil output-buffer))
-            (progn
-              (message "eslint --fix completed successfully.")
-              (kill-buffer output-buffer))
-          ;; (progn
-            ;; (message "eslint --fix failed. Check *eslint-output* for details.")
-            ;; (pop-to-buffer output-buffer))
-          ))))
-#+end_src
-*** async function
-
-#+begin_src emacs-lisp :tangle no
-  (defun my-eslint-fix-file ()
-     "Run `npx eslint --fix --cache` on the current file if it's not modified after save."
-     (when (and (buffer-file-name)
-                (string-match-p "\\.\\(js\\|jsx\\|ts\\|tsx\\|vue\\|html\\)\\'" (buffer-file-name)))
-       (let* ((file-modified-time (nth 5 (file-attributes (buffer-file-name))))
-              (current-modified-time (float-time))
-              (eslint-command (concat "npx eslint --fix --cache " (shell-quote-argument (buffer-file-name))))
-              (process-name "eslint-fix-process"))
-         (message "Running eslint --fix...")
-         (if (or (> current-modified-time (+ (float-time file-modified-time) 2))
-                 (not (buffer-modified-p)))
-             (progn
-               (start-process process-name nil "sh" "-c" eslint-command)
-               (message "eslint --fix started"))
-           (message "File modified; eslint --fix skipped")))))
-#+end_src
-
 *** eslint hook
 
 #+begin_src emacs-lisp
 
 
-      (defun my-add-eslint-fix-hook ()
-        "Add the `my-eslint-fix-file` function to the `after-save-hook`."
-        (add-hook 'after-save-hook 'my-eslint-fix-file nil 'local))
+  (defun eslint-fix-file ()
+    (interactive)
+    (message "eslint --fixing the file" (buffer-file-name))
+    (shell-command (concat "npx eslint --fix " (buffer-file-name))))
 
-      ;; 针对前端相关的 major modes 启用 eslint fix 钩子
-      (dolist (hook '(js-mode-hook
-                      js2-mode-hook
-                      typescript-mode-hook
-                      typescript-ts-mode-hook
-                      tsx-ts-mode-hook
-                      web-mode-hook
-                      vue-mode-hook))
-        (add-hook hook 'my-add-eslint-fix-hook))
+  (defun eslint-fix-file-and-revert ()
+    (interactive)
+    (eslint-fix-file)
+    (revert-buffer t t))
+
+  (global-set-key (kbd "C-S-f") 'eslint-fix-file-and-revert)
+
+  ;; (add-hook 'web-mode-hook
+  ;;           (lambda ()
+  ;;             (add-hook 'after-save-hook #'eslint-fix-file-and-revert)))
+
+  ;; (add-hook 'typescript-ts-mode-hook
+  ;;           (lambda ()
+  ;;             (add-hook 'after-save-hook #'eslint-fix-file-and-revert)))
+
+  ;; (add-hook 'js2-mode-hook
+  ;;           (lambda ()
+  ;;             (add-hook 'after-save-hook #'eslint-fix-file-and-revert)))
+
+  ;; (add-hook 'typescript-tsx-mode-hook
+  ;;           (lambda ()
+  ;;             (add-hook 'after-save-hook #'eslint-fix-file-and-revert)))
 #+end_src
-有点卡编辑。
 
+*** eslint_fix
 #+begin_src emacs-lisp :tangle no
-
-  (defun my-save-hook-function ()
-    (let ((project-root (projectile-project-root))
-          (current-file (buffer-file-name)))
-      (unless (file-exists-p (concat project-root "node_modules/.bin/eslint"))
-        (message "ESLint not found. Skipping command.")
-        (return))
-      (ignore-errors
-        (shell-command
-         (concat project-root "node_modules/.bin/eslint --fix --cache " current-file)
-         ))))
-
-  ;; (defun my-auto-revert-buffer-if-changed-on-disk ()
-  ;;   "Automatically revert buffer if the file has changed on disk."
-  ;;   (let ((revert-without-query '(".*")))
-  ;;     (revert-buffer :ignore-auto :noconfirm)))
-
-  ;; (defun my-check-and-auto-revert-buffer ()
-  ;;   "Check if the buffer is out of date and revert it automatically."
-  ;;   (when (and (buffer-file-name)
-  ;;              (file-exists-p (buffer-file-name))
-  ;;              (not (verify-visited-file-modtime (current-buffer))))
-  ;;     (my-auto-revert-buffer-if-changed-on-disk)))
-
-  ;; ;; Add to hooks to check for changes and auto revert
-  ;; (add-hook 'focus-in-hook 'my-check-and-auto-revert-buffer)
-  ;; (add-hook 'find-file-hook 'my-check-and-auto-revert-buffer)
-  ;; (add-hook 'after-save-hook 'my-check-and-auto-revert-buffer)
-  (add-hook 'after-save-hook 'my-save-hook-function)
+  (use-package eslintd-fix
+    :hook ((js-mode . eslintd-fix-mode)
+           ;; (typescript-mode . eslintd-fix-mode)
+           ;; (vue-mode . eslintd-fix-mode)
+           (web-mode . eslintd-fix-mode)
+           (typescript-ts-mode . eslintd-fix-mode)
+           (typescript-tsx-mode . eslintd-fix-mode)
+           ))
 #+end_src
 ** git
 *** magit
@@ -2506,14 +2494,14 @@ git, goto...
 
 #+begin_src emacs-lisp
 (which-key-add-key-based-replacements
-    "C-c s" "search")
+    "C-c g" "git&get")
 #+end_src
 |--------+------------------|
 | *C-c g*  | git, ...         |
 | ~C-c gc~ | show commit info |
 | ~C-c gl~ | show git log     |
+| ~C-c gu~ | get chrome url   |
 |--------+------------------|
-
 *** C-c b
 
 buffer, file, directory, bookmark...
