@@ -276,6 +276,9 @@
   ;;     (select-window (next-window current-window))))
 
   ;; (advice-add 'split-window :after #'my-split-window-and-switch)
+
+  (setq-default indent-tabs-mode nil) ; 不使用 TAB
+  (setq-default tab-width 2) ; 设置全局 tab 宽度为 2
 #+end_src
 ** Performance
 
@@ -1611,7 +1614,7 @@ expand with RegExp，这个貌似速度更快一点。
      web-mode-enable-auto-closing t
      web-mode-enable-auto-opening t
      web-mode-enable-auto-pairing nil
-     web-mode-enable-auto-indentation t
+     web-mode-enable-auto-indentation nil
      web-mode-tag-auto-close-style 1
      web-mode-enable-current-element-highlight t)
 
@@ -1641,7 +1644,7 @@ expand with RegExp，这个貌似速度更快一点。
 
 #+begin_src emacs-lisp
   (use-package js2-mode
-    :mode "\\.jsx?\\'"
+    ;; :mode "\\.jsx?\\'"
     :config
     ;; Use js2-mode for Node scripts
     (add-to-list 'magic-mode-alist '("#!/usr/bin/env node" . js2-mode))
@@ -1657,12 +1660,71 @@ expand with RegExp，这个貌似速度更快一点。
 
 #+begin_src emacs-lisp
     (use-package typescript-ts-mode
-      :mode "\\.[cm]?tsx?\\'"
+      ;; :mode "\\.[cm]?tsx?\\'"
+      :hook (typescript-ts-mode . (lambda ()
+                                  (setq typescript-indent-level 2)))
       :config
       (setq typescript-indent-level 2))
 
+  ;; 设置全局的缩进宽度为 2
+  (setq-default typescript-indent-level 2)
     ;; (use-package ob-typescript
     ;;   :straight (:type git :host github :repo "lurdan/ob-typescript"))
+#+end_src
+
+*** jtsx
+
+#+begin_src emacs-lisp
+  (use-package jtsx
+    :mode (("\\.jsx?\\'" . jtsx-jsx-mode)
+           ("\\.tsx\\'" . jtsx-tsx-mode)
+           ("\\.ts\\'" . jtsx-typescript-mode))
+    :commands jtsx-install-treesit-language
+    :hook ((jtsx-jsx-mode . hs-minor-mode)
+           (jtsx-tsx-mode . hs-minor-mode)
+           (jtsx-typescript-mode . hs-minor-mode))
+    :custom
+    ;; Optional customizations
+    (js-indent-level 2)
+    (typescript-ts-mode-indent-offset 2)
+    (jtsx-switch-indent-offset 0)
+    ;; (jtsx-indent-statement-block-regarding-standalone-parent nil)
+    ;; (jtsx-jsx-element-move-allow-step-out t)
+    ;; (jtsx-enable-jsx-electric-closing-element t)
+    ;; (jtsx-enable-electric-open-newline-between-jsx-element-tags t)
+    ;; (jtsx-enable-jsx-element-tags-auto-sync nil)
+    ;; (jtsx-enable-all-syntax-highlighting-features t)
+    :config
+    (defun jtsx-bind-keys-to-mode-map (mode-map)
+      "Bind keys to MODE-MAP."
+      (define-key mode-map (kbd "C-c C-j") 'jtsx-jump-jsx-element-tag-dwim)
+      (define-key mode-map (kbd "C-c j o") 'jtsx-jump-jsx-opening-tag)
+      (define-key mode-map (kbd "C-c j c") 'jtsx-jump-jsx-closing-tag)
+      (define-key mode-map (kbd "C-c j r") 'jtsx-rename-jsx-element)
+      (define-key mode-map (kbd "C-c <down>") 'jtsx-move-jsx-element-tag-forward)
+      (define-key mode-map (kbd "C-c <up>") 'jtsx-move-jsx-element-tag-backward)
+      (define-key mode-map (kbd "C-c C-<down>") 'jtsx-move-jsx-element-forward)
+      (define-key mode-map (kbd "C-c C-<up>") 'jtsx-move-jsx-element-backward)
+      (define-key mode-map (kbd "C-c C-S-<down>") 'jtsx-move-jsx-element-step-in-forward)
+      (define-key mode-map (kbd "C-c C-S-<up>") 'jtsx-move-jsx-element-step-in-backward)
+      (define-key mode-map (kbd "C-c j w") 'jtsx-wrap-in-jsx-element)
+      (define-key mode-map (kbd "C-c j u") 'jtsx-unwrap-jsx)
+      (define-key mode-map (kbd "C-c j d") 'jtsx-delete-jsx-node)
+      (define-key mode-map (kbd "C-c j t") 'jtsx-toggle-jsx-attributes-orientation)
+      (define-key mode-map (kbd "C-c j h") 'jtsx-rearrange-jsx-attributes-horizontally)
+      (define-key mode-map (kbd "C-c j v") 'jtsx-rearrange-jsx-attributes-vertically))
+
+    (defun jtsx-bind-keys-to-jtsx-jsx-mode-map ()
+        (jtsx-bind-keys-to-mode-map jtsx-jsx-mode-map))
+
+    (defun jtsx-bind-keys-to-jtsx-tsx-mode-map ()
+        (jtsx-bind-keys-to-mode-map jtsx-tsx-mode-map))
+
+    (add-hook 'jtsx-jsx-mode-hook 'jtsx-bind-keys-to-jtsx-jsx-mode-map)
+    (add-hook 'jtsx-tsx-mode-hook 'jtsx-bind-keys-to-jtsx-tsx-mode-map))
+
+  (which-key-add-key-based-replacements
+    "C-c j" "jump")
 #+end_src
 *** css
 
@@ -1756,18 +1818,27 @@ expand with RegExp，这个貌似速度更快一点。
 #+end_src
 *** format
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package apheleia
-    :defer t
-    :diminish apheleia-mode
-    ;; :hook
-    ;; (prog-mode-hook . apheleia-mode)
-    ;; :config
-    ;; (dolist (formatter '((eslint . (npx "eslint_d" "--fix-to-stdout" "--stdin" "--stdin-filename" file))
-    ;;                      (nix . ("nix" "fmt" "--" "-"))
-    ;;                      (rufo . ("rufo" "--simple-exit"))))
-    ;;   (cl-pushnew formatter apheleia-formatters :test #'equal))
-    )
+    :diminish ""
+    :defines
+    apheleia-formatters
+    apheleia-mode-alist
+    apheleia-hide-log-buffers
+    :functions
+    apheleia-global-mode
+    :config
+    ;; configure formatters
+    (setf (alist-get 'javascript-eslint apheleia-formatters)
+          '(npx "eslint" filepath "--fix"))
+    ;; assign it to mods
+    (add-to-list 'apheleia-mode-alist '(js-ts-mode . javascript-eslint))
+    (add-to-list 'apheleia-mode-alist '(web-mode . javascript-eslint))
+    (add-to-list 'apheleia-mode-alist '(typescript-ts-mode . javascript-eslint))
+    (add-to-list 'apheleia-mode-alist '(typescript-tsx-mode . javascript-eslint))
+    (add-to-list 'apheleia-mode-alist '(js2-mode . javascript-eslint))
+
+    (apheleia-global-mode +1))
     #+end_src
 ** Parens
 
@@ -1795,23 +1866,7 @@ expand with RegExp，这个貌似速度更快一点。
     :hook ((prog-mode org-mode) . rainbow-mode))
 #+end_src
 ** Autocompletion
-*** corfu
 
-#+begin_src emacs-lisp :tangle no
-  (use-package corfu
-    :custom
-    (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-    (corfu-auto t)                 ;; Enable auto completion
-    ;; (corfu-separator ?\s)          ;; Orderless field separator
-    ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
-    (corfu-quit-no-match 'separator)      ;; Never quit, even if there is no match
-    ;; (corfu-preview-current nil)    ;; Disable current candidate preview
-    ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
-    ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
-    ;; (corfu-scroll-margin 5)        ;; Use scroll margin
-    :init
-    (global-corfu-mode))
-#+end_src
 *** kind-icon
 
 #+begin_src emacs-lisp
@@ -1932,12 +1987,24 @@ expand with RegExp，这个貌似速度更快一点。
 ** lsp-mode
 
 #+begin_src emacs-lisp :tangle no
+  (use-package corfu
+      :custom
+      (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+      (corfu-auto t)                 ;; Enable auto completion
+      ;; (corfu-separator ?\s)          ;; Orderless field separator
+      ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
+      (corfu-quit-no-match 'separator)      ;; Never quit, even if there is no match
+      ;; (corfu-preview-current nil)    ;; Disable current candidate preview
+      ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
+      ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+      ;; (corfu-scroll-margin 5)        ;; Use scroll margin
+      :init
+      (global-corfu-mode))
+
   (defun gcl/lsp-mode-setup ()
     (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
     (lsp-headerline-breadcrumb-mode))
 
-  (setq lsp-enabled-clients
-        '((js2-mode . (eslint typescript-language-server))))
   (use-package lsp-mode
     :commands (lsp lsp-deferred)
     :hook ((lsp-mode . gcl/lsp-mode-setup)
@@ -1945,6 +2012,7 @@ expand with RegExp，这个貌似速度更快一点。
            (lsp-mode . lsp-diagnostics-mode)
            ((tsx-ts-mode
              typescript-ts-mode
+             typescript-tsx-mode
              json-ts-mode
              js-ts-mode
              web-mode
@@ -1953,38 +2021,39 @@ expand with RegExp，这个貌似速度更快一点。
              go-ts-mode) . lsp-deferred))
     :diminish lsp-mode
     :diminish lsp-lens-mode
+    :bind (
+           ("C-7" . lsp-ui-peek-find-references)
+           ("C-8" . lsp-ui-peek-find-definitions)
+           ("C-9" . lsp-ui-peek--goto-xref)
+           )
     :config
-    ;; (setq lsp-clients
-    ;;       '((typescript-mode . (lsp-tsserver))
-    ;;         (js-mode . (lsp-eslint lsp-tsserver))
-    ;;         (python-mode . (lsp-pyright))
-    ;;         ;; 添加其他 major mode 和对应的 LSP 客户端配置
-    ;;         ))
-    (setq lsp-eslint-auto-fix-on-save t)
-
-    ;; (defun my/lsp-format-buffer-maybe ()
-    ;;   "Format buffer with LSP if available."
-    ;;   (when (and (bound-and-true-p lsp-mode) lsp-mode)
-    ;;     (lsp-format-buffer)))
-
-    ;; (add-hook 'after-save-hook #'my/lsp-format-buffer-maybe)
     (require 'lsp-eslint)
+    ;; (setq lsp-eslint-auto-fix-on-save t)
+    ;; (setq lsp-eslint-server-command `("node"
+    ;;                                 "~/.vscode/extensions/dbaeumer.vscode-eslint-3.0.10/server/out/eslintServer.js"
+    ;;                                 "--stdio"))
+    ;; latest VSCode eslint extension from marketplace
+    ;; (setq lsp-eslint-download-url "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/dbaeumer/vsextensions/vscode-eslint/3.0.10/vspackage")
+    (setq lsp-enabled-clients '(ts-ls eslint emmet-ls tailwindcss pyright vue-semantic-server stylelint-ls html-ls css-ls))
     (defun lsp--eslint-before-save (orig-fun)
       "Run lsp-eslint-apply-all-fixes and then run the original lsp--before-save."
       (when lsp-eslint-auto-fix-on-save (lsp-eslint-fix-all))
       (funcall orig-fun))
 
-    (advice-add 'lsp--before-save :around #'lsp--eslint-before-save)
+    ;; (advice-add 'lsp--after-save :around #'lsp--eslint-before-save)
     :custom
-    ( lsp-prefer-flymake nil) ; 使用 lsp-ui 和 flycheck 而不是 flymake
-    ( lsp-keymap-prefix "C-c l")
-    ( lsp-completion-provider :none) ;; we use Corfu
-    ( lsp-diagnostics-provider :flycheck)
-    ( lsp-log-io nil) ; only for debug
-    ( lsp-idle-delay 0.5)
+    (lsp-prefer-flymake nil) ; 使用 lsp-ui 和 flycheck 而不是 flymake
+    (lsp-keymap-prefix "C-c l")
+    (lsp-completion-provider :none) ;; we use Corfu
+    (lsp-diagnostics-provider :flycheck)
+    (lsp-log-io nil) ; only for debug
+    (lsp-idle-delay 0.5)
     (lsp-enable-file-watchers nil) ; 只监听当前项目中的文件
     ;; (lsp-enable-folding nil)
     )
+
+  (which-key-add-key-based-replacements
+    "C-c l" "lsp")
 
   (use-package lsp-ui
     :hook (lsp-mode . lsp-ui-mode)
@@ -2002,6 +2071,19 @@ expand with RegExp，这个貌似速度更快一点。
 
   ;; 其他 buffer 中启用
   (add-to-list 'lsp-language-id-configuration '(".*\\.erb$" . "html"))
+
+  (defun my-setup-js-lsp-clients ()
+    "Set up LSP clients for JavaScript modes."
+    (setq-local lsp-enabled-clients '(vue-semantic-server ts-ls eslint)))
+  (add-hook 'js-mode-hook 'my-setup-js-lsp-clients)
+  (add-hook 'js2-mode-hook 'my-setup-js-lsp-clients)
+  (add-hook 'typescript-ts-mode-hook 'my-setup-js-lsp-clients)
+  (add-hook 'typescript-tsx-mode-hook 'my-setup-js-lsp-clients)
+
+  (defun my-setup-web-lsp-clients ()
+    "Set up LSP clients for Web modes."
+    (setq-local lsp-enabled-clients '(vue-semantic-server tailwindcss stylelint-ls emmet-ls)))
+  (add-hook 'web-mode-hook 'my-setup-web-lsp-clients)
 
   (use-package lsp-treemacs
     :commands lsp-treemacs-errors-list)
@@ -2035,6 +2117,7 @@ expand with RegExp，这个貌似速度更快一点。
     (require 'lsp-bridge)
     (require 'lsp-bridge-jdtls)
 
+    (setq lsp-bridge-enable-auto-format-code nil)
     (setq lsp-bridge-enable-completion-in-minibuffer t)
     (setq lsp-bridge-signature-show-function 'lsp-bridge-signature-show-with-frame)
     (setq lsp-bridge-enable-with-tramp t)
@@ -2047,10 +2130,10 @@ expand with RegExp，这个貌似速度更快一点。
 
     (global-lsp-bridge-mode)
 
-    (add-to-list 'lsp-bridge-multi-lang-server-extension-list '(("html") . "html_tailwindcss"))
+    ;; (add-to-list 'lsp-bridge-multi-lang-server-extension-list '(("html") . "html_tailwindcss"))
 
-    (add-to-list 'lsp-bridge-multi-lang-server-extension-list '(("vue") . "html_tailwindcss"))
-    (add-to-list 'lsp-bridge-multi-lang-server-extension-list '(("css") . "css_tailwindcss"))
+    ;; (add-to-list 'lsp-bridge-multi-lang-server-extension-list '(("vue") . "html_tailwindcss"))
+    ;; (add-to-list 'lsp-bridge-multi-lang-server-extension-list '(("css") . "css_tailwindcss"))
 
     (setq lsp-bridge-csharp-lsp-server "csharp-ls")
     (defun my/bridge-server-setup ()
@@ -2071,7 +2154,7 @@ expand with RegExp，这个貌似速度更快一点。
     )
 
   ;; 打开日志，开发者才需要
-  ;; (setq lsp-bridge-enable-log t)
+  (setq lsp-bridge-enable-log t)
 
 #+end_src
 ** eslint
@@ -2266,6 +2349,7 @@ expand with RegExp，这个貌似速度更快一点。
    ("s-n" . next-buffer)
    ("s-p" . previous-buffer)
    ("s-f" . find-file)
+   ("s-F" . projectile-find-file)
    )
 #+end_src
 

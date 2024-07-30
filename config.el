@@ -226,6 +226,9 @@
 
 ;; (advice-add 'split-window :after #'my-split-window-and-switch)
 
+(setq-default indent-tabs-mode nil) ; 不使用 TAB
+(setq-default tab-width 2) ; 设置全局 tab 宽度为 2
+
 (setq
  ;; 缩短更新 screen 的时间
  idle-update-delay 0.1
@@ -1287,7 +1290,7 @@
    web-mode-enable-auto-closing t
    web-mode-enable-auto-opening t
    web-mode-enable-auto-pairing nil
-   web-mode-enable-auto-indentation t
+   web-mode-enable-auto-indentation nil
    web-mode-tag-auto-close-style 1
    web-mode-enable-current-element-highlight t)
 
@@ -1314,7 +1317,7 @@
   )
 
 (use-package js2-mode
-  :mode "\\.jsx?\\'"
+  ;; :mode "\\.jsx?\\'"
   :config
   ;; Use js2-mode for Node scripts
   (add-to-list 'magic-mode-alist '("#!/usr/bin/env node" . js2-mode))
@@ -1326,12 +1329,67 @@
   (setq-default js-indent-level 2))
 
 (use-package typescript-ts-mode
-  :mode "\\.[cm]?tsx?\\'"
-  :config
-  (setq typescript-indent-level 2))
+    ;; :mode "\\.[cm]?tsx?\\'"
+    :hook (typescript-ts-mode . (lambda ()
+                                (setq typescript-indent-level 2)))
+    :config
+    (setq typescript-indent-level 2))
 
-;; (use-package ob-typescript
-;;   :straight (:type git :host github :repo "lurdan/ob-typescript"))
+;; 设置全局的缩进宽度为 2
+(setq-default typescript-indent-level 2)
+  ;; (use-package ob-typescript
+  ;;   :straight (:type git :host github :repo "lurdan/ob-typescript"))
+
+(use-package jtsx
+  :mode (("\\.jsx?\\'" . jtsx-jsx-mode)
+         ("\\.tsx\\'" . jtsx-tsx-mode)
+         ("\\.ts\\'" . jtsx-typescript-mode))
+  :commands jtsx-install-treesit-language
+  :hook ((jtsx-jsx-mode . hs-minor-mode)
+         (jtsx-tsx-mode . hs-minor-mode)
+         (jtsx-typescript-mode . hs-minor-mode))
+  :custom
+  ;; Optional customizations
+  (js-indent-level 2)
+  (typescript-ts-mode-indent-offset 2)
+  (jtsx-switch-indent-offset 0)
+  ;; (jtsx-indent-statement-block-regarding-standalone-parent nil)
+  ;; (jtsx-jsx-element-move-allow-step-out t)
+  ;; (jtsx-enable-jsx-electric-closing-element t)
+  ;; (jtsx-enable-electric-open-newline-between-jsx-element-tags t)
+  ;; (jtsx-enable-jsx-element-tags-auto-sync nil)
+  ;; (jtsx-enable-all-syntax-highlighting-features t)
+  :config
+  (defun jtsx-bind-keys-to-mode-map (mode-map)
+    "Bind keys to MODE-MAP."
+    (define-key mode-map (kbd "C-c C-j") 'jtsx-jump-jsx-element-tag-dwim)
+    (define-key mode-map (kbd "C-c j o") 'jtsx-jump-jsx-opening-tag)
+    (define-key mode-map (kbd "C-c j c") 'jtsx-jump-jsx-closing-tag)
+    (define-key mode-map (kbd "C-c j r") 'jtsx-rename-jsx-element)
+    (define-key mode-map (kbd "C-c <down>") 'jtsx-move-jsx-element-tag-forward)
+    (define-key mode-map (kbd "C-c <up>") 'jtsx-move-jsx-element-tag-backward)
+    (define-key mode-map (kbd "C-c C-<down>") 'jtsx-move-jsx-element-forward)
+    (define-key mode-map (kbd "C-c C-<up>") 'jtsx-move-jsx-element-backward)
+    (define-key mode-map (kbd "C-c C-S-<down>") 'jtsx-move-jsx-element-step-in-forward)
+    (define-key mode-map (kbd "C-c C-S-<up>") 'jtsx-move-jsx-element-step-in-backward)
+    (define-key mode-map (kbd "C-c j w") 'jtsx-wrap-in-jsx-element)
+    (define-key mode-map (kbd "C-c j u") 'jtsx-unwrap-jsx)
+    (define-key mode-map (kbd "C-c j d") 'jtsx-delete-jsx-node)
+    (define-key mode-map (kbd "C-c j t") 'jtsx-toggle-jsx-attributes-orientation)
+    (define-key mode-map (kbd "C-c j h") 'jtsx-rearrange-jsx-attributes-horizontally)
+    (define-key mode-map (kbd "C-c j v") 'jtsx-rearrange-jsx-attributes-vertically))
+
+  (defun jtsx-bind-keys-to-jtsx-jsx-mode-map ()
+      (jtsx-bind-keys-to-mode-map jtsx-jsx-mode-map))
+
+  (defun jtsx-bind-keys-to-jtsx-tsx-mode-map ()
+      (jtsx-bind-keys-to-mode-map jtsx-tsx-mode-map))
+
+  (add-hook 'jtsx-jsx-mode-hook 'jtsx-bind-keys-to-jtsx-jsx-mode-map)
+  (add-hook 'jtsx-tsx-mode-hook 'jtsx-bind-keys-to-jtsx-tsx-mode-map))
+
+(which-key-add-key-based-replacements
+  "C-c j" "jump")
 
 (use-package scss-mode
   :config
@@ -1384,18 +1442,6 @@
 (use-package flycheck
   :diminish flycheck-mode
   :init (global-flycheck-mode))
-
-(use-package apheleia
-  :defer t
-  :diminish apheleia-mode
-  ;; :hook
-  ;; (prog-mode-hook . apheleia-mode)
-  ;; :config
-  ;; (dolist (formatter '((eslint . (npx "eslint_d" "--fix-to-stdout" "--stdin" "--stdin-filename" file))
-  ;;                      (nix . ("nix" "fmt" "--" "-"))
-  ;;                      (rufo . ("rufo" "--simple-exit"))))
-  ;;   (cl-pushnew formatter apheleia-formatters :test #'equal))
-  )
 
 (use-package highlight-parentheses
   :hook (prog-mode . highlight-parentheses-mode)
@@ -1536,6 +1582,7 @@
   (require 'lsp-bridge)
   (require 'lsp-bridge-jdtls)
 
+  (setq lsp-bridge-enable-auto-format-code nil)
   (setq lsp-bridge-enable-completion-in-minibuffer t)
   (setq lsp-bridge-signature-show-function 'lsp-bridge-signature-show-with-frame)
   (setq lsp-bridge-enable-with-tramp t)
@@ -1548,10 +1595,10 @@
 
   (global-lsp-bridge-mode)
 
-  (add-to-list 'lsp-bridge-multi-lang-server-extension-list '(("html") . "html_tailwindcss"))
+  ;; (add-to-list 'lsp-bridge-multi-lang-server-extension-list '(("html") . "html_tailwindcss"))
 
-  (add-to-list 'lsp-bridge-multi-lang-server-extension-list '(("vue") . "html_tailwindcss"))
-  (add-to-list 'lsp-bridge-multi-lang-server-extension-list '(("css") . "css_tailwindcss"))
+  ;; (add-to-list 'lsp-bridge-multi-lang-server-extension-list '(("vue") . "html_tailwindcss"))
+  ;; (add-to-list 'lsp-bridge-multi-lang-server-extension-list '(("css") . "css_tailwindcss"))
 
   (setq lsp-bridge-csharp-lsp-server "csharp-ls")
   (defun my/bridge-server-setup ()
@@ -1572,7 +1619,7 @@
   )
 
 ;; 打开日志，开发者才需要
-;; (setq lsp-bridge-enable-log t)
+(setq lsp-bridge-enable-log t)
 
 (defun eslint-fix-file ()
   (interactive)
@@ -1720,6 +1767,7 @@
  ("s-n" . next-buffer)
  ("s-p" . previous-buffer)
  ("s-f" . find-file)
+ ("s-F" . projectile-find-file)
  )
 
 (which-key-add-key-based-replacements
