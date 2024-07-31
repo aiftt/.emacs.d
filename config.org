@@ -55,8 +55,6 @@
           (message "No other windows exist."))
       (setq toggle-one-window-window-configuration (current-window-configuration))
       (delete-other-windows)))
-
-  (global-set-key (kbd "s-o") 'toggle-one-window)
 #+end_src
 ** copy filename or path
 
@@ -381,7 +379,7 @@
 ** org-mode
 
 #+begin_src emacs-lisp
-  (setq org-directory "~/.gclrc/org")
+  (setq org-directory "~/.org-files")
 
   (defun gcl/org-path (path)
     (expand-file-name path org-directory))
@@ -541,7 +539,7 @@ Content-Type: application/json; charset=utf-8
 #+begin_src emacs-lisp
     (use-package org-roam
       :custom
-      (org-roam-directory (file-truename "~/.gclrc/org/v2/"))
+      (org-roam-directory (file-truename "~/.org-files"))
       :bind (("C-c n l" . org-roam-buffer-toggle)
              ("C-c n f" . org-roam-node-find)
              ("C-c n g" . org-roam-graph)
@@ -781,6 +779,10 @@ expand with RegExp，这个貌似速度更快一点。
 #+begin_src emacs-lisp
   (use-package diminish
     :demand t
+    :diminish (lsp-bridge-mode . "℗")
+    :diminish hi-lock-mode
+    :diminish eslintd-fix-mode
+    :diminish highlight-thing-mode
     :diminish org-indent-mode
     :diminish visual-line-mode
     :diminish hs-minor-mode
@@ -1816,7 +1818,7 @@ expand with RegExp，这个貌似速度更快一点。
     :diminish flycheck-mode
     :init (global-flycheck-mode))
 #+end_src
-*** format
+*** format with apheleia
 
 #+begin_src emacs-lisp :tangle no
   (use-package apheleia
@@ -1840,6 +1842,12 @@ expand with RegExp，这个貌似速度更快一点。
 
     (apheleia-global-mode +1))
     #+end_src
+*** format with prettier
+
+#+begin_src emacs-lisp
+  (use-package prettier)
+  (add-hook 'after-init-hook #'global-prettier-mode)
+#+end_src
 ** Parens
 
 #+begin_src emacs-lisp
@@ -2092,11 +2100,12 @@ expand with RegExp，这个貌似速度更快一点。
 
 #+begin_src emacs-lisp
   (use-package lsp-bridge
-    :diminish (lsp-bridge-mode . "℗ ")
     :straight '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
                            :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
                            :build (:not compile)
                            )
+    :init
+    (global-lsp-bridge-mode)
     :bind (
            ;; ("C-c l d" . lsp-bridge-popup-documentation)
            ("C-c l r" . lsp-bridge-restart-process)
@@ -2117,6 +2126,8 @@ expand with RegExp，这个貌似速度更快一点。
     (require 'lsp-bridge)
     (require 'lsp-bridge-jdtls)
 
+    (setq lsp-bridge-show-mode-line nil)
+    (setq lsp-bridge-enable-mode-line nil)
     (setq lsp-bridge-enable-auto-format-code nil)
     (setq lsp-bridge-enable-completion-in-minibuffer t)
     (setq lsp-bridge-signature-show-function 'lsp-bridge-signature-show-with-frame)
@@ -2128,14 +2139,12 @@ expand with RegExp，这个貌似速度更快一点。
     (setq acm-enable-tabnine nil)
     (setq acm-enable-codeium nil)
 
-    (global-lsp-bridge-mode)
-
     ;; (add-to-list 'lsp-bridge-multi-lang-server-extension-list '(("html") . "html_tailwindcss"))
 
     ;; (add-to-list 'lsp-bridge-multi-lang-server-extension-list '(("vue") . "html_tailwindcss"))
     ;; (add-to-list 'lsp-bridge-multi-lang-server-extension-list '(("css") . "css_tailwindcss"))
 
-    (setq lsp-bridge-csharp-lsp-server "csharp-ls")
+    ;; (setq lsp-bridge-csharp-lsp-server "csharp-ls")
     (defun my/bridge-server-setup ()
       (with-current-buffer (current-buffer)
         (when (bound-and-true-p acm-backend-lsp-server-names)
@@ -2154,7 +2163,7 @@ expand with RegExp，这个貌似速度更快一点。
     )
 
   ;; 打开日志，开发者才需要
-  (setq lsp-bridge-enable-log t)
+  ;; (setq lsp-bridge-enable-log t)
 
 #+end_src
 ** eslint
@@ -2193,7 +2202,7 @@ expand with RegExp，这个貌似速度更快一点。
 #+end_src
 
 *** eslint_fix
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
   (use-package eslintd-fix
     :hook ((js-mode . eslintd-fix-mode)
            ;; (typescript-mode . eslintd-fix-mode)
@@ -2337,7 +2346,8 @@ expand with RegExp，这个貌似速度更快一点。
   (bind-keys*
    ("C-`" . execute-extended-command)
    ("C-x ="     . indent-region)
-   ("M-o" . other-window)
+   ("M-o" . toggle-one-window)
+   ("s-o" . other-window)
    ;; ("M-9" . hs-hide-block)
    ;; ("M-0" . hs-show-block)
    ("M-9" . hs-hide-all)

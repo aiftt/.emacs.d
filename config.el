@@ -32,8 +32,6 @@
     (setq toggle-one-window-window-configuration (current-window-configuration))
     (delete-other-windows)))
 
-(global-set-key (kbd "s-o") 'toggle-one-window)
-
 (defun gcl/copy-file-full-name ()
   "Copy the current buffer's file name to the clipboard."
   (interactive)
@@ -305,7 +303,7 @@
 
 ;; TODO
 
-(setq org-directory "~/.gclrc/org")
+(setq org-directory "~/.org-files")
 
   (defun gcl/org-path (path)
     (expand-file-name path org-directory))
@@ -431,7 +429,7 @@
 
 (use-package org-roam
     :custom
-    (org-roam-directory (file-truename "~/.gclrc/org/v2/"))
+    (org-roam-directory (file-truename "~/.org-files"))
     :bind (("C-c n l" . org-roam-buffer-toggle)
            ("C-c n f" . org-roam-node-find)
            ("C-c n g" . org-roam-graph)
@@ -627,6 +625,10 @@
 
 (use-package diminish
   :demand t
+  :diminish (lsp-bridge-mode . "℗")
+  :diminish hi-lock-mode
+  :diminish eslintd-fix-mode
+  :diminish highlight-thing-mode
   :diminish org-indent-mode
   :diminish visual-line-mode
   :diminish hs-minor-mode
@@ -1443,6 +1445,9 @@
   :diminish flycheck-mode
   :init (global-flycheck-mode))
 
+(use-package prettier)
+(add-hook 'after-init-hook #'global-prettier-mode)
+
 (use-package highlight-parentheses
   :hook (prog-mode . highlight-parentheses-mode)
   :diminish highlight-parentheses-mode
@@ -1557,11 +1562,12 @@
                  (window-parameters (mode-line-format . none)))))
 
 (use-package lsp-bridge
-  :diminish (lsp-bridge-mode . "℗ ")
   :straight '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
                          :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
                          :build (:not compile)
                          )
+  :init
+  (global-lsp-bridge-mode)
   :bind (
          ;; ("C-c l d" . lsp-bridge-popup-documentation)
          ("C-c l r" . lsp-bridge-restart-process)
@@ -1582,6 +1588,8 @@
   (require 'lsp-bridge)
   (require 'lsp-bridge-jdtls)
 
+  (setq lsp-bridge-show-mode-line nil)
+  (setq lsp-bridge-enable-mode-line nil)
   (setq lsp-bridge-enable-auto-format-code nil)
   (setq lsp-bridge-enable-completion-in-minibuffer t)
   (setq lsp-bridge-signature-show-function 'lsp-bridge-signature-show-with-frame)
@@ -1593,14 +1601,12 @@
   (setq acm-enable-tabnine nil)
   (setq acm-enable-codeium nil)
 
-  (global-lsp-bridge-mode)
-
   ;; (add-to-list 'lsp-bridge-multi-lang-server-extension-list '(("html") . "html_tailwindcss"))
 
   ;; (add-to-list 'lsp-bridge-multi-lang-server-extension-list '(("vue") . "html_tailwindcss"))
   ;; (add-to-list 'lsp-bridge-multi-lang-server-extension-list '(("css") . "css_tailwindcss"))
 
-  (setq lsp-bridge-csharp-lsp-server "csharp-ls")
+  ;; (setq lsp-bridge-csharp-lsp-server "csharp-ls")
   (defun my/bridge-server-setup ()
     (with-current-buffer (current-buffer)
       (when (bound-and-true-p acm-backend-lsp-server-names)
@@ -1619,7 +1625,7 @@
   )
 
 ;; 打开日志，开发者才需要
-(setq lsp-bridge-enable-log t)
+;; (setq lsp-bridge-enable-log t)
 
 (defun eslint-fix-file ()
   (interactive)
@@ -1648,6 +1654,15 @@
 ;; (add-hook 'typescript-tsx-mode-hook
 ;;           (lambda ()
 ;;             (add-hook 'after-save-hook #'eslint-fix-file-and-revert)))
+
+(use-package eslintd-fix
+  :hook ((js-mode . eslintd-fix-mode)
+         ;; (typescript-mode . eslintd-fix-mode)
+         ;; (vue-mode . eslintd-fix-mode)
+         (web-mode . eslintd-fix-mode)
+         (typescript-ts-mode . eslintd-fix-mode)
+         (typescript-tsx-mode . eslintd-fix-mode)
+         ))
 
 (use-package magit
   :bind* (("C-S-g" . magit))
@@ -1755,7 +1770,8 @@
 (bind-keys*
  ("C-`" . execute-extended-command)
  ("C-x ="     . indent-region)
- ("M-o" . other-window)
+ ("M-o" . toggle-one-window)
+ ("s-o" . other-window)
  ;; ("M-9" . hs-hide-block)
  ;; ("M-0" . hs-show-block)
  ("M-9" . hs-hide-all)
