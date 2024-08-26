@@ -143,106 +143,115 @@
 (global-unset-key (kbd "s-g"))
 
 ;; 光标样式
-(setq-default cursor-type '(bar . 1))
-;; 光标不闪烁
-(blink-cursor-mode -1)
+    (setq-default cursor-type '(bar . 1))
+    ;; 光标不闪烁
+    (blink-cursor-mode -1)
 
-;; 关闭 Edebug 日志输出
-(setq edebug-trace nil)
+    ;; 关闭 Edebug 日志输出
+    (setq edebug-trace nil)
 
-(setq debug-on-error nil)
-  (setq edebug-all-defs nil)
-  (setq edebug-all-forms nil)
+    (setq debug-on-error nil)
+      (setq edebug-all-defs nil)
+      (setq edebug-all-forms nil)
 
-        ;; 去掉工具栏等
-        (when window-system
-          (tool-bar-mode 0)
-          (scroll-bar-mode 0)
-          (tooltip-mode 0))
+            ;; 去掉工具栏等
+            (when window-system
+              (tool-bar-mode 0)
+              (scroll-bar-mode 0)
+              (tooltip-mode 0))
 
-        ;; 高亮当前行
-        (global-hl-line-mode 1)
-        ;; 显示列号
-        (column-number-mode t)
+            ;; 高亮当前行
+            (global-hl-line-mode 1)
+            ;; 显示列号
+            (column-number-mode t)
 
-        ;; 启动全屏
-        (set-frame-parameter (selected-frame) 'fullscreen 'maximized)
+            ;; 启动全屏
+            (set-frame-parameter (selected-frame) 'fullscreen 'maximized)
 
-        ;; 启动界面
-        (setq inhibit-startup-message t
-              initial-scratch-message ""
-              initial-major-mode 'emacs-lisp-mode
-              initial-buffer-choice t
-              inhibit-splash-screen t)
+            ;; 启动界面
+            (setq inhibit-startup-message t
+                  initial-scratch-message ""
+                  initial-major-mode 'emacs-lisp-mode
+                  initial-buffer-choice t
+                  inhibit-splash-screen t)
 
-        ;; - 选中粘贴时能覆盖选中的内容
-        (delete-selection-mode 1)
+            ;; - 选中粘贴时能覆盖选中的内容
+            (delete-selection-mode 1)
 
-        ;; - 文件编码
+            ;; - 文件编码
+            (prefer-coding-system 'utf-8)
+          ;; 设置 Emacs 的默认编码为 UTF-8
         (prefer-coding-system 'utf-8)
-      ;; 设置 Emacs 的默认编码为 UTF-8
-    (prefer-coding-system 'utf-8)
-    (set-default-coding-systems 'utf-8)
-    ;; (set-terminal-coding-system 'utf-8)
-    ;; (set-keyboard-coding-system 'utf-8)
-    (setq-default buffer-file-coding-system 'utf-8)
-    ;; (setq coding-system-for-read 'utf-8)
-    ;; (setq coding-system-for-write 'utf-8)
+        (set-default-coding-systems 'utf-8)
+        ;; (set-terminal-coding-system 'utf-8)
+        ;; (set-keyboard-coding-system 'utf-8)
+        (setq-default buffer-file-coding-system 'utf-8)
+        ;; (setq coding-system-for-read 'utf-8)
+        ;; (setq coding-system-for-write 'utf-8)
 
-    ;; 如果使用 Windows 环境，可能还需要添加以下内容
-    ;; (set-language-environment "UTF-8")
-        ;; (setq-default buffer-file-coding-system 'utf-8-auto-unix)
-      ;;  (setq-default coding-system-for-read 'utf-8-unix)
-      ;; (setq-default coding-system-for-write 'utf-8-unix)
+        ;; 如果使用 Windows 环境，可能还需要添加以下内容
+        ;; (set-language-environment "UTF-8")
+            ;; (setq-default buffer-file-coding-system 'utf-8-auto-unix)
+          ;;  (setq-default coding-system-for-read 'utf-8-unix)
+          ;; (setq-default coding-system-for-write 'utf-8-unix)
 
-        ;; - 错误信息
-        (setq visible-bell nil)
-        (setq ring-bell-function 'ignore)
+            ;; - 错误信息
+            (setq visible-bell nil)
+            (setq ring-bell-function 'ignore)
 
-        ;; - 截断行
-        (setq-default truncate-lines t)
-        ;; - yes or no
-        (fset 'yes-or-no-p 'y-or-n-p)
-        ;; - 驼峰单词里移动
-        (subword-mode)
-        ;; - 默认认为两个空格开头为一个段落，关闭此选项
-        (setq sentence-end-double-space nil)
-        ;; - 更好的通配符搜索
-        (setq search-whitespace-regexp ".*?")
-        ;; - 窗口管理
-        (when (fboundp 'winner-mode)
-          (winner-mode 1))
+            ;; - 截断行
+            (setq-default truncate-lines t)
+            ;; - yes or no
+            (fset 'yes-or-no-p 'y-or-n-p)
+            ;; - 驼峰单词里移动
+            (subword-mode)
+            ;; - 默认认为两个空格开头为一个段落，关闭此选项
+            (setq sentence-end-double-space nil)
+            ;; - 更好的通配符搜索
+            (setq search-whitespace-regexp ".*?")
+            ;; - 窗口管理
+            (when (fboundp 'winner-mode)
+              (winner-mode 1))
 
-        ;; - 在 mac 上，当进入一个新的工作空间时，会默认全屏
-        (setq ns-use-native-fullscreen nil)
+            ;; - 在 mac 上，当进入一个新的工作空间时，会默认全屏
+            (setq ns-use-native-fullscreen nil)
 
-        ;; - 不生成备份文件
-        (setq make-backup-files nil)
+            ;; - 不生成备份文件
+            (setq make-backup-files nil)
 
-        ;; 启用自动保存已访问的文件 ss
-        ;; (auto-save-visited-mode 1)
-        ;; 设置自动保存的间隔时间
-        ;; (setq auto-save-visited-interval 1)  ; 每秒钟保存一次当前文件的备份
-        ;; (setq auto-save-interval 1)          ; 每秒钟保存一次所有文件的备份
-        (setq save-silently t)  ; 自动保存文件，避免提示确认
-        ;; 分割窗口的时候自动切换到该窗口
-        ;; (add-hook 'window-setup-hook 'select-window)
+            ;; 启用自动保存已访问的文件 ss
+            ;; (auto-save-visited-mode 1)
+            ;; 设置自动保存的间隔时间
+            ;; (setq auto-save-visited-interval 1)  ; 每秒钟保存一次当前文件的备份
+            ;; (setq auto-save-interval 1)          ; 每秒钟保存一次所有文件的备份
+            (setq save-silently t)  ; 自动保存文件，避免提示确认
+            ;; 分割窗口的时候自动切换到该窗口
+            ;; (add-hook 'window-setup-hook 'select-window)
 
 
-        ;; 有些功能需要用到，比如：折叠等等
-        (add-hook 'prog-mode-hook #'hs-minor-mode)
+            ;; 有些功能需要用到，比如：折叠等等
+            (add-hook 'prog-mode-hook #'hs-minor-mode)
 
-        ;; (defun my-split-window-and-switch ()
-        ;;   "Split the window and switch to the newly created window."
-        ;;   (interactive)
-        ;;   (let ((current-window (selected-window)))
-        ;;     (call-interactively #'split-window)
-        ;;     (select-window (next-window current-window))))
+            ;; (defun my-split-window-and-switch ()
+            ;;   "Split the window and switch to the newly created window."
+            ;;   (interactive)
+            ;;   (let ((current-window (selected-window)))
+            ;;     (call-interactively #'split-window)
+            ;;     (select-window (next-window current-window))))
 
-        ;; (advice-add 'split-window :after #'my-split-window-and-switch)
+            ;; (advice-add 'split-window :after #'my-split-window-and-switch)
 
-        (setq-default indent-tabs-mode nil) ; 不使用 TAB
-        (setq-default tab-width 2) ; 设置全局 tab 宽度为 2
+            (setq-default indent-tabs-mode nil) ; 不使用 TAB
+            (setq-default tab-width 2) ; 设置全局 tab 宽度为 2
+
+
+    ;; 启用行号显示
+  (defun my-setup-display-line-numbers ()
+  "Enable display-line-numbers-mode in certain modes."
+  (when (derived-mode-p 'prog-mode)
+    (display-line-numbers-mode 1)))
+
+(add-hook 'prog-mode-hook 'my-setup-display-line-numbers)
 
 (setq
  ;; 缩短更新 screen 的时间
