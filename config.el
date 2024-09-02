@@ -317,6 +317,8 @@
         exec-path-from-shell-arguments '("-l"))
   (exec-path-from-shell-initialize))
 
+(setenv "NODE_PATH" "/usr/local/lib/node_modules/")
+
 (use-package autorevert
 :init
 (global-auto-revert-mode)
@@ -454,38 +456,105 @@
 (add-hook 'org-mode-hook 'org-indent-mode)
 
 (use-package org-roam
-    :custom
-    (org-roam-directory (file-truename "~/.org-files"))
-    :bind (("C-c n l" . org-roam-buffer-toggle)
-           ("C-c n f" . org-roam-node-find)
-           ("C-c n g" . org-roam-graph)
-           ("C-c n i" . org-roam-node-insert)
-           ("C-c n c" . org-roam-capture)
-           ("C-c n v" . org-roam-node-visit)
-           ;; Dailies
-           ("C-c n j" . org-roam-dailies-capture-today))
-    :config
-    ;; If you're using a vertical completion framework, you might want a more informative completion interface
-    (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
-    (org-roam-db-autosync-mode)
-    ;; If using org-roam-protocol
-    (require 'org-roam-protocol))
+  :custom
+  (org-roam-directory (file-truename "~/.org-files"))
+  (org-roam-capture-templates
+   '(("d" "default" plain
+      "%?"
+      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+      :unnarrowed t)
+     ("j" "交科院" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
+      :if-new (file+head "jtt/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: 交科院")
+      :unnarrowed t)
+     ("b" "Blog" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
+      :if-new (file+head "pages/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: Blog")
+      :unnarrowed t)
+     ))
+  :bind (
+         ;; ("C-c n f" . org-roam-node-find)
+         ;; ("C-c n g" . org-roam-graph)
+         ("C-c n c" . org-roam-capture)
+         ("C-c n v" . org-roam-node-visit)
 
-  (use-package org-roam-ui
-    :diminish org-roam-ui-mode
-    :after org-roam
-;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
-;;         a hookable mode anymore, you're advised to pick something yourself
-;;         if you don't care about startup time, use
-;;  :hook (after-init . org-roam-ui-mode)
-    :config
-    (setq org-roam-ui-sync-theme t
-          org-roam-ui-follow t
-          org-roam-ui-update-on-save t
-          org-roam-ui-open-on-start nil))
+         ;; Dailies
+         ("C-c n j" . org-roam-dailies-capture-today)
+
+         ;; org-roam-ui
+         ("C-c n o" . org-roam-ui-open)
+         (:map org-mode-map
+               (("C-c n i" . org-roam-node-insert)
+                ("C-c n t" . org-roam-tag-add)
+                ("C-c n a" . org-roam-alias-add)
+                ("C-c n `" . org-roam-buffer-toggle)
+                ("C-c n g" . org-id-get-create)
+                ))
+         )
+  :config
+  (org-roam-setup)
+  ;; If you're using a vertical completion framework, you might want a more informative completion interface
+  (setq org-roam-node-display-template
+      (concat "${title:*} "
+              (propertize "${tags:10}" 'face 'org-tag)))
+  (org-roam-db-autosync-mode)
+  ;; If using org-roam-protocol
+  (require 'org-roam-protocol))
+
+(use-package org-roam-ui
+  :diminish org-roam-ui-mode
+  :after org-roam
+  ;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+  ;;         a hookable mode anymore, you're advised to pick something yourself
+  ;;         if you don't care about startup time, use
+  ;;  :hook (after-init . org-roam-ui-mode)
+  :config
+  (setq org-roam-ui-sync-theme t
+        org-roam-ui-follow t
+        org-roam-ui-update-on-save t
+        org-roam-ui-open-on-start nil))
+
+(use-package consult-org-roam
+   :after org-roam
+   :init
+   (require 'consult-org-roam)
+   ;; Activate the minor mode
+   (consult-org-roam-mode 1)
+   :custom
+   ;; Use `ripgrep' for searching with `consult-org-roam-search'
+   (consult-org-roam-grep-func #'consult-ripgrep)
+   ;; Configure a custom narrow key for `consult-buffer'
+   (consult-org-roam-buffer-narrow-key ?r)
+   ;; Display org-roam buffers right after non-org-roam buffers
+   ;; in consult-buffer (and not down at the bottom)
+   (consult-org-roam-buffer-after-buffers t)
+   :config
+   ;; Eventually suppress previewing for certain functions
+   (consult-customize
+    consult-org-roam-forward-links
+    :preview-key "M-.")
+   :bind
+   ;; Define some convenient keybindings as an addition
+   ("C-c n f" . consult-org-roam-file-find)
+   ("C-c n b" . consult-org-roam-backlinks)
+   ("C-c n B" . consult-org-roam-backlinks-recursive)
+   ("C-c n l" . consult-org-roam-forward-links)
+   ("C-c n r" . consult-org-roam-search))
+
+(use-package deft
+  :after org
+  :bind
+  ("C-c n d" . deft)
+  :custom
+  (deft-recursive t)
+  (deft-use-filter-string-for-filename t)
+  (deft-default-extension "org")
+  (deft-directory org-roam-directory))
 
 (use-package org-mac-link
   :bind (("C-c g u" . org-mac-link-get-link)))
+
+(use-package corg
+  :straight (:host github :repo "isamert/corg.el"))
+(add-hook 'org-mode-hook #'corg-setup)
 
 (use-package async :commands (async-start))
 (use-package cl-lib)
@@ -1472,6 +1541,9 @@
   :init (global-flycheck-mode))
 (setq flycheck-javascript-eslint-executable "eslint_d")
 
+(use-package prettier
+  :diminish prettier-mode)
+
 (use-package highlight-parentheses
   :hook (prog-mode . highlight-parentheses-mode)
   :diminish highlight-parentheses-mode
@@ -1778,6 +1850,7 @@
  ("s-b" . switch-to-buffer)
  ("s-J" . scroll-up-command)
  ("s-K" . scroll-down-command)
+ ("C-S-v" . scroll-down-command)
  ("s-n" . next-buffer)
  ("s-p" . previous-buffer)
  ("s-f" . find-file)

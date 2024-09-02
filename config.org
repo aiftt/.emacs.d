@@ -382,6 +382,8 @@
     (setq exec-path-from-shell-variables '("PATH" "MANPATH" "LSP_USE_PLISTS" "NODE_PATH")
           exec-path-from-shell-arguments '("-l"))
     (exec-path-from-shell-initialize))
+
+  (setenv "NODE_PATH" "/usr/local/lib/node_modules/")
 #+end_src
 ** Auto revert buffer
 
@@ -464,7 +466,7 @@ Content-Type: application/json; charset=utf-8
 {
     "name": "Jane Smith",
     "city": "Berlin"
-}
+    }
 *** configuration
 
 #+begin_src emacs-lisp
@@ -563,42 +565,118 @@ Content-Type: application/json; charset=utf-8
 #+end_src
 *** org-roam
 #+begin_src emacs-lisp
-    (use-package org-roam
-      :custom
-      (org-roam-directory (file-truename "~/.org-files"))
-      :bind (("C-c n l" . org-roam-buffer-toggle)
-             ("C-c n f" . org-roam-node-find)
-             ("C-c n g" . org-roam-graph)
-             ("C-c n i" . org-roam-node-insert)
-             ("C-c n c" . org-roam-capture)
-             ("C-c n v" . org-roam-node-visit)
-             ;; Dailies
-             ("C-c n j" . org-roam-dailies-capture-today))
-      :config
-      ;; If you're using a vertical completion framework, you might want a more informative completion interface
-      (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
-      (org-roam-db-autosync-mode)
-      ;; If using org-roam-protocol
-      (require 'org-roam-protocol))
+  (use-package org-roam
+    :custom
+    (org-roam-directory (file-truename "~/.org-files"))
+    (org-roam-capture-templates
+     '(("d" "default" plain
+        "%?"
+        :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+        :unnarrowed t)
+       ("j" "交科院" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
+        :if-new (file+head "jtt/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: 交科院")
+        :unnarrowed t)
+       ("b" "Blog" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
+        :if-new (file+head "pages/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: Blog")
+        :unnarrowed t)
+       ))
+    :bind (
+           ;; ("C-c n f" . org-roam-node-find)
+           ;; ("C-c n g" . org-roam-graph)
+           ("C-c n c" . org-roam-capture)
+           ("C-c n v" . org-roam-node-visit)
 
-    (use-package org-roam-ui
-      :diminish org-roam-ui-mode
-      :after org-roam
-  ;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
-  ;;         a hookable mode anymore, you're advised to pick something yourself
-  ;;         if you don't care about startup time, use
-  ;;  :hook (after-init . org-roam-ui-mode)
-      :config
-      (setq org-roam-ui-sync-theme t
-            org-roam-ui-follow t
-            org-roam-ui-update-on-save t
-            org-roam-ui-open-on-start nil))
+           ;; Dailies
+           ("C-c n j" . org-roam-dailies-capture-today)
+
+           ;; org-roam-ui
+           ("C-c n o" . org-roam-ui-open)
+           (:map org-mode-map
+                 (("C-c n i" . org-roam-node-insert)
+                  ("C-c n t" . org-roam-tag-add)
+                  ("C-c n a" . org-roam-alias-add)
+                  ("C-c n `" . org-roam-buffer-toggle)
+                  ("C-c n g" . org-id-get-create)
+                  ))
+           )
+    :config
+    (org-roam-setup)
+    ;; If you're using a vertical completion framework, you might want a more informative completion interface
+    (setq org-roam-node-display-template
+        (concat "${title:*} "
+                (propertize "${tags:10}" 'face 'org-tag)))
+    (org-roam-db-autosync-mode)
+    ;; If using org-roam-protocol
+    (require 'org-roam-protocol))
+
+  (use-package org-roam-ui
+    :diminish org-roam-ui-mode
+    :after org-roam
+    ;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+    ;;         a hookable mode anymore, you're advised to pick something yourself
+    ;;         if you don't care about startup time, use
+    ;;  :hook (after-init . org-roam-ui-mode)
+    :config
+    (setq org-roam-ui-sync-theme t
+          org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+          org-roam-ui-open-on-start nil))
+#+end_src
+
+*** consult-org-roam
+#+begin_src emacs-lisp
+  (use-package consult-org-roam
+     :after org-roam
+     :init
+     (require 'consult-org-roam)
+     ;; Activate the minor mode
+     (consult-org-roam-mode 1)
+     :custom
+     ;; Use `ripgrep' for searching with `consult-org-roam-search'
+     (consult-org-roam-grep-func #'consult-ripgrep)
+     ;; Configure a custom narrow key for `consult-buffer'
+     (consult-org-roam-buffer-narrow-key ?r)
+     ;; Display org-roam buffers right after non-org-roam buffers
+     ;; in consult-buffer (and not down at the bottom)
+     (consult-org-roam-buffer-after-buffers t)
+     :config
+     ;; Eventually suppress previewing for certain functions
+     (consult-customize
+      consult-org-roam-forward-links
+      :preview-key "M-.")
+     :bind
+     ;; Define some convenient keybindings as an addition
+     ("C-c n f" . consult-org-roam-file-find)
+     ("C-c n b" . consult-org-roam-backlinks)
+     ("C-c n B" . consult-org-roam-backlinks-recursive)
+     ("C-c n l" . consult-org-roam-forward-links)
+     ("C-c n r" . consult-org-roam-search))
+#+end_src
+*** deft
+#+begin_src emacs-lisp
+(use-package deft
+  :after org
+  :bind
+  ("C-c n d" . deft)
+  :custom
+  (deft-recursive t)
+  (deft-use-filter-string-for-filename t)
+  (deft-default-extension "org")
+  (deft-directory org-roam-directory))
 #+end_src
 *** org-mac-link
 #+begin_src emacs-lisp
    (use-package org-mac-link
      :bind (("C-c g u" . org-mac-link-get-link)))
 #+end_src
+*** corg
+
+#+begin_src emacs-lisp
+  (use-package corg
+    :straight (:host github :repo "isamert/corg.el"))
+  (add-hook 'org-mode-hook #'corg-setup)
+#+end_src
+
 * Toolkits
 
 #+BEGIN_SRC emacs-lisp
@@ -1871,17 +1949,9 @@ expand with RegExp，这个貌似速度更快一点。
     #+end_src
 *** format with prettier
 
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
   (use-package prettier
-    :diminish prettier-mode
-    :hook ((js2-mode . prettier-mode)
-           (typescript-mode . prettier-mode)
-           (css-mode . prettier-mode)
-           (json-mode . prettier-mode)
-           (web-mode . prettier-mode)
-           (jtsx-tsx-mode . prettier-mode)
-           (jtsx-jsx-mode . prettier-mode)
-           (jtsx-typescript-mode . prettier-mode)))
+    :diminish prettier-mode)
 
 #+end_src
 ** Parens
@@ -2405,6 +2475,71 @@ expand with RegExp，这个貌似速度更快一点。
 (global-set-key (kbd "s-<return>") 'multi-vterm-project)
 #+end_src
 ** AI
+*** codeium
+
+#+begin_src emacs-lisp :tangle no
+  ;; we recommend using use-package to organize your init.el
+  (use-package codeium
+      ;; if you use straight
+      :straight '(:type git :host github :repo "Exafunction/codeium.el")
+      ;; otherwise, make sure that the codeium.el file is on load-path
+
+      :init
+      ;; use globally
+      (add-to-list 'completion-at-point-functions #'codeium-completion-at-point)
+      ;; or on a hook
+      ;; (add-hook 'python-mode-hook
+      ;;     (lambda ()
+      ;;         (setq-local completion-at-point-functions '(codeium-completion-at-point))))
+
+      ;; if you want multiple completion backends, use cape (https://github.com/minad/cape):
+      ;; (add-hook 'python-mode-hook
+      ;;     (lambda ()
+      ;;         (setq-local completion-at-point-functions
+      ;;             (list (cape-super-capf #'codeium-completion-at-point #'lsp-completion-at-point)))))
+      ;; an async company-backend is coming soon!
+
+      ;; codeium-completion-at-point is autoloaded, but you can
+      ;; optionally set a timer, which might speed up things as the
+      ;; codeium local language server takes ~0.2s to start up
+      ;; (add-hook 'emacs-startup-hook
+      ;;  (lambda () (run-with-timer 0.1 nil #'codeium-init)))
+
+      ;; :defer t ;; lazy loading, if you want
+      :config
+      (setq use-dialog-box nil) ;; do not use popup boxes
+
+      ;; if you don't want to use customize to save the api-key
+      ;; (setq codeium/metadata/api_key "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")
+
+      ;; get codeium status in the modeline
+      (setq codeium-mode-line-enable
+          (lambda (api) (not (memq api '(CancelRequest Heartbeat AcceptCompletion)))))
+      (add-to-list 'mode-line-format '(:eval (car-safe codeium-mode-line)) t)
+      ;; alternatively for a more extensive mode-line
+      ;; (add-to-list 'mode-line-format '(-50 "" codeium-mode-line) t)
+
+      ;; use M-x codeium-diagnose to see apis/fields that would be sent to the local language server
+      (setq codeium-api-enabled
+          (lambda (api)
+              (memq api '(GetCompletions Heartbeat CancelRequest GetAuthToken RegisterUser auth-redirect AcceptCompletion))))
+      ;; you can also set a config for a single buffer like this:
+      ;; (add-hook 'python-mode-hook
+      ;;     (lambda ()
+      ;;         (setq-local codeium/editor_options/tab_size 4)))
+
+      ;; You can overwrite all the codeium configs!
+      ;; for example, we recommend limiting the string sent to codeium for better performance
+      (defun my-codeium/document/text ()
+          (buffer-substring-no-properties (max (- (point) 3000) (point-min)) (min (+ (point) 1000) (point-max))))
+      ;; if you change the text, you should also change the cursor_offset
+      ;; warning: this is measured by UTF-8 encoded bytes
+      (defun my-codeium/document/cursor_offset ()
+          (codeium-utf8-byte-length
+              (buffer-substring-no-properties (max (- (point) 3000) (point-min)) (point))))
+      (setq codeium/document/text 'my-codeium/document/text)
+      (setq codeium/document/cursor_offset 'my-codeium/document/cursor_offset))
+#+end_src
 * Global Keybindings
 
 #+begin_src emacs-lisp
@@ -2422,6 +2557,7 @@ expand with RegExp，这个貌似速度更快一点。
    ("s-b" . switch-to-buffer)
    ("s-J" . scroll-up-command)
    ("s-K" . scroll-down-command)
+   ("C-S-v" . scroll-down-command)
    ("s-n" . next-buffer)
    ("s-p" . previous-buffer)
    ("s-f" . find-file)
