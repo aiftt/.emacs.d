@@ -513,7 +513,8 @@
         org-roam-ui-open-on-start nil))
 
 (use-package consult-org-roam
-   :after org-roam
+  :after org-roam
+  :diminish consult-org-roam-mode
    :init
    (require 'consult-org-roam)
    ;; Activate the minor mode
@@ -720,7 +721,6 @@
 
 (use-package diminish
   :demand t
-  :diminish (lsp-bridge-mode . "℗")
   :diminish hi-lock-mode
   :diminish eslintd-fix-mode
   :diminish highlight-thing-mode
@@ -1380,8 +1380,8 @@
   :config
   (setq
    web-mode-markup-indent-offset 2
-   web-mode-css-indent-offset 2
-   web-mode-code-indent-offset 2
+   web-mode-css-indent-offset 0
+   web-mode-code-indent-offset 0
    web-mode-style-padding 0
    web-mode-script-padding 0
    web-mode-enable-auto-closing t
