@@ -331,45 +331,50 @@
 
 ;; TODO
 
-(setq org-directory "~/.org-files")
+;; 防止 Emacs 加载内置版本的 org-mode
+;; (setq package-enable-at-startup nil)
 
-  (defun gcl/org-path (path)
-    (expand-file-name path org-directory))
+;; 强制从外部安装的包中加载 org-mode
+;; (require 'org)
+   (setq org-directory "~/.org-files")
 
-  ;; Turn on indentation and auto-fill mode for Org files
-  (defun dw/org-mode-setup ()
-    ;; (variable-pitch-mode 1)
-    (org-indent-mode 1)
-    (auto-fill-mode 0)
-    (visual-line-mode 1)
-    (setq corfu-auto nil)
-    (setq evil-auto-indent nil))
+     (defun gcl/org-path (path)
+       (expand-file-name path org-directory))
 
-  (defun dw/org-move-done-tasks-to-bottom ()
-    "Sort all tasks in the topmost heading by TODO state."
-    (interactive)
-    (save-excursion
-      (while (org-up-heading-safe))
-      (org-sort-entries nil ?o))
+     ;; Turn on indentation and auto-fill mode for Org files
+     (defun dw/org-mode-setup ()
+       ;; (variable-pitch-mode 1)
+       (org-indent-mode 1)
+       (auto-fill-mode 0)
+       (visual-line-mode 1)
+       (setq corfu-auto nil)
+       (setq evil-auto-indent nil))
 
-    ;; Reset the view of TODO items
-    (org-overview)
-    (org-show-entry)
-    (org-show-children))
+     (defun dw/org-move-done-tasks-to-bottom ()
+       "Sort all tasks in the topmost heading by TODO state."
+       (interactive)
+       (save-excursion
+         (while (org-up-heading-safe))
+         (org-sort-entries nil ?o))
+
+       ;; Reset the view of TODO items
+       (org-overview)
+       (org-show-entry)
+       (org-show-children))
 
 
-  (defun dw/org-todo-state-change-hook ()
-    (when (string= org-state "DONE")
-      (dw/org-move-done-tasks-to-bottom)))
-  ;; (add-hook 'org-after-todo-state-change-hook 'dw/org-todo-state-change-hook)
+     (defun dw/org-todo-state-change-hook ()
+       (when (string= org-state "DONE")
+         (dw/org-move-done-tasks-to-bottom)))
+     ;; (add-hook 'org-after-todo-state-change-hook 'dw/org-todo-state-change-hook)
 
-  (defun my-org-mode-hook ()
-  "Custom configurations for `org-mode`."
-  (setq org-adapt-indentation t)         ; Automatically adapt indentation
-  (setq org-indent-indentation-per-level 2) ; Set indentation level to 2 spaces
-  (org-indent-mode t))                   ; Enable org-indent-mode for better visibility
+     (defun my-org-mode-hook ()
+     "Custom configurations for `org-mode`."
+     (setq org-adapt-indentation t)         ; Automatically adapt indentation
+     (setq org-indent-indentation-per-level 2) ; Set indentation level to 2 spaces
+     (org-indent-mode t))                   ; Enable org-indent-mode for better visibility
 
-(add-hook 'org-mode-hook 'my-org-mode-hook)
+   (add-hook 'org-mode-hook 'my-org-mode-hook)
 
 (use-package verb)
 
@@ -394,8 +399,37 @@
         org-startup-folded 'content
         org-cycle-separator-lines 2
         org-capture-bookmark nil
-        org-confirm-babel-evaluate nil
-        )
+        org-confirm-babel-evaluate nil)
+
+  ;; 设置任务样式
+  ;; (setq org-todo-keyword-faces
+  ;;       '(("TODO" .   (:foreground "red" :weight bold))
+  ;;         ("DOING" .   (:foreground "cyan" :weight bold))
+  ;;         ("WAITING" .      (:foreground "orange" :weight bold))
+  ;;         ("DONE" .      (:foreground "green" :weight bold))
+  ;;         ("CANCELED" .     (:background "gray" :foreground "black"))))
+
+
+  ;; ‘!’ （for timestamp）和‘@’（for a note）
+  (setq org-todo-keywords
+        '((sequence "TODO(t!)" "DOING(s!)" "WAITING(w@/!)" "|" "DONE(d!)" "CANCELED(c@/!)")))
+
+  ;; 记录时间
+  (setq org-log-done 'time)
+  ;; 记录提示信息
+  (setq org-log-done 'note)
+
+  ;; Save clock data and notes in the LOGBOOK drawer
+  (setq org-clock-into-drawer t)
+
+  ;; 开启 clock 功能, 启用时间追踪
+  (setq org-clock-persist 'history)
+  (org-clock-persistence-insinuate)
+  ;; 自定义 clock 视图
+  (setq org-agenda-log-mode-items '(closed clock))
+
+  ;; note when clock out
+  (setq org-log-note-clock-out t)
 
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -450,9 +484,15 @@
 (use-package org-modern
   :hook (org-mode . org-modern-mode))
 (use-package org-modern-indent
-:straight (org-modern-indent :type git :host github :repo "jdtsmith/org-modern-indent")
-:config ; add late to hook
-(add-hook 'org-mode-hook #'org-modern-indent-mode 90))
+  :straight (org-modern-indent :type git :host github :repo "jdtsmith/org-modern-indent")
+  :config ; add late to hook
+  (setq org-modern-todo-faces
+         '(("TODO" .   (:foreground "red" :weight bold))
+          ("DOING" .   (:foreground "cyan" :weight bold))
+          ("WAITING" .      (:foreground "orange" :weight bold))
+          ("DONE" .      (:foreground "green" :weight bold))
+          ("CANCELED" .     (:background "gray" :foreground "black"))))
+  (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
 (add-hook 'org-mode-hook 'org-indent-mode)
 
 (use-package org-roam
@@ -556,6 +596,53 @@
 (use-package corg
   :straight (:host github :repo "isamert/corg.el"))
 (add-hook 'org-mode-hook #'corg-setup)
+
+;; 递归查找 ~/org/ 目录及其子目录中的所有 .org 文件
+(setq org-agenda-files (directory-files-recursively "~/.org-files/" "\\.org$"))
+(use-package org-super-agenda
+  ;; :custom (org-super-agenda-groups
+  ;;          '( ;; Each group has an implicit boolean OR operator between its selectors.
+  ;;            (:name "Overdue" :deadline past :order 0)
+  ;;            (:name "Evening Habits" :and (:habit t :tag "evening") :order 8)
+  ;;            (:name "Habits" :habit t :order 6)
+  ;;            (:name "Today" ;; Optionally specify section name
+  ;;             :time-grid t  ;; Items that appear on the time grid (scheduled/deadline with time)
+  ;;             :order 3)     ;; capture the today first but show it in order 3
+  ;;            (:name "Low Priority" :priority "C" :tag "maybe" :order 7)
+  ;;            (:name "Due Today" :deadline today :order 1)
+  ;;            (:name "Important"
+  ;;             :and (:priority "A" :not (:todo ("DONE" "CANCELED")))
+  ;;             :order 2)
+  ;;            (:name "Due Soon" :deadline future :order 4)
+  ;;            (:name "Todo" :not (:habit t) :order 5)
+  ;;            (:name "Waiting" :todo ("WAITING" "HOLD") :order 9))
+  ;;          )
+  :init
+  (setq org-super-agenda-date-format "%A (%e)"
+        org-super-agenda-groups
+        '((:name "已完成"
+                 :todo ("DONE" "CANCELED")
+                 :order 4)
+          (:name "今天完成"
+                 :habit t
+                 :order 2)
+          (:name "未完成"
+                 :todo "DOING"
+                 :scheduled past
+                 :order 0)
+          (:name "今日任务"
+                 :date today
+                 :order 1)
+          (:name "今日任务"
+                 :scheduled today
+                 :order 1)
+          (:name "待办"
+                 :todo "TODO"
+                 :scheduled future
+                 :order 3)))
+  :config
+  (setq org-super-agenda-header-map nil)
+  (org-super-agenda-mode t))
 
 (use-package async :commands (async-start))
 (use-package cl-lib)
@@ -1855,6 +1942,8 @@
  ("s-p" . previous-buffer)
  ("s-f" . find-file)
  ("s-F" . projectile-find-file)
+
+ ("s-g s-g" . goto-line)
  )
 
 (which-key-add-key-based-replacements
