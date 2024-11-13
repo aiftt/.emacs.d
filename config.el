@@ -336,7 +336,7 @@
 
 ;; 强制从外部安装的包中加载 org-mode
 ;; (require 'org)
-   (setq org-directory "~/.org-files")
+   (setq org-directory "~/org-web/blogs")
 
      (defun gcl/org-path (path)
        (expand-file-name path org-directory))
@@ -478,7 +478,15 @@
                   ("einit" . "src emacs-lisp :tangle ~/.config/emacs/init.el :mkdirp yes")
                   ("emodule" . "src emacs-lisp :tangle ~/.config/emacs/modules/dw-MODULE.el :mkdirp yes")
                   ("yaml" . "src yaml")
-                  ("json" . "src json")))
+                  ("json" . "src json")
+                  ("js"  . "src javascript")
+
+                  ;; others
+                  ("war" . "warning")
+                  ("suc" . "success")
+                  ("tip" . "tip")
+                  ("err" . "error")
+                  ))
     (add-to-list 'org-structure-template-alist item)))
 
 (use-package org-modern
@@ -497,7 +505,7 @@
 
 (use-package org-roam
   :custom
-  (org-roam-directory (file-truename "~/.org-files"))
+  (org-roam-directory (file-truename "~/org-web/blogs"))
   (org-roam-capture-templates
    '(("d" "default" plain
       "%?"
@@ -598,51 +606,7 @@
 (add-hook 'org-mode-hook #'corg-setup)
 
 ;; 递归查找 ~/org/ 目录及其子目录中的所有 .org 文件
-(setq org-agenda-files (directory-files-recursively "~/.org-files/" "\\.org$"))
-(use-package org-super-agenda
-  ;; :custom (org-super-agenda-groups
-  ;;          '( ;; Each group has an implicit boolean OR operator between its selectors.
-  ;;            (:name "Overdue" :deadline past :order 0)
-  ;;            (:name "Evening Habits" :and (:habit t :tag "evening") :order 8)
-  ;;            (:name "Habits" :habit t :order 6)
-  ;;            (:name "Today" ;; Optionally specify section name
-  ;;             :time-grid t  ;; Items that appear on the time grid (scheduled/deadline with time)
-  ;;             :order 3)     ;; capture the today first but show it in order 3
-  ;;            (:name "Low Priority" :priority "C" :tag "maybe" :order 7)
-  ;;            (:name "Due Today" :deadline today :order 1)
-  ;;            (:name "Important"
-  ;;             :and (:priority "A" :not (:todo ("DONE" "CANCELED")))
-  ;;             :order 2)
-  ;;            (:name "Due Soon" :deadline future :order 4)
-  ;;            (:name "Todo" :not (:habit t) :order 5)
-  ;;            (:name "Waiting" :todo ("WAITING" "HOLD") :order 9))
-  ;;          )
-  :init
-  (setq org-super-agenda-date-format "%A (%e)"
-        org-super-agenda-groups
-        '((:name "已完成"
-                 :todo ("DONE" "CANCELED")
-                 :order 4)
-          (:name "今天完成"
-                 :habit t
-                 :order 2)
-          (:name "未完成"
-                 :todo "DOING"
-                 :scheduled past
-                 :order 0)
-          (:name "今日任务"
-                 :date today
-                 :order 1)
-          (:name "今日任务"
-                 :scheduled today
-                 :order 1)
-          (:name "待办"
-                 :todo "TODO"
-                 :scheduled future
-                 :order 3)))
-  :config
-  (setq org-super-agenda-header-map nil)
-  (org-super-agenda-mode t))
+(setq org-agenda-files (directory-files-recursively "~/org-web/blogs/" "\\.org$"))
 
 (use-package async :commands (async-start))
 (use-package cl-lib)
@@ -1467,8 +1431,8 @@
   :config
   (setq
    web-mode-markup-indent-offset 2
-   web-mode-css-indent-offset 0
-   web-mode-code-indent-offset 0
+   web-mode-css-indent-offset 2
+   web-mode-code-indent-offset 2
    web-mode-style-padding 0
    web-mode-script-padding 0
    web-mode-enable-auto-closing t
@@ -1807,6 +1771,9 @@
               (run-with-timer 3 nil #'my/bridge-server-setup)))
   )
 
+(with-eval-after-load 'lsp-bridge
+  (define-key lsp-bridge-mode-map (kbd "RET") 'newline))
+
 ;; 打开日志，开发者才需要
 ;; (setq lsp-bridge-enable-log t)
 
@@ -1944,6 +1911,9 @@
  ("s-F" . projectile-find-file)
 
  ("s-g s-g" . goto-line)
+
+ ("s-<f12>" . eslintd-fix-buffer)
+ ("C-<f12>" . prettier-prettify)
  )
 
 (which-key-add-key-based-replacements

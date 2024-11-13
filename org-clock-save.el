@@ -1,0 +1,2 @@
+;; org-clock-save.el - lovegg.local at <2024-10-29 Tue 16:36>
+(setq org-clock-stored-history '(("/Users/lizhicheng/org-web/blogs/20240826110646-交科院.org" . 2898) ("/Users/lizhicheng/org-web/blogs/20240826110646-交科院.org" . 2377) ("/Users/lizhicheng/org-web/blogs/20240826110646-交科院.org" . 1392) ("/Users/lizhicheng/org-web/blogs/20240826110646-交科院.org" . 1726) ("/Users/lizhicheng/org-web/blogs/20240826110646-交科院.org" . 687)))
