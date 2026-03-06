@@ -336,7 +336,7 @@
 
 ;; 强制从外部安装的包中加载 org-mode
 ;; (require 'org)
-   (setq org-directory "~/org-web/blogs")
+   (setq org-directory "~/org-blog/content/blog/posts")
 
      (defun gcl/org-path (path)
        (expand-file-name path org-directory))
@@ -412,7 +412,7 @@
 
   ;; ‘!’ （for timestamp）和‘@’（for a note）
   (setq org-todo-keywords
-        '((sequence "TODO(t!)" "DOING(s!)" "WAITING(w@/!)" "|" "DONE(d!)" "CANCELED(c@/!)")))
+        '((sequence "TODO(t!)" "DOING(s!)" "WAITING(w@/!)" "|" "DONE(d!)" "NEXTW(n!)" "CANCELED(c@/!)")))
 
   ;; 记录时间
   (setq org-log-done 'time)
@@ -505,17 +505,17 @@
 
 (use-package org-roam
   :custom
-  (org-roam-directory (file-truename "~/org-web/blogs"))
+  (org-roam-directory (file-truename "~/org-blog/content/blog/posts"))
   (org-roam-capture-templates
    '(("d" "default" plain
       "%?"
       :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
       :unnarrowed t)
      ("j" "交科院" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
-      :if-new (file+head "jtt/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: 交科院")
+      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: 交科院")
       :unnarrowed t)
      ("b" "Blog" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
-      :if-new (file+head "pages/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: Blog")
+      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+TITLE: ${title}\n#+DATE: %<%Y-%m-%d %H:%M:%S>\n#+AUTHOR: aiftt\n#+EMAIL: ftt.loves@gmail.com\n#+TAGS: []\n#+CATEGORIES: []\n#+DRAFT: false\n#+filetags: Blog")
       :unnarrowed t)
      ))
   :bind (
@@ -884,6 +884,7 @@
 (global-set-key (kbd "C-c D") #'crux-delete-file-and-buffer)
 (global-set-key (kbd "C-c R") #'crux-rename-file-and-buffer)
 (global-set-key (kbd "C-c b K") #'crux-kill-other-buffers)
+;; (global-set-key (kbd "C-c ^") #'org-sort-entries)
 
 (use-package youdao-dictionary
   :bind (("C-c y ." . youdao-dictionary-search-at-point+)
@@ -1909,6 +1910,7 @@
  ("s-p" . previous-buffer)
  ("s-f" . find-file)
  ("s-F" . projectile-find-file)
+ ("s-P" . consult-ripgrep)
 
  ("s-g s-g" . goto-line)
 

@@ -1,0 +1,8 @@
+# key: upc
+# name: update-comment
+# --
+// update-begin--author:lizhicheng---date:`(format-time-string "%Y%m%d%H%M%S")`---for：$1
+
+$0
+
+// update-end--author:lizhicheng---date:`(format-time-string "%Y%m%d%H%M%S")`---for：$1

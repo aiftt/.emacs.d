@@ -1,2 +1,2 @@
-;; org-clock-save.el - lovegg.local at <2024-11-25 Mon 09:29>
-(setq org-clock-stored-history '(("/Users/lizhicheng/org-web/blogs/20240826110646-交科院.org" . 1783) ("/Users/lizhicheng/org-web/blogs/20240826110646-交科院.org" . 1358) ("/Users/lizhicheng/org-web/blogs/20240826110646-交科院.org" . 1694) ("/Users/lizhicheng/org-web/blogs/20240826110646-交科院.org" . 2093) ("/Users/lizhicheng/org-web/blogs/20240826110646-交科院.org" . 385)))
+;; org-clock-save.el - lovegg.local at <2026-03-06 Fri 20:24>
+(setq org-clock-stored-history '(("/Users/lizhicheng/org-web/blogs/20250210083720-2025.org" . 1)))
